@@ -13,6 +13,9 @@ window.MATHQUEST_CONFIG = {
   // Leave it blank to run in "offline practice" mode (nothing is sent).
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz_OczALSdd5wkzgKf_Ju5dCLq0pE5geLMpWiARGpSBEJhsmNmYj9kHk4fI7KeVfBV-gg/exec",
 
+  // Academy / school name shown across the site and on the report.
+  ACADEMY_NAME: "Whyte Pyramid Academy",
+
   // Tutor name that appears on the report (shown to "madam").
   TUTOR_NAME: "Mr Ola",
 
