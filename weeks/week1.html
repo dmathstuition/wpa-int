@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Week 1 — Addition Powers | Math Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>➕</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HUD -->
+  <div class="hud">
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <span class="chip">⭐ Lvl <b id="lvl">1</b></span>
+    <span class="chip streak-fire" id="streakChip">🔥 <b id="streak">0</b></span>
+    <span class="chip">💎 XP <b id="xp">0</b></span>
+    <div class="xpbar" title="XP to next level"><i id="xpFill"></i></div>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+
+  <div class="stagemap" id="stagemap"></div>
+
+  <!-- Everything renders here -->
+  <div id="screen"></div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+/* =============================================================
+   WEEK 1 — ADDITION POWERS  (Year 6 SATs)
+   Data-driven mini-game engine. To make Week 2, copy this file,
+   change WEEK_NUMBER + WEEK_TITLE and edit buildStages().
+   ============================================================= */
+var WEEK_NUMBER = 1;
+var WEEK_TITLE  = "Addition Powers";
+
+/* ---------- little helpers ---------- */
+function rnd(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(a){ return a[rnd(0,a.length-1)]; }
+function commas(n){ return Number(n).toLocaleString("en-GB"); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){var j=rnd(0,i);var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+
+// Build 4 multiple-choice options around a correct numeric answer
+function mcOptions(correct){
+  var set = {}; set[correct]=true;
+  var tries=0;
+  while(Object.keys(set).length<4 && tries<50){
+    tries++;
+    var delta = pick([1,2,3,5,9,10,11,20,100,90,-1,-10]) * pick([1,1,-1]);
+    var cand = correct + delta;
+    if (cand>0 && cand!==correct) set[cand]=true;
+  }
+  return shuffle(Object.keys(set).map(Number));
+}
+
+/* ---------- vertical column-sum HTML ---------- */
+function verticalSum(nums){
+  var strs = nums.map(String);
+  var width = Math.max.apply(null, strs.map(function(s){return s.length;}));
+  var rows = strs.map(function(s, idx){
+    var padded = s.padStart(width, " ").split("");
+    var op = idx>0 ? '<td class="op">+</td>' : '<td></td>';
+    return '<tr>'+op+padded.map(function(d){return '<td>'+(d===" "?"":d)+'</td>';}).join("")+'</tr>';
+  }).join("");
+  var lineCells = '<td></td>'+Array(width).fill('<td></td>').join("");
+  return '<div class="colsum"><table>'+rows+'<tr class="line">'+lineCells+'</tr></table></div>';
+}
+
+/* =============================================================
+   STAGE / QUESTION BUILDERS
+   Each question: { kind, prompt(html), answer, options?, hint }
+   ============================================================= */
+function qBond100(){
+  var a = rnd(11,89); var ans = 100-a;
+  return { kind:"mc", prompt:"Number bond to <b>100</b>:<br><span class='big-num'>"+a+" + ? = 100</span>",
+           answer:ans, options:mcOptions(ans), hint:"Tens make 90, then units make 10." };
+}
+function qBond1000(){
+  var a = rnd(1,9)*100 + rnd(1,9)*10; var ans = 1000-a;
+  return { kind:"mc", prompt:"Number bond to <b>1000</b>:<br><span class='big-num'>"+a+" + ? = 1000</span>",
+           answer:ans, options:mcOptions(ans), hint:"How far to the next hundred, then to 1000?" };
+}
+function qMental(){
+  var a = rnd(23,79), b = rnd(24,88); var ans=a+b;
+  return { kind:"mc", prompt:"Quick mental add:<br><span class='big-num'>"+a+" + "+b+"</span>",
+           answer:ans, options:mcOptions(ans), hint:"Add the tens first, then the units." };
+}
+function qNearMultiple(){
+  var a = rnd(30,90)*10 + rnd(90,99)%10; // near a round number
+  a = rnd(1,9)*1000 + 990 + rnd(0,8);
+  var b = rnd(11,60); var ans=a+b;
+  return { kind:"type", prompt:"Add cleverly (round up, then adjust):<br><span class='big-num'>"+commas(a)+" + "+b+"</span>",
+           answer:ans, hint:"Add to the next thousand, then take away what you added." };
+}
+function qColumn(nDigits){
+  var lo = Math.pow(10,nDigits-1), hi = Math.pow(10,nDigits)-1;
+  var a=rnd(lo,hi), b=rnd(lo,hi); var ans=a+b;
+  return { kind:"column", nums:[a,b], answer:ans, hint:"Line up the columns. Carry into the next column when you go over 9." };
+}
+function qColumn3(){
+  var a=rnd(1000,9999), b=rnd(1000,9999), c=rnd(1000,9999); var ans=a+b+c;
+  return { kind:"column", nums:[a,b,c], answer:ans, hint:"Add one column at a time, top to bottom. Watch your carries!" };
+}
+function qBig(){
+  var a=rnd(10000,99999), b=rnd(10000,99999); var ans=a+b;
+  return { kind:"column", nums:[a,b], answer:ans, hint:"Same method, just more columns. Stay neat!" };
+}
+function qMissing(){
+  var a=rnd(100,899), b=rnd(100,899); var total=a+b;
+  var aStr=String(a); var pos=rnd(0,aStr.length-1);
+  var hidden=aStr[pos];
+  var shown=aStr.substring(0,pos)+"▢"+aStr.substring(pos+1);
+  return { kind:"mc",
+    prompt:"Find the missing digit ▢ :<br><span class='big-num'>"+shown+" + "+b+" = "+total+"</span>",
+    answer:Number(hidden),
+    options:shuffle([0,1,2,3,4,5,6,7,8,9].filter(function(d){return d!==Number(hidden);}).slice(0,3).concat(Number(hidden))),
+    hint:"Try each digit — which one makes the total correct?" };
+}
+function qWord(){
+  var templates = [
+    function(){ var a=rnd(1200,4800), b=rnd(1300,4900);
+      return { text:"🎟️ On Saturday <b>"+commas(a)+"</b> people visited the fair. On Sunday <b>"+commas(b)+"</b> came. How many visited in total?", ans:a+b }; },
+    function(){ var a=rnd(345,880), b=rnd(240,760), c=rnd(120,540);
+      return { text:"📚 A library has <b>"+a+"</b> maths books, <b>"+b+"</b> science books and <b>"+c+"</b> story books. How many books altogether?", ans:a+b+c }; },
+    function(){ var a=rnd(1500,6000), b=rnd(1900,5500);
+      return { text:"💷 A charity raised £<b>"+commas(a)+"</b> in May and £<b>"+commas(b)+"</b> in June. How much did they raise in total?", ans:a+b }; },
+    function(){ var a=rnd(2450,7800), b=rnd(999,3999);
+      return { text:"🚗 A car costs £<b>"+commas(a)+"</b>. A trailer costs £<b>"+commas(b)+"</b>. What is the total cost?", ans:a+b }; },
+    function(){ var a=rnd(15600,48000), b=rnd(12300,39000);
+      return { text:"🏟️ A stadium sold <b>"+commas(a)+"</b> tickets for match 1 and <b>"+commas(b)+"</b> for match 2. Total tickets sold?", ans:a+b }; }
+  ];
+  var t = pick(templates)();
+  return { kind:"type", prompt:"Word problem:<br><div style='font-size:22px;font-weight:700;margin-top:8px;'>"+t.text+"</div>",
+           answer:t.ans, hint:"Pull out the numbers and add them with the column method." };
+}
+
+/* ---------- assemble the whole lesson ---------- */
+function buildStages(){
+  return [
+    { key:"warmup", emoji:"🔥", title:"Warm-Up Blast", color:"var(--orange)",
+      intro:"Quick-fire mental maths to wake up your brain! Number bonds and speedy adds. ⚡",
+      questions:[ qBond100(), qBond100(), qBond1000(), qMental(), qMental(), qBond1000() ] },
+
+    { key:"column", emoji:"🏗️", title:"Column Crushers", color:"var(--blue)",
+      intro:"Line them up and CARRY! Classic column addition — the SATs superpower. 🦾",
+      questions:[ qColumn(3), qColumn(3), qColumn(4), qColumn(4), qColumn3() ] },
+
+    { break:true, emoji:"🤸", title:"Brain Break!", text:"Stand up and do 10 star jumps ⭐, then wiggle your fingers. Ready in…" },
+
+    { key:"big", emoji:"🚀", title:"Big Number Boost", color:"var(--purple)",
+      intro:"Now for GIANT numbers and clever mental tricks. You've got this! 🌈",
+      questions:[ qBig(), qBig(), qNearMultiple(), qNearMultiple(), qColumn3() ] },
+
+    { key:"missing", emoji:"🕵️", title:"Missing Digit Detective", color:"var(--pink)",
+      intro:"Uh oh — some digits are hiding! Be a detective and find them. 🔎",
+      questions:[ qMissing(), qMissing(), qMissing(), qMissing() ] },
+
+    { break:true, emoji:"💧", title:"Brain Break!", text:"Take 3 big breaths and a sip of water 💧. Shake out your hands. Ready in…" },
+
+    { key:"word", emoji:"🧠", title:"Reasoning Rangers", color:"var(--green)",
+      intro:"Real SATs-style word problems. Read carefully, find the numbers, add them up! 🧩",
+      questions:[ qWord(), qWord(), qWord(), qWord() ] },
+
+    { key:"boss", emoji:"👑", title:"BOSS LEVEL", color:"var(--red)",
+      intro:"Final challenge! A mix of everything you've mastered. Beat the boss! 🐉",
+      questions:[ qColumn(4), qMissing(), qBig(), qWord(), qBond1000() ] }
+  ];
+}
+
+/* =============================================================
+   GAME STATE + ENGINE
+   ============================================================= */
+var state = {
+  student: MQ.getStudent() || "",
+  xp:0, level:1, streak:0, bestStreak:0,
+  idx:0,          // index into stages array
+  qi:0,           // question index within stage
+  firstTry:true,  // was this question answered correctly on first go?
+  correctFirst:0, totalQ:0,
+  stageStats:{},  // key -> {correct,total}
+  startTime:Date.now(),
+  qStart:0
+};
+var STAGES = buildStages();
+var screen = document.getElementById("screen");
+
+/* ---- HUD paint ---- */
+function paintHUD(){
+  document.getElementById("lvl").textContent = state.level;
+  document.getElementById("xp").textContent = state.xp;
+  document.getElementById("streak").textContent = state.streak;
+  var into = state.xp % 100;
+  document.getElementById("xpFill").style.width = into + "%";
+  document.getElementById("streakChip").classList.toggle("on", state.streak>=3);
+}
+function addXP(n){
+  state.xp += n;
+  var newLevel = 1 + Math.floor(state.xp/100);
+  if (newLevel > state.level){ state.level=newLevel; MQ.sound("level"); MQ.confetti(70); toast("⬆️ LEVEL "+newLevel+"!"); }
+  paintHUD();
+}
+
+/* ---- stage map dots ---- */
+function paintMap(){
+  var nodes = STAGES.filter(function(s){return !s.break;});
+  var map = document.getElementById("stagemap");
+  map.innerHTML = "";
+  var playIdx=-1, counter=0;
+  STAGES.forEach(function(s,i){ if(!s.break){ counter++; if(i===state.idx) playIdx=counter; } });
+  nodes.forEach(function(s,i){
+    var div=document.createElement("div");
+    var done = (i+1) < playIdx;
+    var active = (i+1) === playIdx;
+    div.className = "node" + (done?" done":"") + (active?" active":"");
+    div.textContent = done ? "✓" : s.emoji;
+    div.title = s.title;
+    map.appendChild(div);
+  });
+}
+
+/* ---- transient toast ---- */
+function toast(msg){
+  var t=document.createElement("div");
+  t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:18px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);animation:popIn .3s;";
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },1100);
+}
+
+/* ---- sound toggle button ---- */
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent = MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); };
+paintSound();
+
+/* =============================================================
+   SCREENS
+   ============================================================= */
+function showIntro(){
+  paintMap();
+  screen.innerHTML =
+    '<div class="card center">' +
+      '<div class="mascot">🦸</div>' +
+      '<h1>Week '+WEEK_NUMBER+': '+WEEK_TITLE+'</h1>' +
+      '<div class="speech">Welcome '+(state.student||"hero")+'! Complete <b>'+countQuestions()+' challenges</b> across '+countStages()+' stages. Earn XP, keep your 🔥 streak, and rescue every missing digit!</div>' +
+      '<div class="row" style="margin-top:20px;">' +
+        '<button class="btn big green" id="goBtn">🚀 START MISSION</button>' +
+      '</div>' +
+      '<p class="muted" style="margin-top:14px;">Tip: answer on your first try to boost your streak & XP!</p>' +
+    '</div>';
+  document.getElementById("goBtn").onclick=function(){ MQ.sound("click"); nextStage(true); };
+}
+function countQuestions(){ return STAGES.reduce(function(n,s){return n+(s.questions?s.questions.length:0);},0); }
+function countStages(){ return STAGES.filter(function(s){return !s.break;}).length; }
+
+function nextStage(first){
+  if(!first){ state.idx++; }
+  while(state.idx<STAGES.length && STAGES[state.idx].skip){ state.idx++; }
+  if(state.idx>=STAGES.length){ return showResults(); }
+  var s=STAGES[state.idx];
+  if(s.break){ return showBreak(s); }
+  state.qi=0;
+  showStageIntro(s);
+}
+
+function showStageIntro(s){
+  paintMap();
+  screen.innerHTML =
+    '<div class="card center" style="border-top:10px solid '+(s.color||"var(--blue)")+';">' +
+      '<div style="font-size:64px;">'+s.emoji+'</div>' +
+      '<h1>'+s.title+'</h1>' +
+      '<div class="speech">'+s.intro+'</div>' +
+      '<button class="btn big blue" id="stgBtn" style="margin-top:18px;">Let\'s do it! ▶</button>' +
+    '</div>';
+  document.getElementById("stgBtn").onclick=function(){ MQ.sound("click"); showQuestion(); };
+}
+
+function showBreak(s){
+  paintMap();
+  var secs=15;
+  screen.innerHTML =
+    '<div class="card center" style="background:linear-gradient(135deg,#fff,#eafff3);">' +
+      '<div class="mascot" style="font-size:74px;">'+s.emoji+'</div>' +
+      '<h1>'+s.title+'</h1>' +
+      '<div class="speech">'+s.text+' <b id="bt">'+secs+'</b>s</div>' +
+      '<button class="btn green" id="skipBreak" style="margin-top:16px;">I\'m ready! ▶</button>' +
+    '</div>';
+  var iv=setInterval(function(){
+    secs--; var bt=document.getElementById("bt");
+    if(bt) bt.textContent=secs;
+    if(secs<=0){ clearInterval(iv); nextStage(); }
+  },1000);
+  document.getElementById("skipBreak").onclick=function(){ clearInterval(iv); MQ.sound("click"); nextStage(); };
+}
+
+function currentStage(){ return STAGES[state.idx]; }
+
+function showQuestion(){
+  paintMap();
+  var s=currentStage();
+  var q=s.questions[state.qi];
+  state.firstTry=true;
+  state.qStart=Date.now();
+
+  var body="";
+  if(q.kind==="column"){
+    body = verticalSum(q.nums) +
+      '<div style="margin-top:18px;" class="center">' +
+        '<input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?" />' +
+      '</div>';
+  } else if(q.kind==="type"){
+    body = '<div class="center" style="margin:8px 0 6px;">'+q.prompt+'</div>' +
+      '<div class="center" style="margin-top:14px;">' +
+        '<input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?" />' +
+      '</div>';
+  } else { // mc
+    body = '<div class="center" style="margin:8px 0;">'+q.prompt+'</div>' +
+      '<div class="options" id="opts">' +
+        q.options.map(function(o){ return '<button class="opt" data-v="'+o+'">'+commas(o)+'</button>'; }).join("") +
+      '</div>';
+  }
+
+  screen.innerHTML =
+    '<div class="card">' +
+      '<div class="row" style="justify-content:space-between;">' +
+        '<span class="chip" style="background:'+(s.color||"var(--blue)")+';color:#fff;">'+s.emoji+' '+s.title+'</span>' +
+        '<span class="chip" style="background:#eee;color:#333;">Q '+(state.qi+1)+' / '+s.questions.length+'</span>' +
+      '</div>' +
+      body +
+      '<div class="feedback" id="fb"></div>' +
+      '<div class="center" id="controls"></div>' +
+    '</div>';
+
+  if(q.kind==="mc"){
+    Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"), function(btn){
+      btn.onclick=function(){ handleAnswer(Number(btn.getAttribute("data-v")), q, btn); };
+    });
+  } else {
+    var inp=document.getElementById("ans");
+    inp.focus();
+    var ctr=document.getElementById("controls");
+    ctr.innerHTML='<button class="btn green" id="checkBtn" style="margin-top:16px;">Check ✅</button> '+
+                  '<button class="btn ghost" id="hintBtn" style="margin-top:16px;">💡 Hint</button>';
+    document.getElementById("checkBtn").onclick=function(){ handleAnswer(Number(inp.value), q, null); };
+    document.getElementById("hintBtn").onclick=function(){ document.getElementById("fb").textContent="💡 "+q.hint; document.getElementById("fb").className="feedback"; };
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("checkBtn").click(); });
+  }
+}
+
+function handleAnswer(val, q, btn){
+  var fb=document.getElementById("fb");
+  if(isNaN(val)){ fb.textContent="Type a number first ✏️"; fb.className="feedback"; return; }
+
+  if(val===q.answer){
+    // correct
+    MQ.sound("correct");
+    if(btn) btn.classList.add("correct");
+    lockInputs();
+    var fast = (Date.now()-state.qStart) < 9000;
+    if(state.firstTry){
+      state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak);
+      recordStage(true);
+      state.correctFirst++;
+      var gained = 10 + (fast?5:0) + (state.streak>=3?5:0);
+      addXP(gained);
+      fb.className="feedback good";
+      fb.innerHTML = pick(["🎉 Brilliant!","💥 Smashed it!","🌟 Superb!","🚀 Nailed it!","🔥 Yes!"]) +
+                     " +"+gained+" XP"+(fast?" ⚡speed":"")+(state.streak>=3?" 🔥x"+state.streak:"");
+      MQ.confetti(state.streak>=5?110:60);
+    } else {
+      addXP(4);
+      fb.className="feedback good";
+      fb.innerHTML="✅ Correct! +4 XP (you got there!) ";
+    }
+    state.totalQ++; // count once per question
+    showNext();
+  } else {
+    // wrong
+    MQ.sound("wrong");
+    if(btn) btn.classList.add("wrong");
+    if(state.firstTry){ recordStage(false); state.streak=0; paintHUD(); }
+    state.firstTry=false;
+    fb.className="feedback bad";
+    fb.innerHTML = pick(["Not quite","Oops","Try again"]) + " — "+ (q.hint||"have another go!") + " 💡";
+    // For MC, disable the wrong one and let them try others
+    if(btn) btn.disabled=true;
+    // For typed, clear and refocus
+    var inp=document.getElementById("ans"); if(inp){ inp.value=""; inp.focus(); }
+  }
+}
+
+function recordStage(ok){
+  var key=currentStage().key;
+  if(!state.stageStats[key]) state.stageStats[key]={correct:0,total:0};
+  state.stageStats[key].total++;
+  if(ok) state.stageStats[key].correct++;
+}
+function lockInputs(){
+  Array.prototype.forEach.call(document.querySelectorAll(".opt"), function(b){ b.disabled=true; });
+  var inp=document.getElementById("ans"); if(inp) inp.disabled=true;
+  var cb=document.getElementById("checkBtn"); if(cb) cb.disabled=true;
+}
+function showNext(){
+  paintHUD();
+  var ctr=document.getElementById("controls");
+  ctr.innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:16px;">Next ▶</button>';
+  var nb=document.getElementById("nextBtn"); nb.focus();
+  nb.onclick=function(){
+    MQ.sound("click");
+    var s=currentStage();
+    state.qi++;
+    if(state.qi>=s.questions.length){ showStageClear(s); }
+    else showQuestion();
+  };
+}
+
+function showStageClear(s){
+  var st=state.stageStats[s.key]||{correct:0,total:0};
+  var pct = st.total? Math.round(st.correct/st.total*100):0;
+  MQ.sound("win"); MQ.confetti(120);
+  paintMap();
+  screen.innerHTML =
+    '<div class="card center">' +
+      '<div class="mascot" style="font-size:72px;">'+s.emoji+'</div>' +
+      '<h1>Stage Clear!</h1>' +
+      '<h2 style="color:'+(s.color||"var(--blue)")+';">'+s.title+'</h2>' +
+      '<p style="font-size:20px;font-weight:800;">First-try score: '+st.correct+' / '+st.total+' ('+pct+'%)</p>' +
+      '<p style="font-size:34px;">'+MQ.rating(pct).emoji+' '+"⭐".repeat(MQ.rating(pct).stars)+'</p>' +
+      '<button class="btn big blue" id="contBtn">Continue ▶</button>' +
+    '</div>';
+  document.getElementById("contBtn").onclick=function(){ MQ.sound("click"); nextStage(); };
+}
+
+/* =============================================================
+   RESULTS + LOGGING
+   ============================================================= */
+function showResults(){
+  document.getElementById("stagemap").innerHTML="";
+  var acc = state.totalQ? Math.round(state.correctFirst/state.totalQ*100):0;
+  var rt = MQ.rating(acc);
+  var mins = Math.max(1, Math.round((Date.now()-state.startTime)/60000));
+  MQ.sound("win"); MQ.confetti(200);
+
+  // Per-stage breakdown
+  var breakdown = STAGES.filter(function(s){return !s.break;}).map(function(s){
+    var st=state.stageStats[s.key]||{correct:0,total:0};
+    var p=st.total?Math.round(st.correct/st.total*100):0;
+    return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0;">' +
+      '<span style="width:30px;">'+s.emoji+'</span>' +
+      '<b style="flex:1;text-align:left;">'+s.title+'</b>' +
+      '<div class="xpbar" style="flex:1;background:#eee;"><i style="width:'+p+'%;"></i></div>' +
+      '<span style="width:70px;text-align:right;font-weight:800;">'+st.correct+'/'+st.total+'</span></div>';
+  }).join("");
+
+  screen.innerHTML =
+    '<div class="card center">' +
+      '<div class="mascot" style="font-size:80px;">'+rt.emoji+'</div>' +
+      '<h1>Mission Complete!</h1>' +
+      '<div class="speech">Amazing work, '+(state.student||"hero")+'! Here is your report card.</div>' +
+      '<div class="row" style="margin:18px 0;gap:20px;">' +
+        '<div><div class="big-num" style="font-size:56px;">'+acc+'%</div><div class="muted">Accuracy</div></div>' +
+        '<div><div class="big-num" style="font-size:56px;">'+state.xp+'</div><div class="muted">Total XP</div></div>' +
+        '<div><div class="big-num" style="font-size:56px;">🔥'+state.bestStreak+'</div><div class="muted">Best streak</div></div>' +
+      '</div>' +
+      '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>' +
+      '<p style="font-size:22px;font-weight:800;color:var(--purple);">Rating: '+rt.label+'</p>' +
+      '<div style="max-width:520px;margin:14px auto;text-align:left;">'+breakdown+'</div>' +
+      '<p class="muted" id="saveState">💾 Saving your result…</p>' +
+      '<div class="row" style="margin-top:8px;">' +
+        '<button class="btn green" id="againBtn">🔁 Play again</button>' +
+        '<a class="btn blue" href="../index.html" style="text-decoration:none;">🏠 Home</a>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById("againBtn").onclick=function(){ location.reload(); };
+
+  // Build the report payload and send it
+  var payload = {
+    student: state.student || "Unknown",
+    week: WEEK_NUMBER,
+    weekTitle: WEEK_TITLE,
+    accuracy: acc,
+    correct: state.correctFirst,
+    totalQuestions: state.totalQ,
+    xp: state.xp,
+    bestStreak: state.bestStreak,
+    stars: rt.stars,
+    rating: rt.label,
+    minutes: mins,
+    stages: state.stageStats,
+    tutor: (window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.TUTOR_NAME) || ""
+  };
+  MQ.logResult(payload).then(function(res){
+    var el=document.getElementById("saveState");
+    if(!el) return;
+    if(res && res.ok) el.textContent="✅ Result saved. Your tutor can see your progress!";
+    else if(res && res.offline) el.textContent="📴 Saved on this device (tutor: add the Apps Script link to sync).";
+    else el.textContent="⚠️ Couldn't reach the server, but your result is saved on this device.";
+  });
+}
+
+/* ---------- boot ---------- */
+if(!state.student){
+  // If they arrived here directly, ask the name once
+  screen.innerHTML =
+    '<div class="card center" style="max-width:520px;">' +
+      '<div class="mascot">🦸</div><div class="speech">What\'s your name, hero?</div>' +
+      '<div class="row" style="margin-top:16px;">' +
+        '<input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;">' +
+        '<button class="btn green" id="nmBtn">Start ▶</button>' +
+      '</div></div>';
+  document.getElementById("nmBtn").onclick=function(){
+    var v=document.getElementById("nm").value.trim(); if(!v) return;
+    state.student=v; MQ.setStudent(v); paintHUD(); showIntro();
+  };
+  document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
+} else {
+  paintHUD(); showIntro();
+}
+</script>
+</body>
+</html>

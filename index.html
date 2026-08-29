@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Math Quest — Addition Missions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>➕</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hud">
+    <span class="chip">🚀 <b>Math Quest</b></span>
+    <span class="chip" id="whoChip">👤 <b id="whoName">Player</b></span>
+    <span class="chip">🔥 Weeks done: <b id="weeksDone">0</b></span>
+    <button class="btn ghost" id="soundBtn">🔊 Sound</button>
+  </div>
+
+  <h1 class="title-pop">➕ ADDITION MISSIONS ➗</h1>
+  <p class="subtitle">Pick a mission, smash the maths, earn XP & stars! 🌟</p>
+
+  <!-- Name gate -->
+  <div class="card" id="nameCard" style="margin-top:22px; max-width:560px;">
+    <div class="mascot">🦸</div>
+    <div class="speech">Hi hero! What shall I call you today?</div>
+    <div class="row" style="margin-top:18px;">
+      <input class="pill-input" id="nameInput" placeholder="Type your name…" maxlength="24" style="flex:1 1 220px;" />
+      <button class="btn green" id="startBtn">Let's go! ▶</button>
+    </div>
+  </div>
+
+  <!-- Mission grid -->
+  <div id="missionArea" class="hide">
+    <div class="weekgrid" id="weekGrid"></div>
+
+    <!-- Progress across weeks -->
+    <div class="card" id="progressCard" style="margin-top:22px;">
+      <h2>📈 <span id="progName">Your</span> Progress</h2>
+      <p class="muted" id="progNote">Complete a mission to start building your progress chart!</p>
+      <div id="progList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="assets/tracker.js"></script>
+<script>
+/* -------------------------------------------------------------
+   WEEKLY MISSION LIST
+   To publish a new week: add a row here and set live:true.
+   'file' points at weeks/weekN.html (create it from the template).
+   ------------------------------------------------------------- */
+var WEEKS = [
+  { n: 1, title: "Addition Powers", emoji: "➕", file: "weeks/week1.html", live: true,
+    desc: "Mental maths, column addition, missing digits & word problems." },
+  { n: 2, title: "Coming Soon", emoji: "🔒", file: "weeks/week2.html", live: false,
+    desc: "Unlocks next week — keep your streak alive!" },
+  { n: 3, title: "Coming Soon", emoji: "🔒", file: "weeks/week3.html", live: false,
+    desc: "A brand-new challenge is on the way." }
+];
+
+var soundBtn = document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent = MQ.soundEnabled() ? "🔊 Sound" : "🔇 Muted"; }
+soundBtn.onclick = function(){ MQ.toggleSound(); paintSound(); MQ.sound("click"); };
+paintSound();
+
+function renderWeeks(){
+  var grid = document.getElementById("weekGrid");
+  grid.innerHTML = "";
+  WEEKS.forEach(function(w, i){
+    var el = document.createElement("div");
+    el.className = "weekcard" + (w.live ? "" : " locked");
+    el.style.animationDelay = (i*0.08)+"s";
+    el.innerHTML =
+      '<div class="emoji">'+(w.live ? w.emoji : "🔒")+'</div>' +
+      '<h3>Week '+w.n+'</h3>' +
+      '<div style="font-weight:800;margin-bottom:6px;">'+ (w.live ? w.title : "Coming Soon") +'</div>' +
+      '<p class="muted" style="min-height:48px;font-size:14px;">'+w.desc+'</p>' +
+      '<span class="tag '+(w.live?"live":"soon")+'">'+(w.live?"▶ PLAY NOW":"LOCKED")+'</span>';
+    if (w.live){
+      el.style.cursor = "pointer";
+      el.onclick = function(){ MQ.sound("click"); window.location.href = w.file; };
+    }
+    grid.appendChild(el);
+  });
+}
+
+function renderProgress(name){
+  document.getElementById("progName").textContent = name + "'s";
+  MQ.fetchHistory(name).then(function(rows){
+    rows = (rows||[]).filter(function(r){ return (r.student||"").toLowerCase() === name.toLowerCase(); });
+    // keep best score per week
+    var byWeek = {};
+    rows.forEach(function(r){
+      var w = r.week; var acc = Number(r.accuracy)||0;
+      if (!byWeek[w] || acc > byWeek[w].accuracy) byWeek[w] = r;
+    });
+    var weeks = Object.keys(byWeek).sort(function(a,b){return a-b;});
+    document.getElementById("weeksDone").textContent = weeks.length;
+    var list = document.getElementById("progList");
+    if (!weeks.length){ return; }
+    document.getElementById("progNote").textContent = "Best result for each week 🎯";
+    list.innerHTML = weeks.map(function(w){
+      var r = byWeek[w]; var acc = Number(r.accuracy)||0;
+      var rt = MQ.rating(acc);
+      var stars = "⭐".repeat(rt.stars) + "▫️".repeat(5-rt.stars);
+      return '<div style="display:flex;align-items:center;gap:12px;margin:10px 0;">' +
+        '<b style="width:76px;">Week '+w+'</b>' +
+        '<div class="xpbar" style="flex:1;background:#eee;"><i style="width:'+acc+'%;"></i></div>' +
+        '<span style="width:56px;text-align:right;font-weight:800;">'+acc+'%</span>' +
+        '<span style="width:120px;">'+stars+'</span></div>';
+    }).join("");
+  });
+}
+
+function begin(name){
+  MQ.setStudent(name);
+  document.getElementById("whoName").textContent = name;
+  document.getElementById("nameCard").classList.add("hide");
+  document.getElementById("missionArea").classList.remove("hide");
+  renderWeeks();
+  renderProgress(name);
+  MQ.sound("level");
+}
+
+document.getElementById("startBtn").onclick = function(){
+  var n = document.getElementById("nameInput").value.trim();
+  if (!n){ document.getElementById("nameInput").focus(); return; }
+  begin(n);
+};
+document.getElementById("nameInput").addEventListener("keydown", function(e){
+  if (e.key === "Enter") document.getElementById("startBtn").click();
+});
+
+// Auto-skip name gate if we already know the player
+(function(){
+  var saved = MQ.getStudent();
+  if (saved){
+    document.getElementById("nameInput").value = saved;
+    begin(saved);
+  }
+})();
+</script>
+</body>
+</html>
