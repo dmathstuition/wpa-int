@@ -78,71 +78,67 @@ function verticalSum(nums){
 }
 
 /* =============================================================
-   STAGE / QUESTION BUILDERS
-   Each question: { kind, prompt(html), answer, options?, hint }
+   STAGE / QUESTION BUILDERS  —  STRICTLY 3-to-6 DIGIT ADDITION
+   Every question is a column addition. Two flavours:
+     • "ordinary"  = no carrying (each column adds to 9 or less)
+     • "carry"     = at least one column carries over
    ============================================================= */
-function qBond100(){
-  var a = rnd(11,89); var ans = 100-a;
-  return { kind:"mc", prompt:"Number bond to <b>100</b>:<br><span class='big-num'>"+a+" + ? = 100</span>",
-           answer:ans, options:mcOptions(ans), hint:"Tens make 90, then units make 10." };
+
+/* Two n-digit numbers that add with NO carrying in any column. */
+function genNoCarry(nDigits){
+  var aStr="", bStr="";
+  for(var i=0;i<nDigits;i++){
+    var lead = (i===0);
+    var ad, bd;
+    if(lead){ ad=rnd(1,8); bd=rnd(1, 9-ad); }   // both leading digits >= 1, sum <= 9
+    else    { ad=rnd(0,9); bd=rnd(0, 9-ad); }   // column sum <= 9  => never carries
+    aStr+=ad; bStr+=bd;
+  }
+  var a=Number(aStr), b=Number(bStr);
+  return { nums:[a,b], answer:a+b, carry:false };
 }
-function qBond1000(){
-  var a = rnd(1,9)*100 + rnd(1,9)*10; var ans = 1000-a;
-  return { kind:"mc", prompt:"Number bond to <b>1000</b>:<br><span class='big-num'>"+a+" + ? = 1000</span>",
-           answer:ans, options:mcOptions(ans), hint:"How far to the next hundred, then to 1000?" };
+
+/* Two n-digit numbers guaranteed to need carrying somewhere. */
+function genCarry(nDigits){
+  var lo=Math.pow(10,nDigits-1), hi=Math.pow(10,nDigits)-1, a,b,g=0;
+  do { a=rnd(lo,hi); b=rnd(lo,hi); g++; } while(g<100 && !hasCarry([a,b]));
+  return { nums:[a,b], answer:a+b, carry:true };
 }
-function qMental(){
-  var a = rnd(23,79), b = rnd(24,88); var ans=a+b;
-  return { kind:"mc", prompt:"Quick mental add:<br><span class='big-num'>"+a+" + "+b+"</span>",
-           answer:ans, options:mcOptions(ans), hint:"Add the tens first, then the units." };
+
+/* Three n-digit numbers (a proper carry challenge) for the boss. */
+function genCarry3(nDigits){
+  var lo=Math.pow(10,nDigits-1), hi=Math.pow(10,nDigits)-1, a,b,c,g=0;
+  do { a=rnd(lo,hi); b=rnd(lo,hi); c=rnd(lo,hi); g++; } while(g<100 && !hasCarry([a,b,c]));
+  return { nums:[a,b,c], answer:a+b+c, carry:true };
 }
-function qNearMultiple(){
-  var a = rnd(30,90)*10 + rnd(90,99)%10; // near a round number
-  a = rnd(1,9)*1000 + 990 + rnd(0,8);
-  var b = rnd(11,60); var ans=a+b;
-  return { kind:"type", prompt:"Add cleverly (round up, then adjust):<br><span class='big-num'>"+commas(a)+" + "+b+"</span>",
-           answer:ans, hint:"Add to the next thousand, then take away what you added." };
+
+/* mode: "ordinary" | "carry" | "mix" -> a column-addition question. */
+function addQ(nDigits, mode){
+  var g = mode==="ordinary" ? genNoCarry(nDigits)
+        : mode==="carry"    ? genCarry(nDigits)
+        : (Math.random()<0.5 ? genNoCarry(nDigits) : genCarry(nDigits));
+  return { kind:"column", nums:g.nums, answer:g.answer,
+    hint: g.carry
+      ? "Add each column from the right. When a column makes 10 or more, write the units digit and carry 1 into the next column."
+      : "Add each column from the right. None of these columns pass 9, so there's no carrying — nice and tidy!" };
 }
-function qColumn(nDigits){
-  var lo = Math.pow(10,nDigits-1), hi = Math.pow(10,nDigits)-1;
-  var a=rnd(lo,hi), b=rnd(lo,hi); var ans=a+b;
-  return { kind:"column", nums:[a,b], answer:ans, hint:"Line up the columns. Carry into the next column when you go over 9." };
-}
-function qColumn3(){
-  var a=rnd(1000,9999), b=rnd(1000,9999), c=rnd(1000,9999); var ans=a+b+c;
-  return { kind:"column", nums:[a,b,c], answer:ans, hint:"Add one column at a time, top to bottom. Watch your carries!" };
-}
-function qBig(){
-  var a=rnd(10000,99999), b=rnd(10000,99999); var ans=a+b;
-  return { kind:"column", nums:[a,b], answer:ans, hint:"Same method, just more columns. Stay neat!" };
-}
-function qMissing(){
-  var a=rnd(100,899), b=rnd(100,899); var total=a+b;
-  var aStr=String(a); var pos=rnd(0,aStr.length-1);
-  var hidden=aStr[pos];
-  var shown=aStr.substring(0,pos)+"▢"+aStr.substring(pos+1);
-  return { kind:"mc",
-    prompt:"Find the missing digit ▢ :<br><span class='big-num'>"+shown+" + "+b+" = "+total+"</span>",
-    answer:Number(hidden),
-    options:shuffle([0,1,2,3,4,5,6,7,8,9].filter(function(d){return d!==Number(hidden);}).slice(0,3).concat(Number(hidden))),
-    hint:"Try each digit — which one makes the total correct?" };
-}
-function qWord(){
+
+/* Word problems — still strictly 3-6 digit ADDITION. */
+function wordQ(nDigits, mode){
+  var g = mode==="ordinary" ? genNoCarry(nDigits)
+        : mode==="carry"    ? genCarry(nDigits)
+        : (Math.random()<0.5 ? genNoCarry(nDigits) : genCarry(nDigits));
+  var a=g.nums[0], b=g.nums[1];
   var templates = [
-    function(){ var a=rnd(1200,4800), b=rnd(1300,4900);
-      return { text:"🎟️ On Saturday <b>"+commas(a)+"</b> people visited the fair. On Sunday <b>"+commas(b)+"</b> came. How many visited in total?", ans:a+b }; },
-    function(){ var a=rnd(345,880), b=rnd(240,760), c=rnd(120,540);
-      return { text:"📚 A library has <b>"+a+"</b> maths books, <b>"+b+"</b> science books and <b>"+c+"</b> story books. How many books altogether?", ans:a+b+c }; },
-    function(){ var a=rnd(1500,6000), b=rnd(1900,5500);
-      return { text:"💷 A charity raised £<b>"+commas(a)+"</b> in May and £<b>"+commas(b)+"</b> in June. How much did they raise in total?", ans:a+b }; },
-    function(){ var a=rnd(2450,7800), b=rnd(999,3999);
-      return { text:"🚗 A car costs £<b>"+commas(a)+"</b>. A trailer costs £<b>"+commas(b)+"</b>. What is the total cost?", ans:a+b }; },
-    function(){ var a=rnd(15600,48000), b=rnd(12300,39000);
-      return { text:"🏟️ A stadium sold <b>"+commas(a)+"</b> tickets for match 1 and <b>"+commas(b)+"</b> for match 2. Total tickets sold?", ans:a+b }; }
+    "🎟️ On Saturday <b>"+commas(a)+"</b> people visited the fair and on Sunday <b>"+commas(b)+"</b> came. How many visited in <b>total</b>?",
+    "💷 A charity raised £<b>"+commas(a)+"</b> in May and £<b>"+commas(b)+"</b> in June. How much <b>altogether</b>?",
+    "🏟️ A stadium sold <b>"+commas(a)+"</b> tickets for match 1 and <b>"+commas(b)+"</b> for match 2. <b>Total</b> tickets?",
+    "📦 A warehouse holds <b>"+commas(a)+"</b> boxes of apples and <b>"+commas(b)+"</b> boxes of pears. How many boxes in <b>total</b>?",
+    "🚗 A car costs £<b>"+commas(a)+"</b> and a caravan costs £<b>"+commas(b)+"</b>. What is the <b>total</b> cost?"
   ];
-  var t = pick(templates)();
-  return { kind:"type", prompt:"Word problem:<br><div style='font-size:22px;font-weight:700;margin-top:8px;'>"+t.text+"</div>",
-           answer:t.ans, hint:"Pull out the numbers and add them with the column method." };
+  return { kind:"type",
+    prompt:"Word problem:<br><div style='font-size:22px;font-weight:700;margin-top:8px;'>"+pick(templates)+"</div>",
+    answer:g.answer, hint:"Find the two numbers, line them up and add with the column method." };
 }
 
 /* =============================================================
@@ -214,86 +210,7 @@ function colFrames(host, nums){
 }
 
 /* Number-bond hops to 100 / 1000 */
-function bondFrames(host, a, target){
-  var stone = target===100 ? (a%10===0 ? a+10 : Math.ceil(a/10)*10)
-                           : Math.ceil(a/100)*100;
-  if(stone<=a) stone = a + (target===100?10:100);
-  if(stone>=target) stone = target - (target===100?10:100);
-  var j1 = stone - a, j2 = target - stone, ans = target - a;
-  host.innerHTML =
-    '<div class="hops">' +
-      '<div class="stone">'+a+'</div>' +
-      '<div class="hop faded" id="h1"><span class="arc">↷</span><span class="amt">+'+j1+'</span></div>' +
-      '<div class="stone faded" id="s1">'+stone+'</div>' +
-      '<div class="hop faded" id="h2"><span class="arc">↷</span><span class="amt">+'+j2+'</span></div>' +
-      '<div class="stone target">'+target+'</div>' +
-    '</div>' +
-    '<div class="big-num faded" id="bres" style="font-size:34px;">'+a+' + <span style="color:#26de81">'+ans+'</span> = '+target+'</div>';
-  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
-  return [
-    { hold:2400, say:"To make <b>"+target+"</b> from <b>"+a+"</b>, hop in easy steps. First jump up to the tidy number <b>"+stone+"</b>." , apply:function(){ show("h1"); show("s1"); } },
-    { hold:2400, say:"That first hop was <b>+"+j1+"</b>. Now hop from "+stone+" up to <b>"+target+"</b>: that's <b>+"+j2+"</b>.", apply:function(){ show("h2"); } },
-    { hold:2600, snd:"level", say:"Add the hops: "+j1+" + "+j2+" = <b>"+ans+"</b>. So "+a+" + <b>"+ans+"</b> = "+target+" ✅", apply:function(){ show("bres"); } }
-  ];
-}
-
-/* Mental addition by partitioning (tens + units) */
-function mentalFrames(host, a, b){
-  var aT=Math.floor(a/10)*10, aU=a%10, bT=Math.floor(b/10)*10, bU=b%10;
-  var T=aT+bT, U=aU+bU, ans=a+b;
-  host.innerHTML =
-    '<div class="split">' +
-      '<div class="col"><div class="lbl">'+a+'</div><b>'+aT+'</b><div class="lbl">+ '+aU+'</div></div>' +
-      '<div class="col"><div class="lbl">'+b+'</div><b>'+bT+'</b><div class="lbl">+ '+bU+'</div></div>' +
-    '</div>' +
-    '<div class="big-num faded" id="mt" style="font-size:30px;">Tens: '+aT+' + '+bT+' = <b style="color:#4b7bec">'+T+'</b></div>' +
-    '<div class="big-num faded" id="mu" style="font-size:30px;">Units: '+aU+' + '+bU+' = <b style="color:#fd9644">'+U+'</b></div>' +
-    '<div class="big-num faded" id="mr" style="font-size:34px;">'+T+' + '+U+' = <b style="color:#26de81">'+ans+'</b></div>';
-  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
-  return [
-    { hold:2400, say:"Split each number into <b>tens</b> and <b>units</b> — much easier to add in your head!" },
-    { hold:2300, say:"Add the tens together first.", apply:function(){ show("mt"); } },
-    { hold:2300, say:"Now add the units together.", apply:function(){ show("mu"); } },
-    { hold:2600, snd:"level", say:"Recombine: "+T+" + "+U+" = <b>"+ans+"</b> 🎉", apply:function(){ show("mr"); } }
-  ];
-}
-
-/* Round-and-adjust mental strategy for near-multiples */
-function roundFrames(host, a, b){
-  var up = Math.ceil(a/1000)*1000, added = up - a, xtra = b + up, ans = a + b;
-  host.innerHTML =
-    '<div class="big-num" style="font-size:30px;">'+commas(a)+' + '+b+'</div>' +
-    '<div class="big-num faded" id="r1" style="font-size:26px;"><b>'+commas(a)+'</b> is only <b style="color:#fd9644">'+added+'</b> away from <b>'+commas(up)+'</b></div>' +
-    '<div class="big-num faded" id="r2" style="font-size:26px;">Add the tidy number: '+b+' + '+commas(up)+' = <b style="color:#4b7bec">'+commas(xtra)+'</b></div>' +
-    '<div class="big-num faded" id="r3" style="font-size:30px;">Take back the extra '+added+': '+commas(xtra)+' − '+added+' = <b style="color:#26de81">'+commas(ans)+'</b></div>';
-  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
-  return [
-    { hold:2400, say:"When a number is close to a tidy thousand, round it up first — then fix it at the end.", apply:function(){ show("r1"); } },
-    { hold:2500, say:"Add using the tidy number "+commas(up)+" (nice and easy).", apply:function(){ show("r2"); } },
-    { hold:2700, snd:"level", say:"We added <b>"+added+"</b> too many, so take it back off. Answer = <b>"+commas(ans)+"</b> ✅", apply:function(){ show("r3"); } }
-  ];
-}
-
-/* Missing-digit: find it with total − other addend */
-function missingFrames(host, a, b, pos){
-  var total=a+b, aStr=String(a);
-  pos = Math.min(pos, aStr.length-1);
-  var hidden = aStr[aStr.length-1-pos];
-  var shown = aStr.split(""); shown[aStr.length-1-pos] = "▢"; shown = shown.join("");
-  var placeName = pos===0?"units":(pos===1?"tens":"hundreds");
-  host.innerHTML =
-    '<div class="big-num" style="font-size:34px;">'+shown+' + '+b+' = '+total+'</div>' +
-    '<div class="big-num faded" id="d1" style="font-size:28px;">Missing number = '+total+' − '+b+' = <b style="color:#4b7bec">'+a+'</b></div>' +
-    '<div class="big-num faded" id="d2" style="font-size:30px;">The <b>'+placeName+'</b> digit is <span class="numhi">'+hidden+'</span> ✅</div>';
-  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
-  return [
-    { hold:2600, say:"A digit is hiding! The clever trick: the missing addend = <b>total − the other number</b>." },
-    { hold:2600, say:"So work out "+total+" − "+b+".", apply:function(){ show("d1"); } },
-    { hold:2600, snd:"level", say:"That gives <b>"+a+"</b>. Read off the "+placeName+" digit: it's <b>"+hidden+"</b> 🕵️", apply:function(){ show("d2"); } }
-  ];
-}
-
-/* Word problem: highlight numbers, then add them with the column method */
+/* Word problem: read the story, then add the numbers with the column method */
 function wordFrames(host, sentence, nums){
   host.innerHTML =
     '<div class="speech" id="ws" style="margin:0 0 10px;">'+sentence+'</div>' +
@@ -311,10 +228,6 @@ function wordFrames(host, sentence, nums){
 /* dispatcher: build DOM + frames for one example spec */
 function buildExample(host, spec){
   if(spec.type==="column") return colFrames(host, spec.nums);
-  if(spec.type==="bond")   return bondFrames(host, spec.a, spec.target);
-  if(spec.type==="mental") return mentalFrames(host, spec.a, spec.b);
-  if(spec.type==="round")  return roundFrames(host, spec.a, spec.b);
-  if(spec.type==="missing")return missingFrames(host, spec.a, spec.b, spec.pos);
   if(spec.type==="word")   return wordFrames(host, spec.sentence, spec.nums);
   host.innerHTML = ""; return [];
 }
@@ -322,57 +235,78 @@ function buildExample(host, spec){
 /* ---------- assemble the whole lesson ---------- */
 function buildStages(){
   return [
-    { key:"warmup", emoji:"🔥", title:"Warm-Up Blast", color:"var(--orange)",
-      intro:"Quick-fire mental maths to wake up your brain! Number bonds and speedy adds. ⚡",
+    // ---- 3-digit, NO carrying (ordinary) ----
+    { key:"warm3", emoji:"🔥", title:"3-Digit Warm-Up", color:"var(--orange)",
+      intro:"3-digit column addition with <b>no carrying</b> — just line up the columns and add. Nice and steady! ⚡",
       teach:function(){ return [
-        { type:"bond", a:rnd(31,79)|1, target:100 },
-        { type:"mental", a:rnd(34,58), b:rnd(35,49) }
+        { type:"column", nums:genNoCarry(3).nums },
+        { type:"column", nums:genNoCarry(3).nums }
       ]; },
-      questions:[ qBond100(), qBond100(), qBond1000(), qMental(), qMental(), qBond1000() ] },
+      questions:[ addQ(3,"ordinary"), addQ(3,"ordinary"), addQ(3,"ordinary"),
+                  addQ(3,"ordinary"), addQ(3,"ordinary"), addQ(3,"ordinary") ] },
 
-    { key:"column", emoji:"🏗️", title:"Column Crushers", color:"var(--blue)",
-      intro:"Line them up and CARRY! Classic column addition — the SATs superpower. 🦾",
+    // ---- 3-digit, WITH carrying ----
+    { key:"carry3", emoji:"🏗️", title:"3-Digit Carry Masters", color:"var(--blue)",
+      intro:"Now the columns go over 9 — time to <b>carry over</b>! Write the units, carry 1 to the next column. 🦾",
       teach:function(){ return [
         { type:"column", nums:teachPair(3) },
-        { type:"column", nums:teachPair(4) }
+        { type:"column", nums:teachPair(3) }
       ]; },
-      questions:[ qColumn(3), qColumn(3), qColumn(4), qColumn(4), qColumn3() ] },
+      questions:[ addQ(3,"carry"), addQ(3,"carry"), addQ(3,"carry"),
+                  addQ(3,"carry"), addQ(3,"carry"), addQ(3,"carry") ] },
 
     { break:true, emoji:"🤸", title:"Brain Break!", text:"Stand up and do 10 star jumps ⭐, then wiggle your fingers. Ready in…" },
 
-    { key:"big", emoji:"🚀", title:"Big Number Boost", color:"var(--purple)",
-      intro:"Now for GIANT numbers and clever mental tricks. You've got this! 🌈",
+    // ---- 4-digit, mix of ordinary + carry ----
+    { key:"mix4", emoji:"🚀", title:"4-Digit Mission", color:"var(--purple)",
+      intro:"4-digit numbers now — a mix of <b>ordinary</b> and <b>carry-over</b> sums. Watch each column! 🌈",
+      teach:function(){ return [
+        { type:"column", nums:genNoCarry(4).nums },
+        { type:"column", nums:teachPair(4) }
+      ]; },
+      questions:[ addQ(4,"ordinary"), addQ(4,"carry"), addQ(4,"carry"),
+                  addQ(4,"ordinary"), addQ(4,"carry") ] },
+
+    // ---- 5-digit, mix ----
+    { key:"mix5", emoji:"🏔️", title:"5-Digit Challenge", color:"var(--pink)",
+      intro:"Bigger numbers, same method. Keep your columns lined up neatly — carries and all! 🔎",
       teach:function(){ return [
         { type:"column", nums:teachPair(5) },
-        { type:"round", a:rnd(1,8)*1000+990+rnd(1,8), b:rnd(14,48) }
+        { type:"column", nums:genNoCarry(5).nums }
       ]; },
-      questions:[ qBig(), qBig(), qNearMultiple(), qNearMultiple(), qColumn3() ] },
-
-    { key:"missing", emoji:"🕵️", title:"Missing Digit Detective", color:"var(--pink)",
-      intro:"Uh oh — some digits are hiding! Be a detective and find them. 🔎",
-      teach:function(){ return [
-        { type:"missing", a:rnd(234,788), b:rnd(120,540), pos:0 },
-        { type:"missing", a:rnd(345,865), b:rnd(120,610), pos:1 }
-      ]; },
-      questions:[ qMissing(), qMissing(), qMissing(), qMissing() ] },
+      questions:[ addQ(5,"carry"), addQ(5,"ordinary"), addQ(5,"carry"),
+                  addQ(5,"carry"), addQ(5,"ordinary") ] },
 
     { break:true, emoji:"💧", title:"Brain Break!", text:"Take 3 big breaths and a sip of water 💧. Shake out your hands. Ready in…" },
 
-    { key:"word", emoji:"🧠", title:"Reasoning Rangers", color:"var(--green)",
-      intro:"Real SATs-style word problems. Read carefully, find the numbers, add them up! 🧩",
+    // ---- 6-digit, mix ----
+    { key:"mix6", emoji:"🌟", title:"6-Digit Master", color:"var(--green)",
+      intro:"Top of the mountain: 6-digit addition! Ordinary and carry-over. You've trained for this! 🏆",
+      teach:function(){ return [
+        { type:"column", nums:teachPair(6) },
+        { type:"column", nums:genNoCarry(6).nums }
+      ]; },
+      questions:[ addQ(6,"carry"), addQ(6,"ordinary"), addQ(6,"carry"),
+                  addQ(6,"carry"), addQ(6,"ordinary") ] },
+
+    // ---- Word problems (still strictly 3-6 digit addition) ----
+    { key:"word", emoji:"🧠", title:"Word Problems", color:"var(--blue)",
+      intro:"Real SATs-style stories — but every one is a 3-6 digit <b>addition</b>. Find the numbers and add! 🧩",
       teach:function(){
-        var a=rnd(234,486), b=rnd(158,372);
-        var c=rnd(1240,3600), d=rnd(1375,4200);
+        var g1=genNoCarry(3), g2=genCarry(4);
         return [
-          { type:"word", nums:[a,b], sentence:"🏀 Ben scored <b class='numhi'>"+a+"</b> points on Monday and <b class='numhi'>"+b+"</b> points on Tuesday. How many points did he score in <b>total</b>?" },
-          { type:"word", nums:[c,d], sentence:"🍎 A shop sold <b class='numhi'>"+commas(c)+"</b> apples and <b class='numhi'>"+commas(d)+"</b> pears. How many pieces of fruit <b>altogether</b>?" }
+          { type:"word", nums:g1.nums, sentence:"🏀 Ben scored <b class='numhi'>"+commas(g1.nums[0])+"</b> points in game 1 and <b class='numhi'>"+commas(g1.nums[1])+"</b> in game 2. How many <b>in total</b>?" },
+          { type:"word", nums:g2.nums, sentence:"🍎 A shop sold <b class='numhi'>"+commas(g2.nums[0])+"</b> apples and <b class='numhi'>"+commas(g2.nums[1])+"</b> pears. How many pieces of fruit <b>altogether</b>?" }
         ];
       },
-      questions:[ qWord(), qWord(), qWord(), qWord() ] },
+      questions:[ wordQ(3,"mix"), wordQ(4,"mix"), wordQ(5,"carry"), wordQ(4,"ordinary") ] },
 
+    // ---- Boss: everything, 3-6 digits, carry-heavy + a 3-number sum ----
     { key:"boss", emoji:"👑", title:"BOSS LEVEL", color:"var(--red)",
-      intro:"Final challenge! A mix of everything you've mastered. Beat the boss! 🐉",
-      questions:[ qColumn(4), qMissing(), qBig(), qWord(), qBond1000() ] }
+      intro:"Final challenge! A mix of 3 to 6 digit addition, with and without carrying. Beat the boss! 🐉",
+      questions:[ addQ(3,"carry"), addQ(4,"ordinary"),
+                  (function(){ var g=genCarry3(4); return { kind:"column", nums:g.nums, answer:g.answer, hint:"Three numbers! Add one column at a time, top to bottom, and carry when you pass 9." }; })(),
+                  addQ(5,"carry"), addQ(6,"carry") ] }
   ];
 }
 
@@ -576,7 +510,7 @@ function showQuestion(){
 
   var body="";
   if(q.kind==="column"){
-    body = verticalSum(q.nums) +
+    body = '<div class="demo-wrap">' + verticalSum(q.nums) + '</div>' +
       '<div style="margin-top:18px;" class="center">' +
         '<input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?" />' +
       '</div>';

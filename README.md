@@ -141,13 +141,19 @@ learner make progress.
 
 ## 🎓 Week 1 content (Year 6 SATs — Addition)
 
+**Every question is strictly a 3-to-6 digit column addition** — a deliberate
+mix of *ordinary* (no carrying) and *carry-over* problems, building up by size.
+
 | Stage | Focus |
 |------|-------|
-| 🔥 Warm-Up Blast | Number bonds to 100 & 1000, fast mental addition |
-| 🏗️ Column Crushers | Column addition (3–4 digits) with carrying |
-| 🚀 Big Number Boost | 5-digit addition + "round and adjust" mental strategy |
-| 🕵️ Missing Digit Detective | SATs-style missing-digit problems |
-| 🧠 Reasoning Rangers | Word problems (money, measures, totals) |
-| 👑 Boss Level | Mixed challenge of everything above |
+| 🔥 3-Digit Warm-Up | 3-digit addition, **no carrying** |
+| 🏗️ 3-Digit Carry Masters | 3-digit addition **with carrying** |
+| 🚀 4-Digit Mission | 4-digit, mix of ordinary + carry |
+| 🏔️ 5-Digit Challenge | 5-digit, mix of ordinary + carry |
+| 🌟 6-Digit Master | 6-digit, mix of ordinary + carry |
+| 🧠 Word Problems | SATs stories that are 3–6 digit additions |
+| 👑 Boss Level | Mixed 3–6 digit (incl. a 3-number sum), carry-heavy |
 
-Questions are **generated fresh each play**, so it's re-playable for revision.
+Numbers are **generated fresh each play** (no-carry sums are built so every
+column stays ≤ 9; carry sums are guaranteed to carry), so it's re-playable for
+revision. Each stage still opens with **2 animated worked examples** first.
