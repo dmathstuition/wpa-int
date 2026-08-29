@@ -22,6 +22,11 @@
     <button class="btn ghost" id="soundBtn">🔊</button>
   </div>
 
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Maths Quest</small></span>
+  </div>
+
   <div class="stagemap" id="stagemap"></div>
 
   <!-- Everything renders here -->
@@ -140,31 +145,229 @@ function qWord(){
            answer:t.ans, hint:"Pull out the numbers and add them with the column method." };
 }
 
+/* =============================================================
+   WORKED-EXAMPLE ANIMATIONS (the "Learn" phase before practice)
+   Each stage shows 2 animated examples, step by step, self-paced
+   with Replay. Kids watch the METHOD before they try it.
+   ============================================================= */
+function digAt(s, p){ var idx = s.length-1-p; return idx>=0 ? s[idx] : ""; }
+function hasCarry(nums){
+  var W = Math.max.apply(null, nums.map(function(n){return String(n).length;})), carry=0, any=false;
+  for(var p=0;p<W;p++){ var s=carry; nums.forEach(function(n){var d=digAt(String(n),p); if(d!=="")s+=Number(d);}); if(s>9)any=true; carry=Math.floor(s/10);}
+  return any;
+}
+function teachPair(nDigits){
+  var lo=Math.pow(10,nDigits-1), hi=Math.pow(10,nDigits)-1, a,b,g=0;
+  do { a=rnd(lo,hi); b=rnd(lo,hi); g++; } while(g<60 && !hasCarry([a,b]));
+  return [a,b];
+}
+
+/* Build the animated column-addition grid inside `host`; return frames. */
+function colFrames(host, nums){
+  var strs = nums.map(String);
+  var width = Math.max.apply(null, strs.map(function(s){return s.length;}));
+  var total = nums.reduce(function(a,b){return a+b;},0);
+  var W = Math.max(width, String(total).length);
+  var cols = []; for(var p=W-1;p>=0;p--) cols.push(p);
+  function td(inner,cls,id){ return '<td'+(id?' id="'+id+'"':'')+(cls?' class="'+cls+'"':'')+'>'+(inner||"")+'</td>'; }
+  var html = '<div class="demo-wrap"><table class="demo-tbl"><tbody>';
+  html += '<tr>'+td("")+cols.map(function(p){return td("","carry-cell","car-"+p);}).join("")+'</tr>';
+  strs.forEach(function(s,ri){
+    html += '<tr>'+td(ri>0?"+":"","op")+cols.map(function(p){return td(digAt(s,p),"dig","n"+ri+"-"+p);}).join("")+'</tr>';
+  });
+  html += '<tr class="line">'+td("")+cols.map(function(){return td("");}).join("")+'</tr>';
+  html += '<tr>'+td("")+cols.map(function(p){return td("","ans-cell","ans-"+p);}).join("")+'</tr>';
+  html += '</tbody></table></div>';
+  host.innerHTML = html;
+  function q(id){ return host.querySelector("#"+id); }
+
+  var frames = [];
+  frames.push({ hold:2400, say:"Line the digits up by place value. We always start with the <b>units</b> column on the far right 👉" });
+  var carry = 0;
+  cols.slice().reverse().forEach(function(){}); // no-op to keep order clear
+  for(var p=0;p<W;p++){
+    (function(p){
+      var parts = []; nums.forEach(function(n){ var d=digAt(String(n),p); if(d!=="") parts.push(Number(d)); });
+      var cin = carry;
+      var s = cin + parts.reduce(function(a,b){return a+b;},0);
+      var write = s%10, co = Math.floor(s/10);
+      var sumTxt = (cin? "<span style='color:#fd9644'>"+cin+"</span> + " : "") + parts.join(" + ");
+      var place = p===0 ? "units" : (p===1 ? "tens" : (p===2 ? "hundreds" : "next column"));
+      frames.push({
+        hold:2500, snd:"click",
+        say:"Add the <b>"+place+"</b>: "+sumTxt+" = <b>"+s+"</b>. "+(co? "Write <b>"+write+"</b> and <b>carry "+co+"</b> ➜" : "Write <b>"+write+"</b>."),
+        apply:function(){
+          host.querySelectorAll(".hl").forEach(function(e){e.classList.remove("hl");});
+          nums.forEach(function(n,ri){ if(digAt(String(n),p)!==""){ var c=q("n"+ri+"-"+p); if(c)c.classList.add("hl"); } });
+          var ac=q("ans-"+p); if(ac){ ac.textContent=write; ac.classList.add("hl","reveal"); }
+          if(co){ var cc=q("car-"+(p+1)); if(cc){ cc.textContent=co; cc.classList.add("carry-pop"); } }
+        }
+      });
+      carry = co;
+    })(p);
+  }
+  frames.push({ hold:2600, snd:"level",
+    say:"Every column done — the answer is <b>"+commas(total)+"</b> 🎉",
+    apply:function(){ host.querySelectorAll(".hl").forEach(function(e){e.classList.remove("hl");}); host.querySelectorAll(".ans-cell").forEach(function(e){ if(e.textContent) e.classList.add("done"); }); }
+  });
+  return frames;
+}
+
+/* Number-bond hops to 100 / 1000 */
+function bondFrames(host, a, target){
+  var stone = target===100 ? (a%10===0 ? a+10 : Math.ceil(a/10)*10)
+                           : Math.ceil(a/100)*100;
+  if(stone<=a) stone = a + (target===100?10:100);
+  if(stone>=target) stone = target - (target===100?10:100);
+  var j1 = stone - a, j2 = target - stone, ans = target - a;
+  host.innerHTML =
+    '<div class="hops">' +
+      '<div class="stone">'+a+'</div>' +
+      '<div class="hop faded" id="h1"><span class="arc">↷</span><span class="amt">+'+j1+'</span></div>' +
+      '<div class="stone faded" id="s1">'+stone+'</div>' +
+      '<div class="hop faded" id="h2"><span class="arc">↷</span><span class="amt">+'+j2+'</span></div>' +
+      '<div class="stone target">'+target+'</div>' +
+    '</div>' +
+    '<div class="big-num faded" id="bres" style="font-size:34px;">'+a+' + <span style="color:#26de81">'+ans+'</span> = '+target+'</div>';
+  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
+  return [
+    { hold:2400, say:"To make <b>"+target+"</b> from <b>"+a+"</b>, hop in easy steps. First jump up to the tidy number <b>"+stone+"</b>." , apply:function(){ show("h1"); show("s1"); } },
+    { hold:2400, say:"That first hop was <b>+"+j1+"</b>. Now hop from "+stone+" up to <b>"+target+"</b>: that's <b>+"+j2+"</b>.", apply:function(){ show("h2"); } },
+    { hold:2600, snd:"level", say:"Add the hops: "+j1+" + "+j2+" = <b>"+ans+"</b>. So "+a+" + <b>"+ans+"</b> = "+target+" ✅", apply:function(){ show("bres"); } }
+  ];
+}
+
+/* Mental addition by partitioning (tens + units) */
+function mentalFrames(host, a, b){
+  var aT=Math.floor(a/10)*10, aU=a%10, bT=Math.floor(b/10)*10, bU=b%10;
+  var T=aT+bT, U=aU+bU, ans=a+b;
+  host.innerHTML =
+    '<div class="split">' +
+      '<div class="col"><div class="lbl">'+a+'</div><b>'+aT+'</b><div class="lbl">+ '+aU+'</div></div>' +
+      '<div class="col"><div class="lbl">'+b+'</div><b>'+bT+'</b><div class="lbl">+ '+bU+'</div></div>' +
+    '</div>' +
+    '<div class="big-num faded" id="mt" style="font-size:30px;">Tens: '+aT+' + '+bT+' = <b style="color:#4b7bec">'+T+'</b></div>' +
+    '<div class="big-num faded" id="mu" style="font-size:30px;">Units: '+aU+' + '+bU+' = <b style="color:#fd9644">'+U+'</b></div>' +
+    '<div class="big-num faded" id="mr" style="font-size:34px;">'+T+' + '+U+' = <b style="color:#26de81">'+ans+'</b></div>';
+  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
+  return [
+    { hold:2400, say:"Split each number into <b>tens</b> and <b>units</b> — much easier to add in your head!" },
+    { hold:2300, say:"Add the tens together first.", apply:function(){ show("mt"); } },
+    { hold:2300, say:"Now add the units together.", apply:function(){ show("mu"); } },
+    { hold:2600, snd:"level", say:"Recombine: "+T+" + "+U+" = <b>"+ans+"</b> 🎉", apply:function(){ show("mr"); } }
+  ];
+}
+
+/* Round-and-adjust mental strategy for near-multiples */
+function roundFrames(host, a, b){
+  var up = Math.ceil(a/1000)*1000, added = up - a, xtra = b + up, ans = a + b;
+  host.innerHTML =
+    '<div class="big-num" style="font-size:30px;">'+commas(a)+' + '+b+'</div>' +
+    '<div class="big-num faded" id="r1" style="font-size:26px;"><b>'+commas(a)+'</b> is only <b style="color:#fd9644">'+added+'</b> away from <b>'+commas(up)+'</b></div>' +
+    '<div class="big-num faded" id="r2" style="font-size:26px;">Add the tidy number: '+b+' + '+commas(up)+' = <b style="color:#4b7bec">'+commas(xtra)+'</b></div>' +
+    '<div class="big-num faded" id="r3" style="font-size:30px;">Take back the extra '+added+': '+commas(xtra)+' − '+added+' = <b style="color:#26de81">'+commas(ans)+'</b></div>';
+  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
+  return [
+    { hold:2400, say:"When a number is close to a tidy thousand, round it up first — then fix it at the end.", apply:function(){ show("r1"); } },
+    { hold:2500, say:"Add using the tidy number "+commas(up)+" (nice and easy).", apply:function(){ show("r2"); } },
+    { hold:2700, snd:"level", say:"We added <b>"+added+"</b> too many, so take it back off. Answer = <b>"+commas(ans)+"</b> ✅", apply:function(){ show("r3"); } }
+  ];
+}
+
+/* Missing-digit: find it with total − other addend */
+function missingFrames(host, a, b, pos){
+  var total=a+b, aStr=String(a);
+  pos = Math.min(pos, aStr.length-1);
+  var hidden = aStr[aStr.length-1-pos];
+  var shown = aStr.split(""); shown[aStr.length-1-pos] = "▢"; shown = shown.join("");
+  var placeName = pos===0?"units":(pos===1?"tens":"hundreds");
+  host.innerHTML =
+    '<div class="big-num" style="font-size:34px;">'+shown+' + '+b+' = '+total+'</div>' +
+    '<div class="big-num faded" id="d1" style="font-size:28px;">Missing number = '+total+' − '+b+' = <b style="color:#4b7bec">'+a+'</b></div>' +
+    '<div class="big-num faded" id="d2" style="font-size:30px;">The <b>'+placeName+'</b> digit is <span class="numhi">'+hidden+'</span> ✅</div>';
+  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
+  return [
+    { hold:2600, say:"A digit is hiding! The clever trick: the missing addend = <b>total − the other number</b>." },
+    { hold:2600, say:"So work out "+total+" − "+b+".", apply:function(){ show("d1"); } },
+    { hold:2600, snd:"level", say:"That gives <b>"+a+"</b>. Read off the "+placeName+" digit: it's <b>"+hidden+"</b> 🕵️", apply:function(){ show("d2"); } }
+  ];
+}
+
+/* Word problem: highlight numbers, then add them with the column method */
+function wordFrames(host, sentence, nums){
+  host.innerHTML =
+    '<div class="speech" id="ws" style="margin:0 0 10px;">'+sentence+'</div>' +
+    '<div id="wsum" class="faded"></div>';
+  var wsum = host.querySelector("#wsum");
+  var cf = colFrames(wsum, nums);   // build grid now (hidden), reuse column animation
+  var intro = [
+    { hold:2400, say:"Read carefully. First, find the important <b>numbers</b> in the story." },
+    { hold:2300, say:"The word 'total' / 'altogether' means we <b>ADD</b>. Let's stack them up.",
+      apply:function(){ wsum.classList.remove("faded"); wsum.classList.add("show-in"); } }
+  ];
+  return intro.concat(cf);
+}
+
+/* dispatcher: build DOM + frames for one example spec */
+function buildExample(host, spec){
+  if(spec.type==="column") return colFrames(host, spec.nums);
+  if(spec.type==="bond")   return bondFrames(host, spec.a, spec.target);
+  if(spec.type==="mental") return mentalFrames(host, spec.a, spec.b);
+  if(spec.type==="round")  return roundFrames(host, spec.a, spec.b);
+  if(spec.type==="missing")return missingFrames(host, spec.a, spec.b, spec.pos);
+  if(spec.type==="word")   return wordFrames(host, spec.sentence, spec.nums);
+  host.innerHTML = ""; return [];
+}
+
 /* ---------- assemble the whole lesson ---------- */
 function buildStages(){
   return [
     { key:"warmup", emoji:"🔥", title:"Warm-Up Blast", color:"var(--orange)",
       intro:"Quick-fire mental maths to wake up your brain! Number bonds and speedy adds. ⚡",
+      teach:function(){ return [
+        { type:"bond", a:rnd(31,79)|1, target:100 },
+        { type:"mental", a:rnd(34,58), b:rnd(35,49) }
+      ]; },
       questions:[ qBond100(), qBond100(), qBond1000(), qMental(), qMental(), qBond1000() ] },
 
     { key:"column", emoji:"🏗️", title:"Column Crushers", color:"var(--blue)",
       intro:"Line them up and CARRY! Classic column addition — the SATs superpower. 🦾",
+      teach:function(){ return [
+        { type:"column", nums:teachPair(3) },
+        { type:"column", nums:teachPair(4) }
+      ]; },
       questions:[ qColumn(3), qColumn(3), qColumn(4), qColumn(4), qColumn3() ] },
 
     { break:true, emoji:"🤸", title:"Brain Break!", text:"Stand up and do 10 star jumps ⭐, then wiggle your fingers. Ready in…" },
 
     { key:"big", emoji:"🚀", title:"Big Number Boost", color:"var(--purple)",
       intro:"Now for GIANT numbers and clever mental tricks. You've got this! 🌈",
+      teach:function(){ return [
+        { type:"column", nums:teachPair(5) },
+        { type:"round", a:rnd(1,8)*1000+990+rnd(1,8), b:rnd(14,48) }
+      ]; },
       questions:[ qBig(), qBig(), qNearMultiple(), qNearMultiple(), qColumn3() ] },
 
     { key:"missing", emoji:"🕵️", title:"Missing Digit Detective", color:"var(--pink)",
       intro:"Uh oh — some digits are hiding! Be a detective and find them. 🔎",
+      teach:function(){ return [
+        { type:"missing", a:rnd(234,788), b:rnd(120,540), pos:0 },
+        { type:"missing", a:rnd(345,865), b:rnd(120,610), pos:1 }
+      ]; },
       questions:[ qMissing(), qMissing(), qMissing(), qMissing() ] },
 
     { break:true, emoji:"💧", title:"Brain Break!", text:"Take 3 big breaths and a sip of water 💧. Shake out your hands. Ready in…" },
 
     { key:"word", emoji:"🧠", title:"Reasoning Rangers", color:"var(--green)",
       intro:"Real SATs-style word problems. Read carefully, find the numbers, add them up! 🧩",
+      teach:function(){
+        var a=rnd(234,486), b=rnd(158,372);
+        var c=rnd(1240,3600), d=rnd(1375,4200);
+        return [
+          { type:"word", nums:[a,b], sentence:"🏀 Ben scored <b class='numhi'>"+a+"</b> points on Monday and <b class='numhi'>"+b+"</b> points on Tuesday. How many points did he score in <b>total</b>?" },
+          { type:"word", nums:[c,d], sentence:"🍎 A shop sold <b class='numhi'>"+commas(c)+"</b> apples and <b class='numhi'>"+commas(d)+"</b> pears. How many pieces of fruit <b>altogether</b>?" }
+        ];
+      },
       questions:[ qWord(), qWord(), qWord(), qWord() ] },
 
     { key:"boss", emoji:"👑", title:"BOSS LEVEL", color:"var(--red)",
@@ -233,6 +436,14 @@ function toast(msg){
   setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },1100);
 }
 
+/* ---- brand name from config ---- */
+(function(){
+  var nm=(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME) || "Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm");
+  if(el) el.innerHTML=nm+"<small>Maths Quest</small>";
+  document.title="Week "+WEEK_NUMBER+" — "+WEEK_TITLE+" | "+nm;
+})();
+
 /* ---- sound toggle button ---- */
 var soundBtn=document.getElementById("soundBtn");
 function paintSound(){ soundBtn.textContent = MQ.soundEnabled()?"🔊":"🔇"; }
@@ -276,9 +487,64 @@ function showStageIntro(s){
       '<div style="font-size:64px;">'+s.emoji+'</div>' +
       '<h1>'+s.title+'</h1>' +
       '<div class="speech">'+s.intro+'</div>' +
-      '<button class="btn big blue" id="stgBtn" style="margin-top:18px;">Let\'s do it! ▶</button>' +
+      '<button class="btn big blue" id="stgBtn" style="margin-top:18px;">📺 Watch how ▶</button>' +
     '</div>';
-  document.getElementById("stgBtn").onclick=function(){ MQ.sound("click"); showQuestion(); };
+  document.getElementById("stgBtn").onclick=function(){ MQ.sound("click"); showTeach(s); };
+}
+
+/* ---------- LEARN phase: animated worked examples ---------- */
+function delay(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+async function runFrames(frames, ctl, narrEl){
+  for(var i=0;i<frames.length;i++){
+    var f=frames[i];
+    if(f.say && narrEl) narrEl.innerHTML=f.say;
+    if(f.apply) f.apply();
+    if(!ctl.skip){ MQ.sound(f.snd||"click"); await delay(f.hold||1800); }
+  }
+}
+function showTeach(stage){
+  paintMap();
+  var specs = stage.teach ? stage.teach() : [];
+  if(!specs.length){ state.qi=0; return showQuestion(); }
+  var ti=0;
+  var ctl={skip:false};
+
+  function shell(){
+    screen.innerHTML =
+      '<div class="card">' +
+        '<div class="row" style="justify-content:space-between;">' +
+          '<span class="chip" style="background:'+(stage.color||"var(--blue)")+';color:#fff;">'+stage.emoji+' '+stage.title+' — Learn</span>' +
+          '<span class="chip" style="background:#eee;color:#333;">Example '+(ti+1)+' / '+specs.length+'</span>' +
+        '</div>' +
+        '<div id="demoHost" style="margin-top:12px;min-height:210px;"><div class="teach-narr" id="tn"></div><div id="demoBody"></div></div>' +
+        '<div class="center" id="teachCtrls" style="margin-top:14px;"></div>' +
+      '</div>';
+  }
+  function playingCtrls(){
+    document.getElementById("teachCtrls").innerHTML='<button class="btn ghost" id="skipAnim">⏭ Skip to answer</button>';
+    document.getElementById("skipAnim").onclick=function(){ ctl.skip=true; };
+  }
+  function doneCtrls(){
+    var last = ti>=specs.length-1;
+    document.getElementById("teachCtrls").innerHTML=
+      '<button class="btn blue" id="replay">🔁 Watch again</button> ' +
+      (last ? '<button class="btn big green" id="toPractice">✅ Now YOU try! ▶</button>'
+            : '<button class="btn big green" id="nextEx">Next example ▶</button>');
+    document.getElementById("replay").onclick=function(){ play(); };
+    var ne=document.getElementById("nextEx"); if(ne) ne.onclick=function(){ MQ.sound("click"); ti++; play(); };
+    var tp=document.getElementById("toPractice"); if(tp) tp.onclick=function(){ MQ.sound("level"); MQ.confetti(50); state.qi=0; showQuestion(); };
+  }
+  async function play(){
+    ctl.skip=false;
+    shell();
+    playingCtrls();
+    var body=document.getElementById("demoBody");
+    var narr=document.getElementById("tn");
+    var frames=buildExample(body, specs[ti]);
+    await runFrames(frames, ctl, narr);
+    doneCtrls();
+  }
+  play();
 }
 
 function showBreak(s){
@@ -494,6 +760,7 @@ function showResults(){
     rating: rt.label,
     minutes: mins,
     stages: state.stageStats,
+    school: (window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME) || "Whyte Pyramid Academy",
     tutor: (window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.TUTOR_NAME) || ""
   };
   MQ.logResult(payload).then(function(res){

@@ -78,8 +78,8 @@ This is what lets you rate the learner and report to *madam*.
 
 ### What lands in the Sheet (per attempt)
 
-`Timestamp · Student · Week · Week Title · Accuracy % · Correct · Total ·
-Stars · Rating · XP · Best Streak · Minutes · Tutor · Stage Breakdown`
+`Timestamp · School · Student · Week · Week Title · Accuracy % · Correct ·
+Total · Stars · Rating · XP · Best Streak · Minutes · Tutor · Stage Breakdown`
 
 The **Rating** column (Legendary / Excellent / Good / Getting there / Keep
 practising) and **Stars** are your ready-made performance rating for the weekly
@@ -113,8 +113,19 @@ Nothing else changes — same site, same link, same Sheet.
 
 ---
 
+## 👀 Learn-first: every stage teaches before it tests
+
+Each teaching stage opens with a **"Watch how"** phase — **2 animated worked
+examples** that step through the method one move at a time (columns light up,
+carries drop in, hops and partitions build up on screen), with a friendly
+narration line for each step. The learner can **⏭ Skip to answer** or **🔁 Watch
+again**, then hits **"Now YOU try!"** to start practising. Seeing the method
+demonstrated first — twice — before doing it is the core of how this helps the
+learner make progress.
+
 ## 🧠 Why it's built for an ADHD learner
 
+- **Model, then do:** animated examples show the method before every exercise.
 - **Short bursts:** 7 quick stages, 4–6 questions each, never a wall of sums.
 - **Instant feedback:** colour, sound and confetti the moment they answer.
 - **Momentum, not punishment:** wrong answers give a hint and a retry; only the

@@ -19,6 +19,11 @@
     <button class="btn ghost" id="soundBtn">🔊 Sound</button>
   </div>
 
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Maths Quest</small></span>
+  </div>
+
   <h1 class="title-pop">➕ ADDITION MISSIONS ➗</h1>
   <p class="subtitle">Pick a mission, smash the maths, earn XP & stars! 🌟</p>
 
@@ -62,6 +67,14 @@ var WEEKS = [
   { n: 3, title: "Coming Soon", emoji: "🔒", file: "weeks/week3.html", live: false,
     desc: "A brand-new challenge is on the way." }
 ];
+
+// Brand name from config (falls back to the default in the markup)
+(function(){
+  var nm = (window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME) || "Whyte Pyramid Academy";
+  var el = document.querySelector("#brand .nm");
+  if (el) el.innerHTML = nm + "<small>Maths Quest</small>";
+  document.title = nm + " — Maths Quest";
+})();
 
 var soundBtn = document.getElementById("soundBtn");
 function paintSound(){ soundBtn.textContent = MQ.soundEnabled() ? "🔊 Sound" : "🔇 Muted"; }

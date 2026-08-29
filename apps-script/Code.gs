@@ -21,7 +21,7 @@
 var SHEET_NAME = "Results";
 
 var HEADERS = [
-  "Timestamp", "Student", "Week", "Week Title", "Accuracy %",
+  "Timestamp", "School", "Student", "Week", "Week Title", "Accuracy %",
   "Correct", "Total Questions", "Stars", "Rating", "XP",
   "Best Streak", "Minutes", "Tutor", "Stage Breakdown (JSON)"
 ];
@@ -48,6 +48,7 @@ function doPost(e) {
     var sh = getSheet_();
     sh.appendRow([
       data.ts || new Date().toISOString(),
+      data.school || "",
       data.student || "",
       data.week || "",
       data.weekTitle || "",
@@ -95,12 +96,12 @@ function readHistory_(student) {
   var out = [];
   for (var i = 0; i < values.length; i++) {
     var r = values[i];
-    var name = String(r[1] || "");
+    var name = String(r[2] || "");
     if (want && name.toLowerCase() !== want) continue;
     out.push({
-      ts: r[0], student: name, week: r[2], weekTitle: r[3],
-      accuracy: r[4], correct: r[5], totalQuestions: r[6],
-      stars: r[7], rating: r[8], xp: r[9], bestStreak: r[10], minutes: r[11]
+      ts: r[0], school: r[1], student: name, week: r[3], weekTitle: r[4],
+      accuracy: r[5], correct: r[6], totalQuestions: r[7],
+      stars: r[8], rating: r[9], xp: r[10], bestStreak: r[11], minutes: r[12]
     });
   }
   return out;
