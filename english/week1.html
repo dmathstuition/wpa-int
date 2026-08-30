@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Week 1 — Nouns, Verbs & Adjectives | Grammar Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <span class="chip">⭐ Lvl <b id="lvl">1</b></span>
+    <span class="chip streak-fire" id="streakChip">🔥 <b id="streak">0</b></span>
+    <span class="chip">💎 XP <b id="xp">0</b></span>
+    <div class="xpbar" title="XP to next level"><i id="xpFill"></i></div>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Grammar Quest</small></span>
+  </div>
+
+  <div class="stagemap" id="stagemap"></div>
+  <div id="screen"></div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+/* =============================================================
+   GRAMMAR QUEST — WEEK 1: Nouns, Verbs & Adjectives (Year 6)
+   Story-led, self-discovery, teacher-guided. An exercise follows
+   every concept. To make Week 2, copy this file, change WEEK_*
+   and rewrite buildStages().
+   ============================================================= */
+var WEEK_NUMBER = 1;
+var WEEK_TITLE  = "Nouns, Verbs & Adjectives";
+var SUBJECT     = "English";
+var OWL = "🦉";
+
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+/* Turn a tagged string into selectable tokens.
+   book|n  ran|v  tall|adj  Paris|proper  hope|abs   ,  .  (punctuation auto) */
+function parse(str){
+  return str.trim().split(/\s+/).map(function(t){
+    var m=t.split("|"), w=m[0], f=m[1]||"";
+    var isP=/^[.,!?;:]+$/.test(w);
+    return {
+      w:w,
+      n:/(^|,)n(,|$)/.test(f)||/proper/.test(f)||/abs/.test(f),
+      v:/(^|,)v(,|$)/.test(f),
+      adj:/(^|,)adj(,|$)/.test(f),
+      proper:/proper/.test(f),
+      abs:/abs/.test(f),
+      punct:isP
+    };
+  });
+}
+
+/* =============================================================
+   THE LESSON  (stages -> flow of steps)
+   step kinds: slide | tap | mc
+   ============================================================= */
+function buildStages(){
+  return [
+    /* ------------------- NOUNS ------------------- */
+    { key:"nouns", emoji:"🏷️", title:"The Naming Gem", color:"var(--blue)",
+      gem:"🏷️", flow:[
+      { kind:"slide", html:"Welcome to the <b>Land of Words</b>, explorer! Every sentence is built from little word-creatures. Our first quest: capture the <b>Naming Gem</b> 🏷️ — the power of <b>NOUNS</b>." },
+      { kind:"tap", discovery:true, target:"n", instr:"🔍 DISCOVER: tap every word that <u>names</u> a person, place or thing.",
+        tokens:parse("The girl|n put the book|n on the table|n ."),
+        reveal:"Brilliant noticing! <b>girl</b>, <b>book</b> and <b>table</b> are all <b>NOUNS</b> — naming words. You just discovered nouns by yourself! 🌟" },
+      { kind:"slide", html:"A <b>NOUN</b> is a <b>naming word</b>. It names a <b>person</b> (teacher), a <b>place</b> (school), a <b>thing</b> (pencil) or an <b>idea</b> (love). If you can put <i>“the”</i> in front of it, it's usually a noun!" },
+      { kind:"tap", target:"n", instr:"Tap all the NOUNS.",
+        tokens:parse("My brother|n kicked the ball|n in the park|n ."),
+        why:"brother (person), ball (thing) and park (place) are all nouns." },
+      { kind:"tap", target:"n", instr:"Tap all the NOUNS.",
+        tokens:parse("The teacher|n told a story|n about a dragon|n ."),
+        why:"teacher, story and dragon all name something." },
+
+      { kind:"slide", html:"Nouns come in types! A <b>common noun</b> is a general name (river, city, dog). A <b>proper noun</b> is a <b>specific name</b> — a person, place or day — and it always starts with a <b>CAPITAL letter</b> (Nile, London, Monday)." },
+      { kind:"mc", q:"Which one is a <b>PROPER</b> noun?", options:["river","Nile","city","forest"], answer:1,
+        why:"“Nile” names one specific river, so it takes a capital letter — that makes it a proper noun." },
+      { kind:"tap", target:"proper", instr:"Tap the PROPER nouns (special names that need a capital).",
+        tokens:parse("On Friday|proper , Amara|proper travelled to Paris|proper ."),
+        why:"Friday, Amara and Paris are all specific names — proper nouns." },
+
+      { kind:"slide", html:"Some nouns you <b>cannot see or touch</b> — they are feelings and ideas. These are <b>abstract nouns</b>: <i>love, fear, courage, freedom, happiness</i>." },
+      { kind:"mc", q:"Which of these is an <b>ABSTRACT</b> noun?", options:["table","happiness","chair","river"], answer:1,
+        why:"You can't touch happiness — it's a feeling. That makes it an abstract noun." },
+      { kind:"tap", target:"abs", instr:"Tap the ABSTRACT nouns (things you cannot touch).",
+        tokens:parse("Her courage|abs gave the team|n hope|abs ."),
+        why:"courage and hope are feelings/ideas — abstract nouns. (team is a noun too, but you can point to a team!)" },
+
+      { kind:"slide", html:"Last noun type: a <b>collective noun</b> is <b>one word for a group</b> — a <i>team</i> of players, a <i>flock</i> of birds, a <i>swarm</i> of bees, a <i>bunch</i> of grapes." },
+      { kind:"mc", q:"Finish it: “A ____ of wolves.”", options:["pack","flock","swarm","fleet"], answer:0,
+        why:"A group of wolves is called a pack. (A flock is birds/sheep, a swarm is insects, a fleet is ships.)" },
+      { kind:"mc", q:"Which word is a <b>collective</b> noun?", options:["team","player","ball","fast"], answer:0,
+        why:"“Team” is one word for a whole GROUP of people — a collective noun." }
+    ]},
+
+    { break:true, emoji:"🤸", title:"Brain Break!", text:"Stand tall, stretch to the sky ☁️, then shake it out. Ready in…" },
+
+    /* ------------------- VERBS ------------------- */
+    { key:"verbs", emoji:"⚡", title:"The Action Gem", color:"var(--orange)",
+      gem:"⚡", flow:[
+      { kind:"slide", html:"Quest two! Time for the <b>Action Gem</b> ⚡ — the power of <b>VERBS</b>. Verbs are the engines of a sentence: they make things <b>happen</b>." },
+      { kind:"tap", discovery:true, target:"v", instr:"🔍 DISCOVER: tap the words that show something <u>happening</u> (an action).",
+        tokens:parse("The dog|n barked|v and chased|v the cat|n ."),
+        reveal:"Spot on! <b>barked</b> and <b>chased</b> are the actions — they are <b>VERBS</b>. You found them yourself! ⚡" },
+      { kind:"slide", html:"A <b>VERB</b> is a <b>doing word</b> — an action like <i>run, jump, sing, write, kick</i>. Trick: if you can say “I can ____”, it's usually a verb (I can run, I can sing)." },
+      { kind:"tap", target:"v", instr:"Tap all the VERBS (the actions).",
+        tokens:parse("She sings|v and dances|v on the stage|n ."),
+        why:"sings and dances are the actions." },
+      { kind:"tap", target:"v", instr:"Tap all the VERBS. (Careful — one word is a describing word, not an action!)",
+        tokens:parse("They ran|v quickly and jumped|v over the wall|n ."),
+        why:"ran and jumped are verbs. “quickly” tells you HOW — that's an adverb, not a verb." },
+      { kind:"slide", html:"Some verbs don't show an action — they show <b>being</b>. These are <b>being verbs</b>: <i>am, is, are, was, were</i>. Example: “She <b>is</b> happy.” — <b>is</b> is the verb." },
+      { kind:"mc", q:"Which word is a <b>being</b> verb?", options:["run","is","happy","dog"], answer:1,
+        why:"“is” shows a state of being — a being verb. (run is an action verb, happy is an adjective, dog is a noun.)" },
+      { kind:"tap", target:"v", instr:"Tap all the VERBS (there is a being verb AND an action verb).",
+        tokens:parse("Tom|proper was|v tired but he finished|v the race|n ."),
+        why:"“was” is a being verb and “finished” is an action verb." }
+    ]},
+
+    { break:true, emoji:"💧", title:"Brain Break!", text:"Three big breaths 🌬️ and a sip of water 💧. Wiggle your fingers. Ready in…" },
+
+    /* ------------------- ADJECTIVES ------------------- */
+    { key:"adjs", emoji:"🎨", title:"The Colour Gem", color:"var(--pink)",
+      gem:"🎨", flow:[
+      { kind:"slide", html:"Final quest! The <b>Colour Gem</b> 🎨 — the power of <b>ADJECTIVES</b>. Adjectives paint pictures by <b>describing nouns</b>." },
+      { kind:"tap", discovery:true, target:"adj", instr:"🔍 DISCOVER: tap the words that <u>describe</u> the knight and the key.",
+        tokens:parse("The tall|adj , brave|adj knight|n found a golden|adj key|n ."),
+        reveal:"Wonderful! <b>tall</b>, <b>brave</b> and <b>golden</b> describe the nouns — they are <b>ADJECTIVES</b>. Discovered again! 🎨" },
+      { kind:"slide", html:"An <b>ADJECTIVE</b> is a <b>describing word</b>. It tells us more about a noun — its <b>size</b> (tiny), <b>colour</b> (red), <b>number</b> (three), or <b>feeling</b> (happy). It usually sits <b>before a noun</b> or after <i>is/was</i>." },
+      { kind:"tap", target:"adj", instr:"Tap all the ADJECTIVES (the describing words).",
+        tokens:parse("A tiny|adj , hungry|adj mouse|n ate the stale|adj cheese|n ."),
+        why:"tiny, hungry and stale all describe the nouns." },
+      { kind:"mc", q:"Choose the <b>adjective</b> to fill the gap:<br>“The ____ dog ran fast.”", options:["quickly","fluffy","barked","dog"], answer:1,
+        why:"“fluffy” describes the dog — an adjective. (quickly = adverb, barked = verb, dog = noun.)" },
+      { kind:"tap", target:"adj", instr:"Tap the ADJECTIVES.",
+        tokens:parse("The weather|n was cold|adj and the sky|n looked grey|adj ."),
+        why:"cold and grey describe the weather and the sky." },
+      { kind:"mc", q:"In “The <span class='hl-word'>ancient</span> castle stood on the hill”, which word <b>describes</b> the castle?", options:["ancient","castle","stood","hill"], answer:0,
+        why:"“ancient” tells us what the castle is like — it's the adjective." }
+    ]},
+
+    /* ------------------- BOSS ------------------- */
+    { key:"boss", emoji:"👑", title:"WORD WIZARD CHALLENGE", color:"var(--red)",
+      gem:"👑", flow:[
+      { kind:"slide", html:"You've collected all three gems! 🏷️⚡🎨 Now the <b>Word Wizard Challenge</b>: name the part of speech of each glowing word. Show your mastery! 🐉" },
+      { kind:"mc", q:"“The <span class='hl-word'>happy</span> child sang loudly.”<br>What is <b>happy</b>?", options:["Noun","Verb","Adjective"], answer:2,
+        why:"“happy” describes the child — an adjective." },
+      { kind:"mc", q:"“The clever fox <span class='hl-word'>jumped</span> over the fence.”<br>What is <b>jumped</b>?", options:["Noun","Verb","Adjective"], answer:1,
+        why:"“jumped” is the action — a verb." },
+      { kind:"mc", q:"“The clever <span class='hl-word'>fox</span> jumped over the fence.”<br>What is <b>fox</b>?", options:["Noun","Verb","Adjective"], answer:0,
+        why:"“fox” names an animal — a noun." },
+      { kind:"mc", q:"“<span class='hl-word'>London</span> is a busy city.”<br>What is <b>London</b>?", options:["Common noun","Proper noun","Verb","Adjective"], answer:1,
+        why:"“London” is a specific place name with a capital — a proper noun." },
+      { kind:"tap", target:"adj", instr:"FINAL TASK — tap ONLY the adjectives.",
+        tokens:parse("The old|adj wizard|n cast a powerful|adj spell|n ."),
+        why:"old and powerful are the describing words." }
+    ]}
+  ];
+}
+
+/* =============================================================
+   ENGINE
+   ============================================================= */
+var state = {
+  student: MQ.getStudent() || "",
+  xp:0, level:1, streak:0, bestStreak:0,
+  idx:0, si:0, firstTry:true,
+  correctFirst:0, totalQ:0, stageStats:{},
+  startTime:Date.now()
+};
+var STAGES = buildStages();
+var screen = document.getElementById("screen");
+
+/* brand from config */
+(function(){
+  var nm=(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm"); if(el) el.innerHTML=nm+"<small>Grammar Quest</small>";
+  document.title="Week "+WEEK_NUMBER+" — "+WEEK_TITLE+" | "+nm;
+})();
+
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); };
+paintSound();
+
+function paintHUD(){
+  document.getElementById("lvl").textContent=state.level;
+  document.getElementById("xp").textContent=state.xp;
+  document.getElementById("streak").textContent=state.streak;
+  document.getElementById("xpFill").style.width=(state.xp%100)+"%";
+  document.getElementById("streakChip").classList.toggle("on", state.streak>=3);
+}
+function addXP(n){
+  state.xp+=n;
+  var nl=1+Math.floor(state.xp/100);
+  if(nl>state.level){ state.level=nl; MQ.sound("level"); MQ.confetti(70); toast("⬆️ LEVEL "+nl+"!"); }
+  paintHUD();
+}
+function toast(msg){
+  var t=document.createElement("div");
+  t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:18px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);animation:popIn .3s;";
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },1100);
+}
+function paintMap(){
+  var nodes=STAGES.filter(function(s){return !s.break;});
+  var map=document.getElementById("stagemap"); map.innerHTML="";
+  var counter=0, playIdx=-1;
+  STAGES.forEach(function(s,i){ if(!s.break){ counter++; if(i===state.idx) playIdx=counter; } });
+  nodes.forEach(function(s,i){
+    var d=document.createElement("div");
+    var done=(i+1)<playIdx, active=(i+1)===playIdx;
+    d.className="node"+(done?" done":"")+(active?" active":"");
+    d.textContent=done?"✓":s.emoji; d.title=s.title;
+    map.appendChild(d);
+  });
+}
+
+/* ---------- flow control ---------- */
+function countSteps(){ return STAGES.reduce(function(n,s){ return n+(s.flow?s.flow.filter(function(x){return x.kind!=="slide"&&!x.discovery;}).length:0); },0); }
+
+function showIntro(){
+  paintMap();
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot">'+OWL+'</div>'+
+      '<h1>Week '+WEEK_NUMBER+': '+WEEK_TITLE+'</h1>'+
+      '<div class="speech">Hoot! I am <b>Professor Hoot</b>. Together we will explore the Land of Words and collect three Word Gems 🏷️⚡🎨. Watch, discover, and try each challenge. Ready, '+(state.student||"explorer")+'?</div>'+
+      '<button class="btn big green" id="goBtn" style="margin-top:18px;">🚀 START THE QUEST</button>'+
+      '<p class="muted" style="margin-top:12px;">Tip: answer on your first try to grow your 🔥 streak!</p>'+
+    '</div>';
+  document.getElementById("goBtn").onclick=function(){ MQ.sound("click"); nextStage(true); };
+}
+
+function nextStage(first){
+  if(!first) state.idx++;
+  if(state.idx>=STAGES.length) return showResults();
+  var s=STAGES[state.idx];
+  if(s.break) return showBreak(s);
+  state.si=0;
+  showStageIntro(s);
+}
+
+function showStageIntro(s){
+  paintMap();
+  screen.innerHTML=
+    '<div class="card center" style="border-top:10px solid '+(s.color||"var(--blue)")+';">'+
+      '<div style="font-size:64px;">'+s.emoji+'</div>'+
+      '<h1>'+s.title+'</h1>'+
+      '<div class="speech">A new gem awaits! Let\'s learn, then prove it. 💪</div>'+
+      '<button class="btn big blue" id="stgBtn" style="margin-top:18px;">Begin ▶</button>'+
+    '</div>';
+  document.getElementById("stgBtn").onclick=function(){ MQ.sound("click"); showStep(); };
+}
+
+function showBreak(s){
+  paintMap();
+  var secs=15;
+  screen.innerHTML=
+    '<div class="card center" style="background:linear-gradient(135deg,#fff,#eafff3);">'+
+      '<div class="mascot" style="font-size:74px;">'+s.emoji+'</div>'+
+      '<h1>'+s.title+'</h1>'+
+      '<div class="speech">'+s.text+' <b id="bt">'+secs+'</b>s</div>'+
+      '<button class="btn green" id="skipBreak" style="margin-top:16px;">I\'m ready! ▶</button>'+
+    '</div>';
+  var iv=setInterval(function(){ secs--; var bt=document.getElementById("bt"); if(bt)bt.textContent=secs; if(secs<=0){ clearInterval(iv); nextStage(); } },1000);
+  document.getElementById("skipBreak").onclick=function(){ clearInterval(iv); MQ.sound("click"); nextStage(); };
+}
+
+function currentStage(){ return STAGES[state.idx]; }
+function advance(){
+  var s=currentStage();
+  state.si++;
+  if(state.si>=s.flow.length) return showStageClear(s);
+  showStep();
+}
+
+function stepHeader(s, label){
+  return '<div class="row" style="justify-content:space-between;">'+
+    '<span class="chip" style="background:'+(s.color||"var(--blue)")+';color:#fff;">'+s.emoji+' '+s.title+'</span>'+
+    '<span class="chip" style="background:#eee;color:#333;">'+label+'</span></div>';
+}
+
+function showStep(){
+  paintMap();
+  var s=currentStage();
+  var step=s.flow[state.si];
+  state.firstTry=true;
+  if(step.kind==="slide") return renderSlide(s, step);
+  if(step.kind==="tap")   return renderTap(s, step);
+  if(step.kind==="mc")    return renderMC(s, step);
+}
+
+/* ----- SLIDE (teacher explanation / story) ----- */
+function renderSlide(s, step){
+  screen.innerHTML=
+    '<div class="card">'+
+      stepHeader(s, "📖 Learn")+
+      '<div style="display:flex;gap:14px;align-items:flex-start;margin-top:14px;">'+
+        '<div style="font-size:52px;line-height:1;">'+OWL+'</div>'+
+        '<div class="speech" style="text-align:left;margin:0;flex:1;">'+step.html+'</div>'+
+      '</div>'+
+      '<div class="center"><button class="btn big blue" id="nextBtn" style="margin-top:18px;">Got it ▶</button></div>'+
+    '</div>';
+  document.getElementById("nextBtn").onclick=function(){ MQ.sound("click"); advance(); };
+}
+
+/* ----- TAP the words ----- */
+function renderTap(s, step){
+  var discovery=!!step.discovery;
+  var tokensHtml=step.tokens.map(function(t,i){
+    if(t.punct) return '<span class="token punct">'+t.w+'</span>';
+    return '<span class="token" data-i="'+i+'">'+t.w+'</span>';
+  }).join("");
+  screen.innerHTML=
+    '<div class="card">'+
+      stepHeader(s, discovery?"🔍 Discover":"✏️ Your turn")+
+      '<div class="instr" style="margin-top:12px;">'+step.instr+'</div>'+
+      '<div class="sentence" id="sent">'+tokensHtml+'</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls">'+
+        '<button class="btn green" id="checkBtn">Check ✅</button>'+
+      '</div>'+
+    '</div>';
+  var sel={};
+  Array.prototype.forEach.call(document.querySelectorAll("#sent .token[data-i]"), function(el){
+    el.onclick=function(){
+      if(el.classList.contains("locked")) return;
+      var i=el.getAttribute("data-i");
+      if(sel[i]){ delete sel[i]; el.classList.remove("sel"); }
+      else { sel[i]=true; el.classList.add("sel"); }
+      MQ.sound("click");
+    };
+  });
+  document.getElementById("checkBtn").onclick=function(){ checkTap(s, step, sel, discovery); };
+}
+
+function checkTap(s, step, sel, discovery){
+  var fb=document.getElementById("fb");
+  var correctIdx={}; step.tokens.forEach(function(t,i){ if(t[step.target] && !t.punct) correctIdx[i]=true; });
+  var chosen=Object.keys(sel), wanted=Object.keys(correctIdx);
+  var wrongPicks=chosen.filter(function(i){ return !correctIdx[i]; });
+  var missed=wanted.filter(function(i){ return !sel[i]; });
+
+  if(discovery){
+    // self-discovery: always celebrate, reveal the rule, don't score
+    document.querySelectorAll("#sent .token[data-i]").forEach(function(el){
+      var i=el.getAttribute("data-i"); el.classList.add("locked");
+      if(correctIdx[i]) el.classList.add("correct");
+    });
+    MQ.sound("correct"); MQ.confetti(50); addXP(6);
+    fb.className="feedback good"; fb.innerHTML="Great exploring! +6 XP 🌟";
+    var ctr=document.getElementById("controls");
+    ctr.innerHTML='<div class="reveal-box">'+step.reveal+'</div>'+
+      '<button class="btn big green" id="nextBtn" style="margin-top:14px;">Continue ▶</button>';
+    document.getElementById("nextBtn").onclick=function(){ MQ.sound("click"); advance(); };
+    return;
+  }
+
+  if(wrongPicks.length===0 && missed.length===0){
+    // perfect
+    document.querySelectorAll("#sent .token[data-i]").forEach(function(el){
+      var i=el.getAttribute("data-i"); el.classList.add("locked");
+      if(correctIdx[i]) el.classList.add("correct");
+    });
+    MQ.sound("correct");
+    if(state.firstTry){ state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak); recordStage(true); state.correctFirst++;
+      var g=10+(state.streak>=3?5:0); addXP(g);
+      fb.className="feedback good"; fb.innerHTML=pick(["🎉 Perfect!","💥 Nailed it!","🌟 Superb!","🔥 Yes!"])+" +"+g+" XP"+(state.streak>=3?" 🔥x"+state.streak:"");
+      MQ.confetti(state.streak>=5?110:60);
+    } else { addXP(4); fb.className="feedback good"; fb.innerHTML="✅ Correct! +4 XP — you got there!"; }
+    state.totalQ++;
+    showNext(step);
+  } else {
+    // not yet — gentle, no answer reveal; let them adjust and Check again
+    MQ.sound("wrong");
+    if(state.firstTry){ recordStage(false); state.streak=0; paintHUD(); }
+    state.firstTry=false;
+    // flash wrong picks red, then clear so they can retry
+    wrongPicks.forEach(function(i){ var el=document.querySelector('#sent .token[data-i="'+i+'"]'); if(el){ el.classList.add("wrong"); setTimeout(function(){ el.classList.remove("wrong"); },700); } });
+    var msg="";
+    if(wrongPicks.length && missed.length) msg="Some are wrong and some are missing.";
+    else if(wrongPicks.length) msg="One or more of your choices isn't right — un-tap it.";
+    else msg="You've missed "+missed.length+" — keep looking!";
+    fb.className="feedback bad"; fb.innerHTML="Not quite — "+msg+" 💡";
+    // offer a hint after the first miss
+    var ctr=document.getElementById("controls");
+    if(!document.getElementById("hintBtn")){
+      ctr.insertAdjacentHTML("beforeend",' <button class="btn ghost" id="hintBtn">💡 Hint</button>');
+      document.getElementById("hintBtn").onclick=function(){
+        var stillMissed=wanted.filter(function(i){ return !document.querySelector('#sent .token[data-i="'+i+'"]').classList.contains("sel"); });
+        if(stillMissed.length){ var el=document.querySelector('#sent .token[data-i="'+stillMissed[0]+'"]'); el.classList.add("miss"); }
+      };
+    }
+  }
+}
+
+/* ----- MULTIPLE CHOICE ----- */
+function renderMC(s, step){
+  screen.innerHTML=
+    '<div class="card">'+
+      stepHeader(s, "✏️ Your turn")+
+      '<div class="center" style="margin:14px 0 4px;font-size:22px;font-weight:800;">'+step.q+'</div>'+
+      '<div class="options" id="opts">'+
+        step.options.map(function(o,i){ return '<button class="opt" data-i="'+i+'">'+o+'</button>'; }).join("")+
+      '</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"></div>'+
+    '</div>';
+  Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"), function(btn){
+    btn.onclick=function(){ checkMC(s, step, Number(btn.getAttribute("data-i")), btn); };
+  });
+}
+function checkMC(s, step, i, btn){
+  var fb=document.getElementById("fb");
+  if(i===step.answer){
+    btn.classList.add("correct");
+    document.querySelectorAll("#opts .opt").forEach(function(b){ b.disabled=true; });
+    MQ.sound("correct");
+    if(state.firstTry){ state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak); recordStage(true); state.correctFirst++;
+      var g=10+(state.streak>=3?5:0); addXP(g);
+      fb.className="feedback good"; fb.innerHTML=pick(["🎉 Correct!","🌟 Well done!","💥 Yes!","🔥 Spot on!"])+" +"+g+" XP"+(state.streak>=3?" 🔥x"+state.streak:"");
+      MQ.confetti(state.streak>=5?110:60);
+    } else { addXP(4); fb.className="feedback good"; fb.innerHTML="✅ Correct! +4 XP"; }
+    if(step.why){ fb.innerHTML+='<div class="reveal-box" style="margin-top:10px;">'+step.why+'</div>'; }
+    state.totalQ++;
+    showNext(step);
+  } else {
+    btn.classList.add("wrong"); btn.disabled=true;
+    MQ.sound("wrong");
+    if(state.firstTry){ recordStage(false); state.streak=0; paintHUD(); }
+    state.firstTry=false;
+    fb.className="feedback bad"; fb.innerHTML="Not quite — try another. 💡";
+  }
+}
+
+function recordStage(ok){
+  var key=currentStage().key;
+  if(!state.stageStats[key]) state.stageStats[key]={correct:0,total:0};
+  state.stageStats[key].total++;
+  if(ok) state.stageStats[key].correct++;
+}
+function showNext(step){
+  paintHUD();
+  var ctr=document.getElementById("controls");
+  ctr.innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:16px;">Next ▶</button>';
+  var nb=document.getElementById("nextBtn"); nb.focus();
+  nb.onclick=function(){ MQ.sound("click"); advance(); };
+}
+
+function showStageClear(s){
+  var st=state.stageStats[s.key]||{correct:0,total:0};
+  var pct=st.total?Math.round(st.correct/st.total*100):100;
+  MQ.sound("win"); MQ.confetti(140);
+  paintMap();
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="gem">'+ (s.gem||"💎") +'</div>'+
+      '<h1>Gem Collected!</h1>'+
+      '<h2 style="color:'+(s.color||"var(--blue)")+';">'+s.title+'</h2>'+
+      '<p style="font-size:20px;font-weight:800;">Score: '+st.correct+' / '+st.total+' ('+pct+'%)</p>'+
+      '<p style="font-size:34px;">'+MQ.rating(pct).emoji+' '+"⭐".repeat(MQ.rating(pct).stars)+'</p>'+
+      '<button class="btn big blue" id="contBtn">Continue ▶</button>'+
+    '</div>';
+  document.getElementById("contBtn").onclick=function(){ MQ.sound("click"); nextStage(); };
+}
+
+/* ---------- RESULTS + LOG ---------- */
+function showResults(){
+  document.getElementById("stagemap").innerHTML="";
+  var acc=state.totalQ?Math.round(state.correctFirst/state.totalQ*100):0;
+  var rt=MQ.rating(acc);
+  var mins=Math.max(1,Math.round((Date.now()-state.startTime)/60000));
+  MQ.sound("win"); MQ.confetti(200);
+
+  var breakdown=STAGES.filter(function(s){return !s.break;}).map(function(s){
+    var st=state.stageStats[s.key]||{correct:0,total:0};
+    var p=st.total?Math.round(st.correct/st.total*100):0;
+    return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0;">'+
+      '<span style="width:30px;">'+s.emoji+'</span>'+
+      '<b style="flex:1;text-align:left;">'+s.title+'</b>'+
+      '<div class="xpbar" style="flex:1;background:#eee;"><i style="width:'+p+'%;"></i></div>'+
+      '<span style="width:70px;text-align:right;font-weight:800;">'+st.correct+'/'+st.total+'</span></div>';
+  }).join("");
+
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot" style="font-size:80px;">'+rt.emoji+'</div>'+
+      '<h1>Quest Complete!</h1>'+
+      '<div class="speech">Magnificent work, '+(state.student||"explorer")+'! You collected all three Word Gems 🏷️⚡🎨. Here is your report card.</div>'+
+      '<div class="row" style="margin:18px 0;gap:20px;">'+
+        '<div><div class="big-num" style="font-size:56px;">'+acc+'%</div><div class="muted">Accuracy</div></div>'+
+        '<div><div class="big-num" style="font-size:56px;">'+state.xp+'</div><div class="muted">Total XP</div></div>'+
+        '<div><div class="big-num" style="font-size:56px;">🔥'+state.bestStreak+'</div><div class="muted">Best streak</div></div>'+
+      '</div>'+
+      '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+      '<p style="font-size:22px;font-weight:800;color:var(--purple);">Rating: '+rt.label+'</p>'+
+      '<div style="max-width:520px;margin:14px auto;text-align:left;">'+breakdown+'</div>'+
+      '<p class="muted" id="saveState">💾 Saving your result…</p>'+
+      '<div class="row" style="margin-top:8px;">'+
+        '<button class="btn green" id="againBtn">🔁 Play again</button>'+
+        '<a class="btn blue" href="index.html" style="text-decoration:none;">🏠 Home</a>'+
+      '</div>'+
+    '</div>';
+  document.getElementById("againBtn").onclick=function(){ location.reload(); };
+
+  var payload={
+    student:state.student||"Unknown",
+    subject:SUBJECT,
+    week:WEEK_NUMBER, weekTitle:WEEK_TITLE,
+    accuracy:acc, correct:state.correctFirst, totalQuestions:state.totalQ,
+    xp:state.xp, bestStreak:state.bestStreak, stars:rt.stars, rating:rt.label,
+    minutes:mins, stages:state.stageStats,
+    school:(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  };
+  MQ.logResult(payload).then(function(res){
+    var el=document.getElementById("saveState"); if(!el) return;
+    if(res && res.ok) el.textContent="✅ Result saved. Your tutor can see your progress!";
+    else if(res && res.offline) el.textContent="📴 Saved on this device (tutor: add the Apps Script link to sync).";
+    else el.textContent="⚠️ Couldn't reach the server, but your result is saved on this device.";
+  });
+}
+
+/* ---------- boot ---------- */
+if(!state.student){
+  screen.innerHTML=
+    '<div class="card center" style="max-width:520px;">'+
+      '<div class="mascot">'+OWL+'</div><div class="speech">Hoot! What is your name, explorer?</div>'+
+      '<div class="row" style="margin-top:16px;">'+
+        '<input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;">'+
+        '<button class="btn green" id="nmBtn">Start ▶</button>'+
+      '</div></div>';
+  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); paintHUD(); showIntro(); };
+  document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
+} else { paintHUD(); showIntro(); }
+</script>
+</body>
+</html>

@@ -87,6 +87,40 @@ report to *madam*. Sort or filter by `Student` and `Week` to summarise.
 
 ---
 
+## 📚 Grammar Quest (English) — same site, second subject
+
+There are now **two subjects** on the one site, sharing the same theme, XP,
+Apps Script and login:
+
+- **Maths** — `index.html` (Addition Missions). Link to English is in the header.
+- **English** — `english/index.html` (Grammar Quest). Link back to Maths in its header.
+
+**English Week 1 — Nouns, Verbs & Adjectives** (`english/week1.html`) is a
+story-led adventure through the *Land of Words* with Professor Hoot 🦉. It is
+built around **self-discovery** (the learner taps and guesses *before* the rule
+is revealed), a **teacher-guided** voice, and **an exercise straight after every
+concept**:
+
+| Gem | Concepts taught (each followed by exercises) |
+|-----|----------------------------------------------|
+| 🏷️ Naming Gem | Nouns → common, proper, abstract, collective |
+| ⚡ Action Gem | Verbs → action verbs, being verbs |
+| 🎨 Colour Gem | Adjectives → describing size/colour/number/feeling |
+| 👑 Word Wizard | Boss: label each word's part of speech |
+
+Exercises are **tap-the-word** (tap all the nouns/verbs/adjectives in a
+sentence) and **multiple choice**. Wrong answers give a hint and a retry; only
+the first try is scored. The 3-week English plan continues with adverbs &
+pronouns (Week 2) and prepositions, determiners & conjunctions (Week 3).
+
+### Results are split by subject (tabs)
+
+The Apps Script now files each subject on its **own tab** in your Sheet:
+English results land on an **“English”** tab, Maths stays on **“Results”**. Each
+tab has the same columns, so *madam’s* report per subject is one clean tab.
+**Re-deploy `Code.gs`** (Manage deployments ▸ edit ▸ New version) after updating
+it so the tab-routing takes effect — your existing Maths data is untouched.
+
 ## 🆕 Add next week's mission (do this each week)
 
 1. **Copy** `weeks/week1.html` to `weeks/week2.html`.

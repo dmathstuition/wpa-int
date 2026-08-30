@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grammar Quest — Parts of Speech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hud">
+    <span class="chip">📚 <b>Grammar Quest</b></span>
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">➕ Maths</a>
+    <span class="chip" id="whoChip">👤 <b id="whoName">Explorer</b></span>
+    <span class="chip">🏅 Weeks done: <b id="weeksDone">0</b></span>
+    <button class="btn ghost" id="soundBtn">🔊 Sound</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Grammar Quest</small></span>
+  </div>
+
+  <h1 class="title-pop">📖 PARTS OF SPEECH 🔤</h1>
+  <p class="subtitle">Explore the Land of Words with Professor Hoot 🦉 — collect every Word Gem!</p>
+
+  <div class="card" id="nameCard" style="margin-top:22px; max-width:560px;">
+    <div class="mascot">🦉</div>
+    <div class="speech">Hoot hoot! Welcome, young explorer. What is your name?</div>
+    <div class="row" style="margin-top:18px;">
+      <input class="pill-input" id="nameInput" placeholder="Type your name…" maxlength="24" style="flex:1 1 220px;" />
+      <button class="btn green" id="startBtn">Begin! ▶</button>
+    </div>
+  </div>
+
+  <div id="missionArea" class="hide">
+    <div class="weekgrid" id="weekGrid"></div>
+
+    <div class="card" id="progressCard" style="margin-top:22px;">
+      <h2>📈 <span id="progName">Your</span> Progress</h2>
+      <p class="muted" id="progNote">Finish a lesson to start building your progress chart!</p>
+      <div id="progList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+/* Weekly grammar lessons. Publish a new week: add a row and set live:true. */
+var WEEKS = [
+  { n: 1, title: "Nouns, Verbs & Adjectives", emoji: "🏷️", file: "week1.html", live: true,
+    desc: "Nouns (common, proper, abstract, collective), verbs & adjectives." },
+  { n: 2, title: "Coming Soon", emoji: "🔒", file: "week2.html", live: false,
+    desc: "Adverbs & pronouns — unlocks next week!" },
+  { n: 3, title: "Coming Soon", emoji: "🔒", file: "week3.html", live: false,
+    desc: "Prepositions, determiners & conjunctions." }
+];
+var SUBJECT = "English";
+
+(function(){
+  var nm=(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME) || "Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm"); if(el) el.innerHTML=nm+"<small>Grammar Quest</small>";
+  document.title=nm+" — Grammar Quest";
+})();
+
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent = MQ.soundEnabled() ? "🔊 Sound" : "🔇 Muted"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); MQ.sound("click"); };
+paintSound();
+
+function renderWeeks(){
+  var grid=document.getElementById("weekGrid"); grid.innerHTML="";
+  WEEKS.forEach(function(w,i){
+    var el=document.createElement("div");
+    el.className="weekcard"+(w.live?"":" locked");
+    el.style.animationDelay=(i*0.08)+"s";
+    el.innerHTML=
+      '<div class="emoji">'+(w.live?w.emoji:"🔒")+'</div>'+
+      '<h3>Week '+w.n+'</h3>'+
+      '<div style="font-weight:800;margin-bottom:6px;">'+(w.live?w.title:"Coming Soon")+'</div>'+
+      '<p class="muted" style="min-height:48px;font-size:14px;">'+w.desc+'</p>'+
+      '<span class="tag '+(w.live?"live":"soon")+'">'+(w.live?"▶ PLAY NOW":"LOCKED")+'</span>';
+    if(w.live){ el.style.cursor="pointer"; el.onclick=function(){ MQ.sound("click"); window.location.href=w.file; }; }
+    grid.appendChild(el);
+  });
+}
+
+function renderProgress(name){
+  document.getElementById("progName").textContent=name+"'s";
+  MQ.fetchHistory(name, SUBJECT).then(function(rows){
+    rows=(rows||[]).filter(function(r){ return (r.student||"").toLowerCase()===name.toLowerCase(); });
+    var byWeek={};
+    rows.forEach(function(r){ var w=r.week, acc=Number(r.accuracy)||0; if(!byWeek[w]||acc>byWeek[w].accuracy) byWeek[w]=r; });
+    var weeks=Object.keys(byWeek).sort(function(a,b){return a-b;});
+    document.getElementById("weeksDone").textContent=weeks.length;
+    if(!weeks.length) return;
+    document.getElementById("progNote").textContent="Best result for each week 🎯";
+    document.getElementById("progList").innerHTML=weeks.map(function(w){
+      var r=byWeek[w], acc=Number(r.accuracy)||0, rt=MQ.rating(acc);
+      var stars="⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars);
+      return '<div style="display:flex;align-items:center;gap:12px;margin:10px 0;">'+
+        '<b style="width:76px;">Week '+w+'</b>'+
+        '<div class="xpbar" style="flex:1;background:#eee;"><i style="width:'+acc+'%;"></i></div>'+
+        '<span style="width:56px;text-align:right;font-weight:800;">'+acc+'%</span>'+
+        '<span style="width:120px;">'+stars+'</span></div>';
+    }).join("");
+  });
+}
+
+function begin(name){
+  MQ.setStudent(name);
+  document.getElementById("whoName").textContent=name;
+  document.getElementById("nameCard").classList.add("hide");
+  document.getElementById("missionArea").classList.remove("hide");
+  renderWeeks(); renderProgress(name); MQ.sound("level");
+}
+document.getElementById("startBtn").onclick=function(){
+  var n=document.getElementById("nameInput").value.trim(); if(!n){ document.getElementById("nameInput").focus(); return; }
+  begin(n);
+};
+document.getElementById("nameInput").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("startBtn").click(); });
+(function(){ var s=MQ.getStudent(); if(s){ document.getElementById("nameInput").value=s; begin(s); } })();
+</script>
+</body>
+</html>

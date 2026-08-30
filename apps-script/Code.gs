@@ -26,12 +26,20 @@ var HEADERS = [
   "Best Streak", "Minutes", "Tutor", "Stage Breakdown (JSON)"
 ];
 
-/** Return (creating if needed) the results sheet with headers. */
-function getSheet_() {
+/** Turn a subject into a safe tab name; blank -> the default Results tab. */
+function tabFor_(subject) {
+  var s = String(subject || "").trim();
+  if (!s) return SHEET_NAME;
+  return s.replace(/[\[\]\*\/\\\?:]/g, " ").substring(0, 90);  // sheet-name-safe
+}
+
+/** Return (creating if needed) a results sheet/tab with headers. */
+function getSheet_(name) {
+  name = name || SHEET_NAME;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName(SHEET_NAME);
+  var sh = ss.getSheetByName(name);
   if (!sh) {
-    sh = ss.insertSheet(SHEET_NAME);
+    sh = ss.insertSheet(name);
   }
   if (sh.getLastRow() === 0) {
     sh.appendRow(HEADERS);
@@ -45,7 +53,7 @@ function getSheet_() {
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    var sh = getSheet_();
+    var sh = getSheet_(tabFor_(data.subject));   // each subject -> its own tab
     sh.appendRow([
       data.ts || new Date().toISOString(),
       data.school || "",
@@ -77,7 +85,7 @@ function doPost(e) {
 function doGet(e) {
   var params = (e && e.parameter) || {};
   if (params.action === "history") {
-    var rows = readHistory_(params.student || "");
+    var rows = readHistory_(params.student || "", tabFor_(params.subject));
     return jsonp_(params.callback, rows);
   }
   // Friendly landing so you can confirm the URL works in a browser.
@@ -87,8 +95,8 @@ function doGet(e) {
 }
 
 /** Read rows for one student (case-insensitive) into plain objects. */
-function readHistory_(student) {
-  var sh = getSheet_();
+function readHistory_(student, name) {
+  var sh = getSheet_(name);
   var last = sh.getLastRow();
   if (last < 2) return [];
   var values = sh.getRange(2, 1, last - 1, HEADERS.length).getValues();

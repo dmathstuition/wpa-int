@@ -67,8 +67,10 @@
     });
   };
 
-  /* ---------- Read a student's history via JSONP (for progress view) ---------- */
-  MQ.fetchHistory = function (student) {
+  /* ---------- Read a student's history via JSONP (for progress view) ----------
+     subject (optional) picks the matching Sheet tab, e.g. "English".
+     Omit it for the default (Maths) results tab. */
+  MQ.fetchHistory = function (student, subject) {
     return new Promise(function (resolve) {
       if (!URL || !student) { resolve(MQ.readAllResults()); return; }
       const cb = "mqcb_" + Math.random().toString(36).slice(2);
@@ -79,7 +81,9 @@
       };
       function cleanup() { try { delete window[cb]; } catch (e) {} if (s.parentNode) s.parentNode.removeChild(s); }
       const s = document.createElement("script");
-      s.src = URL + "?action=history&student=" + encodeURIComponent(student) + "&callback=" + cb;
+      s.src = URL + "?action=history&student=" + encodeURIComponent(student) +
+              (subject ? "&subject=" + encodeURIComponent(subject) : "") +
+              "&callback=" + cb;
       s.onerror = function () { clearTimeout(timer); cleanup(); resolve(MQ.readAllResults()); };
       document.body.appendChild(s);
     });
