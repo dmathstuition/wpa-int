@@ -110,8 +110,21 @@ concept**:
 
 Exercises are **tap-the-word** (tap all the nouns/verbs/adjectives in a
 sentence) and **multiple choice**. Wrong answers give a hint and a retry; only
-the first try is scored. The 3-week English plan continues with adverbs &
-pronouns (Week 2) and prepositions, determiners & conjunctions (Week 3).
+the first try is scored.
+
+**English Week 2 — Adverbs & Pronouns** (`english/week2.html`) follows the same
+story-led, self-discovery pattern (now with the clickable stage map + saved
+progress too):
+
+| Gem | Concepts taught (each followed by exercises) |
+|-----|----------------------------------------------|
+| 🏃 Motion Gem | Adverbs → manner (how), time (when), place (where) |
+| 👥 Stand-In Gem | Personal pronouns (I, you, he, she, it, we, they…) |
+| 🔑 Ownership Gem | Possessive pronouns (mine, yours, his, hers, ours, theirs) |
+| 🔗 Linking Gem | Relative pronouns (who, which, that, whose) |
+| 👑 Word Wizard | Boss: label each word (adverb / which kind of pronoun) |
+
+Week 3 completes the plan with prepositions, determiners & conjunctions.
 
 ### Results are split by subject (tabs)
 
