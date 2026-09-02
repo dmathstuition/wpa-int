@@ -191,3 +191,23 @@ mix of *ordinary* (no carrying) and *carry-over* problems, building up by size.
 Numbers are **generated fresh each play** (no-carry sums are built so every
 column stays ≤ 9; carry sums are guaranteed to carry), so it's re-playable for
 revision. Each stage still opens with **2 animated worked examples** first.
+
+## 🎓 Week 2 content (Year 6 SATs — Subtraction)
+
+Same pattern as Week 1 — animated worked examples first, clickable stage map,
+saved progress — built **simple → complex**, with **SATs-style reasoning at the
+complex end**. The worked examples animate the **exchange/borrow** method (the
+top digit is struck through and reduced, the current column receives a ten).
+
+| Stage | Focus |
+|------|-------|
+| 🔥 3-Digit Warm-Up | 3-digit subtraction, **no exchanging** |
+| 🏗️ 3-Digit Exchange | 3-digit subtraction **with exchanging (borrowing)** |
+| 🚀 4-Digit Mission | 4-digit, mix of ordinary + exchange |
+| 🏔️ 5-Digit Challenge | 5-digit, mix (incl. exchanging across zeros) |
+| 🌟 6-Digit Master | 6-digit, mix of ordinary + exchange |
+| 🧠 SATs Reasoning | Word problems (difference / how many left) + **missing number** (inverse operations) |
+| 👑 Boss Level | Mixed 3–6 digit + missing number + a **multi-step** SATs question |
+
+All calculations are strictly 3–6 digit subtractions; no-exchange pairs are
+built so every top digit is big enough, exchange pairs are guaranteed to borrow.

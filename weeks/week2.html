@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Week 1 — Addition Powers | Math Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>➕</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HUD -->
+  <div class="hud">
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <span class="chip">⭐ Lvl <b id="lvl">1</b></span>
+    <span class="chip streak-fire" id="streakChip">🔥 <b id="streak">0</b></span>
+    <span class="chip">💎 XP <b id="xp">0</b></span>
+    <div class="xpbar" title="XP to next level"><i id="xpFill"></i></div>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Maths Quest</small></span>
+  </div>
+
+  <div class="stagemap" id="stagemap"></div>
+
+  <!-- Everything renders here -->
+  <div id="screen"></div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+/* =============================================================
+   WEEK 1 — ADDITION POWERS  (Year 6 SATs)
+   Data-driven mini-game engine. To make Week 2, copy this file,
+   change WEEK_NUMBER + WEEK_TITLE and edit buildStages().
+   ============================================================= */
+var WEEK_NUMBER = 2;
+var WEEK_TITLE  = "Subtraction Skills";
+
+/* ---------- little helpers ---------- */
+function rnd(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(a){ return a[rnd(0,a.length-1)]; }
+function commas(n){ return Number(n).toLocaleString("en-GB"); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){var j=rnd(0,i);var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+
+// Build 4 multiple-choice options around a correct numeric answer
+function mcOptions(correct){
+  var set = {}; set[correct]=true;
+  var tries=0;
+  while(Object.keys(set).length<4 && tries<50){
+    tries++;
+    var delta = pick([1,2,3,5,9,10,11,20,100,90,-1,-10]) * pick([1,1,-1]);
+    var cand = correct + delta;
+    if (cand>0 && cand!==correct) set[cand]=true;
+  }
+  return shuffle(Object.keys(set).map(Number));
+}
+
+/* ---------- vertical column-sum HTML ---------- */
+function verticalSum(nums){
+  var strs = nums.map(String);
+  var width = Math.max.apply(null, strs.map(function(s){return s.length;}));
+  var rows = strs.map(function(s, idx){
+    var padded = s.padStart(width, " ").split("");
+    var op = idx>0 ? '<td class="op">+</td>' : '<td></td>';
+    return '<tr>'+op+padded.map(function(d){return '<td>'+(d===" "?"":d)+'</td>';}).join("")+'</tr>';
+  }).join("");
+  var lineCells = '<td></td>'+Array(width).fill('<td></td>').join("");
+  return '<div class="colsum"><table>'+rows+'<tr class="line">'+lineCells+'</tr></table></div>';
+}
+
+/* ---------- vertical subtraction HTML (minuend − subtrahend) ---------- */
+function verticalSub(M, S){
+  var Ms=String(M), Ss=String(S);
+  var width=Math.max(Ms.length, Ss.length);
+  function row(str, op){
+    var padded=str.padStart(width," ").split("");
+    return '<tr>'+(op?'<td class="op">−</td>':'<td></td>')+padded.map(function(d){return '<td>'+(d===" "?"":d)+'</td>';}).join("")+'</tr>';
+  }
+  var lineCells='<td></td>'+Array(width).fill('<td></td>').join("");
+  return '<div class="colsum"><table>'+row(Ms,false)+row(Ss,true)+'<tr class="line">'+lineCells+'</tr></table></div>';
+}
+
+/* =============================================================
+   STAGE / QUESTION BUILDERS  —  STRICTLY 3-to-6 DIGIT SUBTRACTION
+   Every calculation is a column subtraction (minuend − subtrahend).
+   Two flavours:
+     • "ordinary"  = no exchanging (every top digit >= bottom digit)
+     • "exchange"  = at least one column needs a borrow/exchange
+   The complex stages add SATs-style reasoning & missing-number work.
+   ============================================================= */
+
+/* Two n-digit numbers that subtract with NO exchanging (top>=bottom everywhere). */
+function genNoExch(nDigits){
+  var M, S, guard=0;
+  do {
+    var Ms="", Ss="";
+    for(var i=0;i<nDigits;i++){
+      var lead=(i===0), td, bd;
+      if(lead){ td=rnd(2,9); bd=rnd(1, td); }   // both leading digits >=1, top>=bottom
+      else    { td=rnd(0,9); bd=rnd(0, td); }   // top >= bottom => never borrows
+      Ms+=td; Ss+=bd;
+    }
+    M=Number(Ms); S=Number(Ss); guard++;
+  } while(guard<40 && M===S);                    // avoid the trivial X − X = 0
+  return { M:M, S:S, exch:false };
+}
+
+/* Does M − S need any exchange (borrow)? */
+function needsExch(M, S){
+  var Ms=String(M), Ss=String(S), W=Ms.length, b=0;
+  for(var p=0;p<W;p++){
+    var td=Number(digAt(Ms,p)||"0") - b;
+    var bd=Number(digAt(Ss,p)||"0");
+    if(td<bd){ b=1; } else { b=0; }
+    if(td<bd) return true;
+  }
+  return false;
+}
+
+/* Two n-digit numbers, M>S, guaranteed to need at least one exchange. */
+function genExch(nDigits){
+  var lo=Math.pow(10,nDigits-1), hi=Math.pow(10,nDigits)-1, M,S,g=0;
+  do { M=rnd(lo+1,hi); S=rnd(lo, M-1); g++; } while(g<200 && !needsExch(M,S));
+  return { M:M, S:S, exch:true };
+}
+
+/* mode: "ordinary" | "exchange" | "mix" -> a column-subtraction question. */
+function subQ(nDigits, mode){
+  var g = mode==="ordinary" ? genNoExch(nDigits)
+        : mode==="exchange" ? genExch(nDigits)
+        : (Math.random()<0.5 ? genNoExch(nDigits) : genExch(nDigits));
+  return { kind:"colsub", M:g.M, S:g.S, answer:g.M-g.S,
+    hint: g.exch
+      ? "Subtract each column from the right. If the top digit is smaller, exchange a ten from the next column (it drops by 1)."
+      : "Subtract each column from the right. Every top digit is big enough, so there's no exchanging needed." };
+}
+
+/* SATs missing-number (inverse operations). */
+function missingQ(nDigits){
+  var g=genExch(nDigits), M=g.M, S=g.S, R=M-S;
+  if(Math.random()<0.5){
+    return { kind:"type", answer:S,
+      prompt:"Find the missing number ▢:<br><span class='big-num'>"+commas(M)+" − ▢ = "+commas(R)+"</span>",
+      hint:"Use the inverse operation: ▢ = "+commas(M)+" − "+commas(R)+"." };
+  }
+  return { kind:"type", answer:M,
+    prompt:"Find the missing number ▢:<br><span class='big-num'>▢ − "+commas(S)+" = "+commas(R)+"</span>",
+    hint:"Use the inverse operation: ▢ = "+commas(R)+" + "+commas(S)+"." };
+}
+
+/* SATs word problem (take-away, how many left, difference, how many more). */
+function wordQ(nDigits, mode){
+  var g = mode==="exchange" ? genExch(nDigits) : mode==="ordinary" ? genNoExch(nDigits)
+        : (Math.random()<0.5 ? genNoExch(nDigits) : genExch(nDigits));
+  var M=g.M, S=g.S, R=M-S;
+  var templates=[
+    "🎟️ A concert hall has <b>"+commas(M)+"</b> seats. <b>"+commas(S)+"</b> are taken. How many seats are <b>empty</b>?",
+    "💷 Ade saved £<b>"+commas(M)+"</b> and spent £<b>"+commas(S)+"</b>. How much does he have <b>left</b>?",
+    "📚 A school printed <b>"+commas(M)+"</b> books and gave away <b>"+commas(S)+"</b>. How many are <b>left</b>?",
+    "🏃 In a race <b>"+commas(M)+"</b> people started and <b>"+commas(S)+"</b> finished. How many <b>did not finish</b>?",
+    "🎯 Two teams scored <b>"+commas(M)+"</b> and <b>"+commas(S)+"</b> points. What is the <b>difference</b>?",
+    "🚌 A town has <b>"+commas(M)+"</b> people. <b>"+commas(S)+"</b> are adults. How many are <b>children</b>?"
+  ];
+  return { kind:"type",
+    prompt:"Word problem:<br><div style='font-size:22px;font-weight:700;margin-top:8px;'>"+pick(templates)+"</div>",
+    answer:R, hint:"Find the two numbers and subtract (take away) with the column method." };
+}
+
+/* SATs multi-step (subtract twice). */
+function multiStepQ(){
+  var M=rnd(50000,99000), a=rnd(11000,20000), b=rnd(5000,15000);
+  return { kind:"type", answer:M-a-b,
+    prompt:"SATs multi-step:<br><div style='font-size:20px;font-weight:700;margin-top:6px;'>🏬 A warehouse had <b>"+commas(M)+"</b> items. On Monday <b>"+commas(a)+"</b> were sold and on Tuesday <b>"+commas(b)+"</b> more were sold. How many items are <b>left</b>?</div>",
+    hint:"Subtract Monday, then subtract Tuesday: "+commas(M)+" − "+commas(a)+" − "+commas(b)+"." };
+}
+
+/* =============================================================
+   WORKED-EXAMPLE ANIMATIONS (the "Learn" phase before practice)
+   Each stage shows 2 animated examples, step by step, self-paced
+   with Replay. Kids watch the METHOD before they try it.
+   ============================================================= */
+function digAt(s, p){ var idx = s.length-1-p; return idx>=0 ? s[idx] : ""; }
+function hasCarry(nums){
+  var W = Math.max.apply(null, nums.map(function(n){return String(n).length;})), carry=0, any=false;
+  for(var p=0;p<W;p++){ var s=carry; nums.forEach(function(n){var d=digAt(String(n),p); if(d!=="")s+=Number(d);}); if(s>9)any=true; carry=Math.floor(s/10);}
+  return any;
+}
+function teachPair(nDigits){
+  var lo=Math.pow(10,nDigits-1), hi=Math.pow(10,nDigits)-1, a,b,g=0;
+  do { a=rnd(lo,hi); b=rnd(lo,hi); g++; } while(g<60 && !hasCarry([a,b]));
+  return [a,b];
+}
+
+/* Build the animated column-SUBTRACTION grid inside `host`; return frames.
+   Shows exchanging/borrowing: the top digit is struck and reduced, and the
+   current column receives a small ¹ (a ten). */
+function colSubFrames(host, M, S){
+  var Ms=String(M), Ss=String(S), W=Ms.length;
+  var cols=[]; for(var p=W-1;p>=0;p--) cols.push(p);
+  // precompute exchange info + answer digits
+  var enter=new Array(W).fill(0), give=new Array(W).fill(0), ansDig=new Array(W).fill(0), b=0;
+  for(var p=0;p<W;p++){
+    enter[p]=b;
+    var rt=Number(digAt(Ms,p)||0)-b, bd=Number(digAt(Ss,p)||0);
+    if(rt<bd){ give[p]=1; rt+=10; b=1; } else { give[p]=0; b=0; }
+    ansDig[p]=rt-bd;
+  }
+  function td(inner,cls,id){ return '<td'+(id?' id="'+id+'"':'')+(cls?' class="'+cls+'"':'')+'>'+(inner||"")+'</td>'; }
+  var html='<div class="demo-wrap"><table class="demo-tbl"><tbody>';
+  html+='<tr>'+td("")+cols.map(function(p){return td("","carry-cell","ann-"+p);}).join("")+'</tr>';                       // reduced-digit notes
+  html+='<tr>'+td("")+cols.map(function(p){return td('<sup class="recv" id="recv-'+p+'"></sup><span class="orig" id="orig-'+p+'">'+(digAt(Ms,p)||"")+'</span>',"dig","top-"+p);}).join("")+'</tr>';
+  html+='<tr>'+td("−","op")+cols.map(function(p){return td(digAt(Ss,p)||"","dig","s-"+p);}).join("")+'</tr>';
+  html+='<tr class="line">'+td("")+cols.map(function(){return td("");}).join("")+'</tr>';
+  html+='<tr>'+td("")+cols.map(function(p){return td("","ans-cell","ans-"+p);}).join("")+'</tr>';
+  html+='</tbody></table></div>';
+  host.innerHTML=html;
+  function q(id){ return host.querySelector("#"+id); }
+  var places=["units","tens","hundreds","thousands","ten-thousands","hundred-thousands"];
+
+  var frames=[];
+  frames.push({ hold:2400, say:"Line the digits up by place value and start with the <b>units</b> on the right. If the top digit is too small, we <b>exchange</b>. 👉" });
+  for(var p=0;p<W;p++){
+    (function(p){
+      var reducedTop=Number(digAt(Ms,p)||0)-enter[p], bottom=Number(digAt(Ss,p)||0);
+      var eff=give[p]? reducedTop+10 : reducedTop, ad=eff-bottom;
+      var place=places[p]||"next column";
+      var say = give[p]
+        ? "In the <b>"+place+"</b>: <b>"+reducedTop+"</b> is less than <b>"+bottom+"</b>, so <b>exchange a ten</b> — the next column drops by 1. Now "+reducedTop+" + 10 = <b>"+eff+"</b>, and "+eff+" − "+bottom+" = <b>"+ad+"</b>."
+        : "In the <b>"+place+"</b>: <b>"+reducedTop+"</b> − <b>"+bottom+"</b> = <b>"+ad+"</b>.";
+      frames.push({ hold:2600, snd:"click", say:say, apply:function(){
+        host.querySelectorAll(".hl").forEach(function(e){e.classList.remove("hl");});
+        var tc=q("top-"+p); if(tc)tc.classList.add("hl");
+        var sc=q("s-"+p); if(sc)sc.classList.add("hl");
+        if(give[p]){
+          var rv=q("recv-"+p); if(rv){ rv.textContent="1"; rv.classList.add("carry-pop"); }         // this column gets +10
+          var nb=q("orig-"+(p+1)); if(nb){ nb.classList.add("struck"); }                              // neighbour drops by 1
+          var na=q("ann-"+(p+1)); if(na){ na.textContent=String(Number(digAt(Ms,p+1)||0)-1); na.classList.add("carry-pop"); }
+        }
+        var ac=q("ans-"+p); if(ac){ ac.textContent=ad; ac.classList.add("hl","reveal"); }
+      }});
+    })(p);
+  }
+  frames.push({ hold:2600, snd:"level",
+    say:"All columns done — the answer is <b>"+commas(M-S)+"</b> 🎉",
+    apply:function(){ host.querySelectorAll(".hl").forEach(function(e){e.classList.remove("hl");}); host.querySelectorAll(".ans-cell").forEach(function(e){ if(e.textContent) e.classList.add("done"); }); }
+  });
+  return frames;
+}
+
+/* Word problem: read the story, then subtract with the column method. */
+function wordSubFrames(host, sentence, M, S){
+  host.innerHTML =
+    '<div class="speech" id="ws" style="margin:0 0 10px;">'+sentence+'</div>' +
+    '<div id="wsum" class="faded"></div>';
+  var wsum=host.querySelector("#wsum");
+  var cf=colSubFrames(wsum, M, S);
+  var intro=[
+    { hold:2400, say:"Read carefully. First, find the important <b>numbers</b> in the story." },
+    { hold:2300, say:"Words like 'left', 'how many more' or 'difference' mean we <b>SUBTRACT</b> — put the bigger number on top.",
+      apply:function(){ wsum.classList.remove("faded"); wsum.classList.add("show-in"); } }
+  ];
+  return intro.concat(cf);
+}
+
+/* SATs missing-number: teach the inverse-operation trick. */
+function inverseFrames(host, spec){
+  var M=spec.M, S=spec.S, R=M-S;
+  var eq = spec.form==="pre" ? "▢ − "+commas(S)+" = "+commas(R)
+                             : commas(M)+" − ▢ = "+commas(R);
+  var calc = spec.form==="pre" ? commas(R)+" + "+commas(S)+" = <b style='color:#26de81'>"+commas(M)+"</b>"
+                               : commas(M)+" − "+commas(R)+" = <b style='color:#26de81'>"+commas(S)+"</b>";
+  host.innerHTML =
+    '<div class="big-num" style="font-size:32px;">'+eq+'</div>' +
+    '<div class="big-num faded" id="i1" style="font-size:24px;">The ▢ is hidden — use the <b>inverse</b> (opposite) operation.</div>' +
+    '<div class="big-num faded" id="i2" style="font-size:28px;">'+calc+'</div>';
+  function show(id){ var e=host.querySelector("#"+id); if(e){e.classList.remove("faded");e.classList.add("show-in");} }
+  return [
+    { hold:2600, say:"A number is missing. Instead of guessing, we <b>work backwards</b>." },
+    { hold:2600, say:(spec.form==="pre"? "To find the start number, <b>add</b> back what was taken away." : "To find what was taken away, <b>subtract</b> the answer from the start."), apply:function(){ show("i1"); } },
+    { hold:2800, snd:"level", say:"So ▢ = <b>"+commas(spec.form==="pre"?M:S)+"</b> ✅", apply:function(){ show("i2"); } }
+  ];
+}
+
+/* dispatcher: build DOM + frames for one example spec */
+function buildExample(host, spec){
+  if(spec.type==="colsub")  return colSubFrames(host, spec.M, spec.S);
+  if(spec.type==="wordsub") return wordSubFrames(host, spec.sentence, spec.M, spec.S);
+  if(spec.type==="inverse") return inverseFrames(host, spec);
+  host.innerHTML = ""; return [];
+}
+
+/* A tidy exchange example for teaching (no zero digits => no messy cascades). */
+function teachSub(nDigits, exch){
+  if(!exch) return genNoExch(nDigits);
+  var lo=Math.pow(10,nDigits-1), hi=Math.pow(10,nDigits)-1, M,S,g=0;
+  do { M=rnd(lo+1,hi); S=rnd(lo,M-1); g++; }
+  while(g<400 && (!needsExch(M,S) || /0/.test(String(M))));
+  return { M:M, S:S };
+}
+
+/* ---------- assemble the whole lesson (SUBTRACTION, simple -> complex) ---------- */
+function buildStages(){
+  return [
+    // ---- 3-digit, NO exchange (simple) ----
+    { key:"warm3", emoji:"🔥", title:"3-Digit Warm-Up", color:"var(--orange)",
+      intro:"3-digit column subtraction with <b>no exchanging</b> — line up the columns and take away. Nice and steady! ⚡",
+      teach:function(){ var a=genNoExch(3), b=genNoExch(3); return [
+        { type:"colsub", M:a.M, S:a.S }, { type:"colsub", M:b.M, S:b.S }
+      ]; },
+      questions:[ subQ(3,"ordinary"), subQ(3,"ordinary"), subQ(3,"ordinary"),
+                  subQ(3,"ordinary"), subQ(3,"ordinary"), subQ(3,"ordinary") ] },
+
+    // ---- 3-digit, WITH exchange (borrowing) ----
+    { key:"exch3", emoji:"🏗️", title:"3-Digit Exchange", color:"var(--blue)",
+      intro:"Now the top digit is sometimes too small — time to <b>exchange</b> (borrow)! Take a ten from the next column. 🦾",
+      teach:function(){ var a=teachSub(3,true), b=teachSub(3,true); return [
+        { type:"colsub", M:a.M, S:a.S }, { type:"colsub", M:b.M, S:b.S }
+      ]; },
+      questions:[ subQ(3,"exchange"), subQ(3,"exchange"), subQ(3,"exchange"),
+                  subQ(3,"exchange"), subQ(3,"exchange"), subQ(3,"exchange") ] },
+
+    { break:true, emoji:"🤸", title:"Brain Break!", text:"Stand up and do 10 star jumps ⭐, then wiggle your fingers. Ready in…" },
+
+    // ---- 4-digit mix ----
+    { key:"mix4", emoji:"🚀", title:"4-Digit Mission", color:"var(--purple)",
+      intro:"4-digit numbers now — a mix of <b>ordinary</b> and <b>exchange</b> subtractions. Watch each column! 🌈",
+      teach:function(){ var a=genNoExch(4), b=teachSub(4,true); return [
+        { type:"colsub", M:a.M, S:a.S }, { type:"colsub", M:b.M, S:b.S }
+      ]; },
+      questions:[ subQ(4,"ordinary"), subQ(4,"exchange"), subQ(4,"exchange"),
+                  subQ(4,"ordinary"), subQ(4,"exchange") ] },
+
+    // ---- 5-digit mix ----
+    { key:"mix5", emoji:"🏔️", title:"5-Digit Challenge", color:"var(--pink)",
+      intro:"Bigger numbers, same method. Keep your columns lined up neatly — exchanges and all! 🔎",
+      teach:function(){ var a=teachSub(5,true), b=genNoExch(5); return [
+        { type:"colsub", M:a.M, S:a.S }, { type:"colsub", M:b.M, S:b.S }
+      ]; },
+      questions:[ subQ(5,"exchange"), subQ(5,"ordinary"), subQ(5,"exchange"),
+                  subQ(5,"exchange"), subQ(5,"ordinary") ] },
+
+    { break:true, emoji:"💧", title:"Brain Break!", text:"Take 3 big breaths and a sip of water 💧. Shake out your hands. Ready in…" },
+
+    // ---- 6-digit mix ----
+    { key:"mix6", emoji:"🌟", title:"6-Digit Master", color:"var(--green)",
+      intro:"Top of the mountain: 6-digit subtraction! Ordinary and exchange. You've trained for this! 🏆",
+      teach:function(){ var a=teachSub(6,true), b=genNoExch(6); return [
+        { type:"colsub", M:a.M, S:a.S }, { type:"colsub", M:b.M, S:b.S }
+      ]; },
+      questions:[ subQ(6,"exchange"), subQ(6,"ordinary"), subQ(6,"exchange"),
+                  subQ(6,"exchange"), subQ(6,"ordinary") ] },
+
+    // ---- SATs REASONING (the complex part): word problems + missing number ----
+    { key:"reason", emoji:"🧠", title:"SATs Reasoning", color:"var(--blue)",
+      intro:"Real SATs-style problems! Word problems (find the difference / how many left) and <b>missing numbers</b> using inverse operations. 🧩",
+      teach:function(){
+        var w=genExch(4), inv=genExch(3);
+        return [
+          { type:"wordsub", M:w.M, S:w.S,
+            sentence:"💷 A shop had £<b class='numhi'>"+commas(w.M)+"</b> and spent £<b class='numhi'>"+commas(w.S)+"</b>. How much money is <b>left</b>?" },
+          { type:"inverse", M:inv.M, S:inv.S, form:"minus" }
+        ];
+      },
+      questions:[ wordQ(4,"mix"), wordQ(5,"exchange"), missingQ(3), missingQ(4) ] },
+
+    // ---- BOSS: mixed 3-6 digit + SATs missing-number & multi-step ----
+    { key:"boss", emoji:"👑", title:"BOSS LEVEL", color:"var(--red)",
+      intro:"Final challenge! A mix of 3 to 6 digit subtraction, a missing number, a word problem and a multi-step SATs question. Beat the boss! 🐉",
+      questions:[ subQ(3,"exchange"), subQ(4,"mix"), missingQ(4), wordQ(5,"mix"), multiStepQ() ] }
+  ];
+}
+
+/* =============================================================
+   GAME STATE + ENGINE
+   ============================================================= */
+var state = {
+  student: MQ.getStudent() || "",
+  xp:0, level:1, streak:0, bestStreak:0,
+  idx:0,          // index into stages array
+  qi:0,           // question index within stage
+  firstTry:true,  // was this question answered correctly on first go?
+  correctFirst:0, totalQ:0,
+  stageStats:{},  // key -> {correct,total}
+  completed:{},   // stage key -> true (persists across sessions)
+  maxCleared:-1,  // highest STAGES index cleared (for "continue")
+  startTime:Date.now(),
+  qStart:0
+};
+var activeTeachCtl = null;  // lets us cancel a running Learn animation on jump
+var STAGES = buildStages();
+var screen = document.getElementById("screen");
+
+/* ---- HUD paint ---- */
+function paintHUD(){
+  document.getElementById("lvl").textContent = state.level;
+  document.getElementById("xp").textContent = state.xp;
+  document.getElementById("streak").textContent = state.streak;
+  var into = state.xp % 100;
+  document.getElementById("xpFill").style.width = into + "%";
+  document.getElementById("streakChip").classList.toggle("on", state.streak>=3);
+}
+function addXP(n){
+  state.xp += n;
+  var newLevel = 1 + Math.floor(state.xp/100);
+  if (newLevel > state.level){ state.level=newLevel; MQ.sound("level"); MQ.confetti(70); toast("⬆️ LEVEL "+newLevel+"!"); }
+  paintHUD();
+}
+
+/* ---- stage map dots (clickable: tap an icon to jump to that stage) ---- */
+function paintMap(){
+  var map = document.getElementById("stagemap");
+  if(!map) return;
+  map.innerHTML = "";
+  STAGES.forEach(function(s, realIdx){
+    if(s.break) return;
+    var div=document.createElement("div");
+    var done = !!state.completed[s.key];
+    var active = (realIdx === state.idx);
+    div.className = "node clickable" + (done?" done":"") + (active?" active":"");
+    div.textContent = done ? "✓" : s.emoji;
+    div.title = "Go to: " + s.title + (done ? " (done ✓)" : "");
+    div.setAttribute("role","button");
+    div.tabIndex = 0;
+    div.onclick = function(){ jumpToStage(realIdx); };
+    div.onkeydown = function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); jumpToStage(realIdx); } };
+    map.appendChild(div);
+  });
+}
+
+/* Jump straight to a stage (skip to it / continue from last time). */
+function jumpToStage(realIdx){
+  if(realIdx<0 || realIdx>=STAGES.length || STAGES[realIdx].break) return;
+  if(activeTeachCtl) activeTeachCtl.cancelled = true;   // stop any running animation
+  MQ.sound("click");
+  state.idx = realIdx;
+  state.qi = 0; state.si = 0;
+  showStageIntro(STAGES[realIdx]);
+}
+
+/* ---- per-learner progress (so we continue from where we stopped) ---- */
+function progKey(){ return "w2prog_" + (state.student||"").toLowerCase(); }
+function loadProgress(){
+  var p = MQ.readLocal(progKey());
+  if(p){ state.completed = p.completed || {}; state.maxCleared = (typeof p.maxCleared==="number") ? p.maxCleared : -1; }
+}
+function saveProgress(){
+  MQ.saveLocal(progKey(), { completed:state.completed, maxCleared:state.maxCleared, updated:Date.now() });
+}
+/* First stage that isn't finished yet (null if every stage is done). */
+function resumeTarget(){
+  for(var i=0;i<STAGES.length;i++){
+    if(STAGES[i].break) continue;
+    if(!state.completed[STAGES[i].key]) return i;
+  }
+  return null;
+}
+
+/* ---- transient toast ---- */
+function toast(msg){
+  var t=document.createElement("div");
+  t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:18px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);animation:popIn .3s;";
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },1100);
+}
+
+/* ---- brand name from config ---- */
+(function(){
+  var nm=(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME) || "Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm");
+  if(el) el.innerHTML=nm+"<small>Maths Quest</small>";
+  document.title="Week "+WEEK_NUMBER+" — "+WEEK_TITLE+" | "+nm;
+})();
+
+/* ---- sound toggle button ---- */
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent = MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); };
+paintSound();
+
+/* =============================================================
+   SCREENS
+   ============================================================= */
+function showIntro(){
+  paintMap();
+  var rt = resumeTarget();
+  var doneCount = Object.keys(state.completed).length;
+  var welcome, buttons;
+  if(doneCount>0 && rt!=null){            // returning, some stages left
+    welcome = "Welcome back, "+(state.student||"hero")+"! You've finished <b>"+doneCount+"</b> stage"+(doneCount===1?"":"s")+". Continue where you left off, or tap any icon above to jump to a stage. 🚀";
+    buttons = '<button class="btn big green" id="contBtn">▶ Continue: '+STAGES[rt].emoji+' '+STAGES[rt].title+'</button>' +
+              '<button class="btn blue" id="goBtn" style="margin-top:10px;">↺ Start from the beginning</button>';
+  } else if(doneCount>0){                 // returning, all stages done
+    welcome = "Welcome back, "+(state.student||"hero")+"! 🏆 You've completed <b>every</b> stage. Tap any icon above to revisit one, or replay from the start.";
+    buttons = '<button class="btn big green" id="goBtn">🔁 Replay from the start</button>';
+  } else {                                // brand new
+    welcome = "Welcome "+(state.student||"hero")+"! Complete <b>"+countQuestions()+" challenges</b> across "+countStages()+" stages. Tap any icon above to jump around. Earn XP and keep your 🔥 streak!";
+    buttons = '<button class="btn big green" id="goBtn">🚀 START MISSION</button>';
+  }
+  screen.innerHTML =
+    '<div class="card center">' +
+      '<div class="mascot">🦸</div>' +
+      '<h1>Week '+WEEK_NUMBER+': '+WEEK_TITLE+'</h1>' +
+      '<div class="speech">'+welcome+'</div>' +
+      '<div class="row" style="margin-top:20px;flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto;">' +
+        buttons +
+      '</div>' +
+      '<p class="muted" style="margin-top:14px;">Tip: answer on your first try to boost your streak & XP!</p>' +
+    '</div>';
+  document.getElementById("goBtn").onclick=function(){ MQ.sound("click"); state.idx=0; nextStage(true); };
+  var cb=document.getElementById("contBtn");
+  if(cb) cb.onclick=function(){ jumpToStage(rt); };
+}
+function countQuestions(){ return STAGES.reduce(function(n,s){return n+(s.questions?s.questions.length:0);},0); }
+function countStages(){ return STAGES.filter(function(s){return !s.break;}).length; }
+
+function nextStage(first){
+  if(activeTeachCtl) activeTeachCtl.cancelled = true;
+  if(!first){ state.idx++; }
+  while(state.idx<STAGES.length && STAGES[state.idx].skip){ state.idx++; }
+  if(state.idx>=STAGES.length){ return showResults(); }
+  var s=STAGES[state.idx];
+  if(s.break){ return showBreak(s); }
+  state.qi=0;
+  showStageIntro(s);
+}
+
+function showStageIntro(s){
+  paintMap();
+  screen.innerHTML =
+    '<div class="card center" style="border-top:10px solid '+(s.color||"var(--blue)")+';">' +
+      '<div style="font-size:64px;">'+s.emoji+'</div>' +
+      '<h1>'+s.title+'</h1>' +
+      '<div class="speech">'+s.intro+'</div>' +
+      '<button class="btn big blue" id="stgBtn" style="margin-top:18px;">📺 Watch how ▶</button>' +
+    '</div>';
+  document.getElementById("stgBtn").onclick=function(){ MQ.sound("click"); showTeach(s); };
+}
+
+/* ---------- LEARN phase: animated worked examples ---------- */
+function delay(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+async function runFrames(frames, ctl, narrEl){
+  for(var i=0;i<frames.length;i++){
+    if(ctl.cancelled) return;               // learner jumped away — stop cleanly
+    var f=frames[i];
+    if(f.say && narrEl) narrEl.innerHTML=f.say;
+    if(f.apply) f.apply();
+    if(!ctl.skip){ MQ.sound(f.snd||"click"); await delay(f.hold||1800); }
+  }
+}
+function showTeach(stage){
+  paintMap();
+  var specs = stage.teach ? stage.teach() : [];
+  if(!specs.length){ state.qi=0; return showQuestion(); }
+  var ti=0;
+  var ctl={skip:false, cancelled:false};
+  activeTeachCtl = ctl;
+
+  function shell(){
+    screen.innerHTML =
+      '<div class="card">' +
+        '<div class="row" style="justify-content:space-between;">' +
+          '<span class="chip" style="background:'+(stage.color||"var(--blue)")+';color:#fff;">'+stage.emoji+' '+stage.title+' — Learn</span>' +
+          '<span class="chip" style="background:#eee;color:#333;">Example '+(ti+1)+' / '+specs.length+'</span>' +
+        '</div>' +
+        '<div id="demoHost" style="margin-top:12px;min-height:210px;"><div class="teach-narr" id="tn"></div><div id="demoBody"></div></div>' +
+        '<div class="center" id="teachCtrls" style="margin-top:14px;"></div>' +
+      '</div>';
+  }
+  function playingCtrls(){
+    document.getElementById("teachCtrls").innerHTML='<button class="btn ghost" id="skipAnim">⏭ Skip to answer</button>';
+    document.getElementById("skipAnim").onclick=function(){ ctl.skip=true; };
+  }
+  function doneCtrls(){
+    var last = ti>=specs.length-1;
+    document.getElementById("teachCtrls").innerHTML=
+      '<button class="btn blue" id="replay">🔁 Watch again</button> ' +
+      (last ? '<button class="btn big green" id="toPractice">✅ Now YOU try! ▶</button>'
+            : '<button class="btn big green" id="nextEx">Next example ▶</button>');
+    document.getElementById("replay").onclick=function(){ play(); };
+    var ne=document.getElementById("nextEx"); if(ne) ne.onclick=function(){ MQ.sound("click"); ti++; play(); };
+    var tp=document.getElementById("toPractice"); if(tp) tp.onclick=function(){ MQ.sound("level"); MQ.confetti(50); state.qi=0; showQuestion(); };
+  }
+  async function play(){
+    if(ctl.cancelled) return;
+    ctl.skip=false;
+    shell();
+    playingCtrls();
+    var body=document.getElementById("demoBody");
+    var narr=document.getElementById("tn");
+    var frames=buildExample(body, specs[ti]);
+    await runFrames(frames, ctl, narr);
+    if(ctl.cancelled || !document.getElementById("teachCtrls")) return;  // jumped away mid-animation
+    doneCtrls();
+  }
+  play();
+}
+
+function showBreak(s){
+  paintMap();
+  var secs=15;
+  screen.innerHTML =
+    '<div class="card center" style="background:linear-gradient(135deg,#fff,#eafff3);">' +
+      '<div class="mascot" style="font-size:74px;">'+s.emoji+'</div>' +
+      '<h1>'+s.title+'</h1>' +
+      '<div class="speech">'+s.text+' <b id="bt">'+secs+'</b>s</div>' +
+      '<button class="btn green" id="skipBreak" style="margin-top:16px;">I\'m ready! ▶</button>' +
+    '</div>';
+  var iv=setInterval(function(){
+    secs--; var bt=document.getElementById("bt");
+    if(bt) bt.textContent=secs;
+    if(secs<=0){ clearInterval(iv); nextStage(); }
+  },1000);
+  document.getElementById("skipBreak").onclick=function(){ clearInterval(iv); MQ.sound("click"); nextStage(); };
+}
+
+function currentStage(){ return STAGES[state.idx]; }
+
+function showQuestion(){
+  paintMap();
+  var s=currentStage();
+  var q=s.questions[state.qi];
+  state.firstTry=true;
+  state.qStart=Date.now();
+
+  var body="";
+  if(q.kind==="column"){
+    body = '<div class="demo-wrap">' + verticalSum(q.nums) + '</div>' +
+      '<div style="margin-top:18px;" class="center">' +
+        '<input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?" />' +
+      '</div>';
+  } else if(q.kind==="colsub"){
+    body = '<div class="demo-wrap">' + verticalSub(q.M, q.S) + '</div>' +
+      '<div style="margin-top:18px;" class="center">' +
+        '<input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?" />' +
+      '</div>';
+  } else if(q.kind==="type"){
+    body = '<div class="center" style="margin:8px 0 6px;">'+q.prompt+'</div>' +
+      '<div class="center" style="margin-top:14px;">' +
+        '<input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?" />' +
+      '</div>';
+  } else { // mc
+    body = '<div class="center" style="margin:8px 0;">'+q.prompt+'</div>' +
+      '<div class="options" id="opts">' +
+        q.options.map(function(o){ return '<button class="opt" data-v="'+o+'">'+commas(o)+'</button>'; }).join("") +
+      '</div>';
+  }
+
+  screen.innerHTML =
+    '<div class="card">' +
+      '<div class="row" style="justify-content:space-between;">' +
+        '<span class="chip" style="background:'+(s.color||"var(--blue)")+';color:#fff;">'+s.emoji+' '+s.title+'</span>' +
+        '<span class="chip" style="background:#eee;color:#333;">Q '+(state.qi+1)+' / '+s.questions.length+'</span>' +
+      '</div>' +
+      body +
+      '<div class="feedback" id="fb"></div>' +
+      '<div class="center" id="controls"></div>' +
+    '</div>';
+
+  if(q.kind==="mc"){
+    Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"), function(btn){
+      btn.onclick=function(){ handleAnswer(Number(btn.getAttribute("data-v")), q, btn); };
+    });
+  } else {
+    var inp=document.getElementById("ans");
+    inp.focus();
+    var ctr=document.getElementById("controls");
+    ctr.innerHTML='<button class="btn green" id="checkBtn" style="margin-top:16px;">Check ✅</button> '+
+                  '<button class="btn ghost" id="hintBtn" style="margin-top:16px;">💡 Hint</button>';
+    document.getElementById("checkBtn").onclick=function(){ handleAnswer(Number(inp.value), q, null); };
+    document.getElementById("hintBtn").onclick=function(){ document.getElementById("fb").textContent="💡 "+q.hint; document.getElementById("fb").className="feedback"; };
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("checkBtn").click(); });
+  }
+}
+
+function handleAnswer(val, q, btn){
+  var fb=document.getElementById("fb");
+  if(isNaN(val)){ fb.textContent="Type a number first ✏️"; fb.className="feedback"; return; }
+
+  if(val===q.answer){
+    // correct
+    MQ.sound("correct");
+    if(btn) btn.classList.add("correct");
+    lockInputs();
+    var fast = (Date.now()-state.qStart) < 9000;
+    if(state.firstTry){
+      state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak);
+      recordStage(true);
+      state.correctFirst++;
+      var gained = 10 + (fast?5:0) + (state.streak>=3?5:0);
+      addXP(gained);
+      fb.className="feedback good";
+      fb.innerHTML = pick(["🎉 Brilliant!","💥 Smashed it!","🌟 Superb!","🚀 Nailed it!","🔥 Yes!"]) +
+                     " +"+gained+" XP"+(fast?" ⚡speed":"")+(state.streak>=3?" 🔥x"+state.streak:"");
+      MQ.confetti(state.streak>=5?110:60);
+    } else {
+      addXP(4);
+      fb.className="feedback good";
+      fb.innerHTML="✅ Correct! +4 XP (you got there!) ";
+    }
+    state.totalQ++; // count once per question
+    showNext();
+  } else {
+    // wrong
+    MQ.sound("wrong");
+    if(btn) btn.classList.add("wrong");
+    if(state.firstTry){ recordStage(false); state.streak=0; paintHUD(); }
+    state.firstTry=false;
+    fb.className="feedback bad";
+    fb.innerHTML = pick(["Not quite","Oops","Try again"]) + " — "+ (q.hint||"have another go!") + " 💡";
+    // For MC, disable the wrong one and let them try others
+    if(btn) btn.disabled=true;
+    // For typed, clear and refocus
+    var inp=document.getElementById("ans"); if(inp){ inp.value=""; inp.focus(); }
+  }
+}
+
+function recordStage(ok){
+  var key=currentStage().key;
+  if(!state.stageStats[key]) state.stageStats[key]={correct:0,total:0};
+  state.stageStats[key].total++;
+  if(ok) state.stageStats[key].correct++;
+}
+function lockInputs(){
+  Array.prototype.forEach.call(document.querySelectorAll(".opt"), function(b){ b.disabled=true; });
+  var inp=document.getElementById("ans"); if(inp) inp.disabled=true;
+  var cb=document.getElementById("checkBtn"); if(cb) cb.disabled=true;
+}
+function showNext(){
+  paintHUD();
+  var ctr=document.getElementById("controls");
+  ctr.innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:16px;">Next ▶</button>';
+  var nb=document.getElementById("nextBtn"); nb.focus();
+  nb.onclick=function(){
+    MQ.sound("click");
+    var s=currentStage();
+    state.qi++;
+    if(state.qi>=s.questions.length){ showStageClear(s); }
+    else showQuestion();
+  };
+}
+
+function showStageClear(s){
+  var st=state.stageStats[s.key]||{correct:0,total:0};
+  var pct = st.total? Math.round(st.correct/st.total*100):0;
+  // remember this stage as done, so the map + "continue" survive across sessions
+  state.completed[s.key] = true;
+  state.maxCleared = Math.max(state.maxCleared, state.idx);
+  saveProgress();
+  MQ.sound("win"); MQ.confetti(120);
+  paintMap();
+  screen.innerHTML =
+    '<div class="card center">' +
+      '<div class="mascot" style="font-size:72px;">'+s.emoji+'</div>' +
+      '<h1>Stage Clear!</h1>' +
+      '<h2 style="color:'+(s.color||"var(--blue)")+';">'+s.title+'</h2>' +
+      '<p style="font-size:20px;font-weight:800;">First-try score: '+st.correct+' / '+st.total+' ('+pct+'%)</p>' +
+      '<p style="font-size:34px;">'+MQ.rating(pct).emoji+' '+"⭐".repeat(MQ.rating(pct).stars)+'</p>' +
+      '<button class="btn big blue" id="contBtn">Continue ▶</button>' +
+    '</div>';
+  document.getElementById("contBtn").onclick=function(){ MQ.sound("click"); nextStage(); };
+}
+
+/* =============================================================
+   RESULTS + LOGGING
+   ============================================================= */
+function showResults(){
+  document.getElementById("stagemap").innerHTML="";
+  var acc = state.totalQ? Math.round(state.correctFirst/state.totalQ*100):0;
+  var rt = MQ.rating(acc);
+  var mins = Math.max(1, Math.round((Date.now()-state.startTime)/60000));
+  MQ.sound("win"); MQ.confetti(200);
+
+  // Per-stage breakdown
+  var breakdown = STAGES.filter(function(s){return !s.break;}).map(function(s){
+    var st=state.stageStats[s.key]||{correct:0,total:0};
+    var p=st.total?Math.round(st.correct/st.total*100):0;
+    return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0;">' +
+      '<span style="width:30px;">'+s.emoji+'</span>' +
+      '<b style="flex:1;text-align:left;">'+s.title+'</b>' +
+      '<div class="xpbar" style="flex:1;background:#eee;"><i style="width:'+p+'%;"></i></div>' +
+      '<span style="width:70px;text-align:right;font-weight:800;">'+st.correct+'/'+st.total+'</span></div>';
+  }).join("");
+
+  screen.innerHTML =
+    '<div class="card center">' +
+      '<div class="mascot" style="font-size:80px;">'+rt.emoji+'</div>' +
+      '<h1>Mission Complete!</h1>' +
+      '<div class="speech">Amazing work, '+(state.student||"hero")+'! Here is your report card.</div>' +
+      '<div class="row" style="margin:18px 0;gap:20px;">' +
+        '<div><div class="big-num" style="font-size:56px;">'+acc+'%</div><div class="muted">Accuracy</div></div>' +
+        '<div><div class="big-num" style="font-size:56px;">'+state.xp+'</div><div class="muted">Total XP</div></div>' +
+        '<div><div class="big-num" style="font-size:56px;">🔥'+state.bestStreak+'</div><div class="muted">Best streak</div></div>' +
+      '</div>' +
+      '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>' +
+      '<p style="font-size:22px;font-weight:800;color:var(--purple);">Rating: '+rt.label+'</p>' +
+      '<div style="max-width:520px;margin:14px auto;text-align:left;">'+breakdown+'</div>' +
+      '<p class="muted" id="saveState">💾 Saving your result…</p>' +
+      '<div class="row" style="margin-top:8px;">' +
+        '<button class="btn green" id="againBtn">🔁 Play again</button>' +
+        '<a class="btn blue" href="../index.html" style="text-decoration:none;">🏠 Home</a>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById("againBtn").onclick=function(){ location.reload(); };
+
+  // Build the report payload and send it
+  var payload = {
+    student: state.student || "Unknown",
+    week: WEEK_NUMBER,
+    weekTitle: WEEK_TITLE,
+    accuracy: acc,
+    correct: state.correctFirst,
+    totalQuestions: state.totalQ,
+    xp: state.xp,
+    bestStreak: state.bestStreak,
+    stars: rt.stars,
+    rating: rt.label,
+    minutes: mins,
+    stages: state.stageStats,
+    school: (window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME) || "Whyte Pyramid Academy",
+    tutor: (window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.TUTOR_NAME) || ""
+  };
+  MQ.logResult(payload).then(function(res){
+    var el=document.getElementById("saveState");
+    if(!el) return;
+    if(res && res.ok) el.textContent="✅ Result saved. Your tutor can see your progress!";
+    else if(res && res.offline) el.textContent="📴 Saved on this device (tutor: add the Apps Script link to sync).";
+    else el.textContent="⚠️ Couldn't reach the server, but your result is saved on this device.";
+  });
+}
+
+/* ---------- boot ---------- */
+if(!state.student){
+  // If they arrived here directly, ask the name once
+  screen.innerHTML =
+    '<div class="card center" style="max-width:520px;">' +
+      '<div class="mascot">🦸</div><div class="speech">What\'s your name, hero?</div>' +
+      '<div class="row" style="margin-top:16px;">' +
+        '<input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;">' +
+        '<button class="btn green" id="nmBtn">Start ▶</button>' +
+      '</div></div>';
+  document.getElementById("nmBtn").onclick=function(){
+    var v=document.getElementById("nm").value.trim(); if(!v) return;
+    state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); showIntro();
+  };
+  document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
+} else {
+  loadProgress(); paintHUD(); showIntro();
+}
+</script>
+</body>
+</html>
