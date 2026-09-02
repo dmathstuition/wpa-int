@@ -321,9 +321,12 @@ var state = {
   firstTry:true,  // was this question answered correctly on first go?
   correctFirst:0, totalQ:0,
   stageStats:{},  // key -> {correct,total}
+  completed:{},   // stage key -> true (persists across sessions)
+  maxCleared:-1,  // highest STAGES index cleared (for "continue")
   startTime:Date.now(),
   qStart:0
 };
+var activeTeachCtl = null;  // lets us cancel a running Learn animation on jump
 var STAGES = buildStages();
 var screen = document.getElementById("screen");
 
@@ -343,22 +346,53 @@ function addXP(n){
   paintHUD();
 }
 
-/* ---- stage map dots ---- */
+/* ---- stage map dots (clickable: tap an icon to jump to that stage) ---- */
 function paintMap(){
-  var nodes = STAGES.filter(function(s){return !s.break;});
   var map = document.getElementById("stagemap");
+  if(!map) return;
   map.innerHTML = "";
-  var playIdx=-1, counter=0;
-  STAGES.forEach(function(s,i){ if(!s.break){ counter++; if(i===state.idx) playIdx=counter; } });
-  nodes.forEach(function(s,i){
+  STAGES.forEach(function(s, realIdx){
+    if(s.break) return;
     var div=document.createElement("div");
-    var done = (i+1) < playIdx;
-    var active = (i+1) === playIdx;
-    div.className = "node" + (done?" done":"") + (active?" active":"");
+    var done = !!state.completed[s.key];
+    var active = (realIdx === state.idx);
+    div.className = "node clickable" + (done?" done":"") + (active?" active":"");
     div.textContent = done ? "✓" : s.emoji;
-    div.title = s.title;
+    div.title = "Go to: " + s.title + (done ? " (done ✓)" : "");
+    div.setAttribute("role","button");
+    div.tabIndex = 0;
+    div.onclick = function(){ jumpToStage(realIdx); };
+    div.onkeydown = function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); jumpToStage(realIdx); } };
     map.appendChild(div);
   });
+}
+
+/* Jump straight to a stage (skip to it / continue from last time). */
+function jumpToStage(realIdx){
+  if(realIdx<0 || realIdx>=STAGES.length || STAGES[realIdx].break) return;
+  if(activeTeachCtl) activeTeachCtl.cancelled = true;   // stop any running animation
+  MQ.sound("click");
+  state.idx = realIdx;
+  state.qi = 0; state.si = 0;
+  showStageIntro(STAGES[realIdx]);
+}
+
+/* ---- per-learner progress (so we continue from where we stopped) ---- */
+function progKey(){ return "w1prog_" + (state.student||"").toLowerCase(); }
+function loadProgress(){
+  var p = MQ.readLocal(progKey());
+  if(p){ state.completed = p.completed || {}; state.maxCleared = (typeof p.maxCleared==="number") ? p.maxCleared : -1; }
+}
+function saveProgress(){
+  MQ.saveLocal(progKey(), { completed:state.completed, maxCleared:state.maxCleared, updated:Date.now() });
+}
+/* First stage that isn't finished yet (null if every stage is done). */
+function resumeTarget(){
+  for(var i=0;i<STAGES.length;i++){
+    if(STAGES[i].break) continue;
+    if(!state.completed[STAGES[i].key]) return i;
+  }
+  return null;
 }
 
 /* ---- transient toast ---- */
@@ -389,22 +423,39 @@ paintSound();
    ============================================================= */
 function showIntro(){
   paintMap();
+  var rt = resumeTarget();
+  var doneCount = Object.keys(state.completed).length;
+  var welcome, buttons;
+  if(doneCount>0 && rt!=null){            // returning, some stages left
+    welcome = "Welcome back, "+(state.student||"hero")+"! You've finished <b>"+doneCount+"</b> stage"+(doneCount===1?"":"s")+". Continue where you left off, or tap any icon above to jump to a stage. 🚀";
+    buttons = '<button class="btn big green" id="contBtn">▶ Continue: '+STAGES[rt].emoji+' '+STAGES[rt].title+'</button>' +
+              '<button class="btn blue" id="goBtn" style="margin-top:10px;">↺ Start from the beginning</button>';
+  } else if(doneCount>0){                 // returning, all stages done
+    welcome = "Welcome back, "+(state.student||"hero")+"! 🏆 You've completed <b>every</b> stage. Tap any icon above to revisit one, or replay from the start.";
+    buttons = '<button class="btn big green" id="goBtn">🔁 Replay from the start</button>';
+  } else {                                // brand new
+    welcome = "Welcome "+(state.student||"hero")+"! Complete <b>"+countQuestions()+" challenges</b> across "+countStages()+" stages. Tap any icon above to jump around. Earn XP and keep your 🔥 streak!";
+    buttons = '<button class="btn big green" id="goBtn">🚀 START MISSION</button>';
+  }
   screen.innerHTML =
     '<div class="card center">' +
       '<div class="mascot">🦸</div>' +
       '<h1>Week '+WEEK_NUMBER+': '+WEEK_TITLE+'</h1>' +
-      '<div class="speech">Welcome '+(state.student||"hero")+'! Complete <b>'+countQuestions()+' challenges</b> across '+countStages()+' stages. Earn XP, keep your 🔥 streak, and rescue every missing digit!</div>' +
-      '<div class="row" style="margin-top:20px;">' +
-        '<button class="btn big green" id="goBtn">🚀 START MISSION</button>' +
+      '<div class="speech">'+welcome+'</div>' +
+      '<div class="row" style="margin-top:20px;flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto;">' +
+        buttons +
       '</div>' +
       '<p class="muted" style="margin-top:14px;">Tip: answer on your first try to boost your streak & XP!</p>' +
     '</div>';
-  document.getElementById("goBtn").onclick=function(){ MQ.sound("click"); nextStage(true); };
+  document.getElementById("goBtn").onclick=function(){ MQ.sound("click"); state.idx=0; nextStage(true); };
+  var cb=document.getElementById("contBtn");
+  if(cb) cb.onclick=function(){ jumpToStage(rt); };
 }
 function countQuestions(){ return STAGES.reduce(function(n,s){return n+(s.questions?s.questions.length:0);},0); }
 function countStages(){ return STAGES.filter(function(s){return !s.break;}).length; }
 
 function nextStage(first){
+  if(activeTeachCtl) activeTeachCtl.cancelled = true;
   if(!first){ state.idx++; }
   while(state.idx<STAGES.length && STAGES[state.idx].skip){ state.idx++; }
   if(state.idx>=STAGES.length){ return showResults(); }
@@ -430,6 +481,7 @@ function showStageIntro(s){
 function delay(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 async function runFrames(frames, ctl, narrEl){
   for(var i=0;i<frames.length;i++){
+    if(ctl.cancelled) return;               // learner jumped away — stop cleanly
     var f=frames[i];
     if(f.say && narrEl) narrEl.innerHTML=f.say;
     if(f.apply) f.apply();
@@ -441,7 +493,8 @@ function showTeach(stage){
   var specs = stage.teach ? stage.teach() : [];
   if(!specs.length){ state.qi=0; return showQuestion(); }
   var ti=0;
-  var ctl={skip:false};
+  var ctl={skip:false, cancelled:false};
+  activeTeachCtl = ctl;
 
   function shell(){
     screen.innerHTML =
@@ -469,6 +522,7 @@ function showTeach(stage){
     var tp=document.getElementById("toPractice"); if(tp) tp.onclick=function(){ MQ.sound("level"); MQ.confetti(50); state.qi=0; showQuestion(); };
   }
   async function play(){
+    if(ctl.cancelled) return;
     ctl.skip=false;
     shell();
     playingCtrls();
@@ -476,6 +530,7 @@ function showTeach(stage){
     var narr=document.getElementById("tn");
     var frames=buildExample(body, specs[ti]);
     await runFrames(frames, ctl, narr);
+    if(ctl.cancelled || !document.getElementById("teachCtrls")) return;  // jumped away mid-animation
     doneCtrls();
   }
   play();
@@ -623,6 +678,10 @@ function showNext(){
 function showStageClear(s){
   var st=state.stageStats[s.key]||{correct:0,total:0};
   var pct = st.total? Math.round(st.correct/st.total*100):0;
+  // remember this stage as done, so the map + "continue" survive across sessions
+  state.completed[s.key] = true;
+  state.maxCleared = Math.max(state.maxCleared, state.idx);
+  saveProgress();
   MQ.sound("win"); MQ.confetti(120);
   paintMap();
   screen.innerHTML =
@@ -718,11 +777,11 @@ if(!state.student){
       '</div></div>';
   document.getElementById("nmBtn").onclick=function(){
     var v=document.getElementById("nm").value.trim(); if(!v) return;
-    state.student=v; MQ.setStudent(v); paintHUD(); showIntro();
+    state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); showIntro();
   };
   document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
 } else {
-  paintHUD(); showIntro();
+  loadProgress(); paintHUD(); showIntro();
 }
 </script>
 </body>
