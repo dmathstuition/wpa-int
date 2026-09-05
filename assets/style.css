@@ -373,6 +373,22 @@ h1 { font-size: clamp(28px, 6vw, 46px); letter-spacing: .3px; }
 .gem { font-size:70px; text-align:center; animation: bob 2.4s ease-in-out infinite; filter: drop-shadow(0 10px 10px rgba(0,0,0,.22)); }
 .hl-word { background: linear-gradient(160deg,#ffe27a,#ffd23f); border-radius:8px; padding:2px 8px; font-weight:800; }
 
+/* ---------- Timed assignment countdown (lives inside the HUD) ---------- */
+.asg-timer {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(160deg, var(--blue), var(--purple));
+  color: #fff; font-weight: 800; font-size: 18px; letter-spacing: .3px;
+  padding: 7px 16px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.4);
+  box-shadow: 0 6px 14px rgba(35,20,80,.32);
+}
+.asg-timer b { font-variant-numeric: tabular-nums; color: #fff; }
+.asg-timer.warn { background: linear-gradient(160deg, #ff6b79, #e23a4b); animation: timerPulse 1s ease-in-out infinite; }
+@keyframes timerPulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.07);} }
+
+/* small "assignment" button on hub week cards */
+.asg-btn { margin-top: 10px; font-size: 13px !important; padding: 8px 12px !important; }
+
 /* ---------- Confetti canvas ---------- */
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
 

@@ -94,10 +94,13 @@ function renderWeeks(){
       '<h3>Week '+w.n+'</h3>' +
       '<div style="font-weight:800;margin-bottom:6px;">'+ (w.live ? w.title : "Coming Soon") +'</div>' +
       '<p class="muted" style="min-height:48px;font-size:14px;">'+w.desc+'</p>' +
-      '<span class="tag '+(w.live?"live":"soon")+'">'+(w.live?"▶ PLAY NOW":"LOCKED")+'</span>';
+      '<span class="tag '+(w.live?"live":"soon")+'">'+(w.live?"▶ PLAY NOW":"LOCKED")+'</span>' +
+      (w.live ? '<div><button class="btn blue asg-btn" data-asg="1">📝 20-min Assignment</button></div>' : '');
     if (w.live){
       el.style.cursor = "pointer";
       el.onclick = function(){ MQ.sound("click"); window.location.href = w.file; };
+      var ab = el.querySelector('[data-asg]');
+      if (ab) ab.onclick = function(e){ e.stopPropagation(); MQ.sound("click"); window.location.href = w.file + "?mode=assignment"; };
     }
     grid.appendChild(el);
   });

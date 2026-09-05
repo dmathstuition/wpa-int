@@ -134,6 +134,26 @@ tab has the same columns, so *madam’s* report per subject is one clean tab.
 **Re-deploy `Code.gs`** (Manage deployments ▸ edit ▸ New version) after updating
 it so the tab-routing takes effect — your existing Maths data is untouched.
 
+## 📝 Timed take-home assignments (per topic)
+
+Every live topic has a **20-minute timed assignment** the learner can do on
+their own at home to practise what was taught. On each hub, the week card has a
+**📝 20-min Assignment** button (it opens the lesson with `?mode=assignment`).
+
+- **No teaching/story phase** — straight into practice questions that cover all
+  of that topic's skills (mixed and shuffled fresh each time).
+- A **countdown timer** sits in the top bar (turns red and pulses in the last
+  2 minutes); when it hits `0:00` the assignment auto-finishes.
+- Only the **first try** is scored; a 💡 Hint and a retry are available so it
+  stays practice, not a trap.
+- The report card shows **accuracy, correct/attempted, questions completed,
+  stars and time used**, and the result is logged just like a lesson but with
+  the title marked **“… — Assignment”** and an `assignment` flag — so *madam*
+  can tell home practice apart from tutored sessions (same subject tab).
+
+The whole thing is one shared engine (`assets/assignment.js`); each lesson just
+supplies its question pool, so new weeks get assignments automatically.
+
 ## 🆕 Add next week's mission (do this each week)
 
 1. **Copy** `weeks/week1.html` to `weeks/week2.html`.

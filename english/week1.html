@@ -33,6 +33,7 @@
 
 <script src="../config.js"></script>
 <script src="../assets/tracker.js"></script>
+<script src="../assets/assignment.js"></script>
 <script>
 /* =============================================================
    GRAMMAR QUEST — WEEK 1: Nouns, Verbs & Adjectives (Year 6)
@@ -576,6 +577,34 @@ function showResults(){
   });
 }
 
+/* ---------- take-home ASSIGNMENT pool (nouns, verbs, adjectives) ---------- */
+function buildAssignment(){
+  return [
+    { kind:"tap", target:"n", instr:"Tap all the NOUNS.", tokens:parse("The pilot|n flew a plane|n over the city|n .") },
+    { kind:"mc", q:"Which one is a <b>PROPER</b> noun?", options:["mountain","Everest","hill","valley"], answer:1, why:"“Everest” names one specific mountain — a proper noun." },
+    { kind:"tap", target:"proper", instr:"Tap the PROPER nouns.", tokens:parse("In December|proper , Musa|proper visited Rome|proper .") },
+    { kind:"mc", q:"Which is an <b>ABSTRACT</b> noun?", options:["window","freedom","spoon","road"], answer:1, why:"You can't touch freedom — it's an idea, so it's abstract." },
+    { kind:"tap", target:"abs", instr:"Tap the ABSTRACT nouns.", tokens:parse("His honesty|abs and bravery|abs won respect|abs .") },
+    { kind:"mc", q:"Which word is a <b>collective</b> noun?", options:["swarm","bee","buzz","tiny"], answer:0, why:"“swarm” names a whole group of insects — a collective noun." },
+    { kind:"tap", target:"v", instr:"Tap all the VERBS (actions).", tokens:parse("The children|n laughed|v and clapped|v loudly .") },
+    { kind:"mc", q:"Which word is a <b>being</b> verb?", options:["jump","were","green","cat"], answer:1, why:"“were” shows a state of being — a being verb." },
+    { kind:"tap", target:"v", instr:"Tap the VERBS (a being verb AND an action verb).", tokens:parse("She|pers was|v hungry so she ate|v quickly .") },
+    { kind:"tap", target:"adj", instr:"Tap all the ADJECTIVES.", tokens:parse("A brave|adj , clever|adj fox|n crossed the icy|adj river|n .") },
+    { kind:"mc", q:"Choose the <b>adjective</b>: “The ____ cake smelled great.”", options:["quickly","chocolate","baked","oven"], answer:1, why:"“chocolate” describes the cake — an adjective here." },
+    { kind:"tap", target:"adj", instr:"Tap the ADJECTIVES.", tokens:parse("The old|adj castle had a huge|adj , wooden|adj door|n .") },
+    { kind:"mc", q:"“The <span class='hl-word'>tiny</span> bird sang.” What is <b>tiny</b>?", options:["Noun","Verb","Adjective"], answer:2, why:"“tiny” describes the bird — an adjective." },
+    { kind:"mc", q:"“The dog <span class='hl-word'>barked</span>.” What is <b>barked</b>?", options:["Noun","Verb","Adjective"], answer:1, why:"“barked” is the action — a verb." },
+    { kind:"mc", q:"“<span class='hl-word'>Paris</span> is lovely.” What is <b>Paris</b>?", options:["Common noun","Proper noun","Verb"], answer:1, why:"“Paris” is a specific place name — a proper noun." },
+    { kind:"tap", target:"n", instr:"Tap all the NOUNS.", tokens:parse("The farmer|n loaded hay|n onto the truck|n .") }
+  ];
+}
+function startAssignment(){
+  Assignment.start({ subject:SUBJECT, week:WEEK_NUMBER, weekTitle:WEEK_TITLE,
+    minutes:20, accent:"var(--purple)", homeHref:"index.html", questions:buildAssignment() });
+}
+var MODE = new URLSearchParams(location.search).get("mode");
+function bootStart(){ if(MODE==="assignment") startAssignment(); else showIntro(); }
+
 /* ---------- boot ---------- */
 if(!state.student){
   screen.innerHTML=
@@ -585,9 +614,9 @@ if(!state.student){
         '<input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;">'+
         '<button class="btn green" id="nmBtn">Start ▶</button>'+
       '</div></div>';
-  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); showIntro(); };
+  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); bootStart(); };
   document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
-} else { loadProgress(); paintHUD(); showIntro(); }
+} else { loadProgress(); paintHUD(); bootStart(); }
 </script>
 </body>
 </html>

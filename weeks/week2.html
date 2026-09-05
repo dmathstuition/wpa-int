@@ -36,6 +36,7 @@
 
 <script src="../config.js"></script>
 <script src="../assets/tracker.js"></script>
+<script src="../assets/assignment.js"></script>
 <script>
 /* =============================================================
    WEEK 1 — ADDITION POWERS  (Year 6 SATs)
@@ -839,6 +840,22 @@ function showResults(){
   });
 }
 
+/* ---------- take-home ASSIGNMENT pool (all Week 2 subtraction skills) ---------- */
+function buildAssignment(){
+  return [
+    subQ(3,"ordinary"), subQ(3,"exchange"), subQ(4,"mix"), subQ(4,"exchange"),
+    subQ(5,"exchange"), subQ(5,"mix"), subQ(6,"exchange"), subQ(6,"mix"),
+    missingQ(3), missingQ(4), wordQ(4,"mix"), wordQ(5,"exchange"), multiStepQ(),
+    subQ(4,"exchange"), subQ(5,"exchange"), subQ(3,"exchange")
+  ];
+}
+function startAssignment(){
+  Assignment.start({ subject: undefined, week: WEEK_NUMBER, weekTitle: WEEK_TITLE,
+    minutes: 20, accent: "var(--purple)", homeHref: "../index.html", questions: buildAssignment() });
+}
+var MODE = new URLSearchParams(location.search).get("mode");
+function bootStart(){ if(MODE==="assignment") startAssignment(); else showIntro(); }
+
 /* ---------- boot ---------- */
 if(!state.student){
   // If they arrived here directly, ask the name once
@@ -851,11 +868,11 @@ if(!state.student){
       '</div></div>';
   document.getElementById("nmBtn").onclick=function(){
     var v=document.getElementById("nm").value.trim(); if(!v) return;
-    state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); showIntro();
+    state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); bootStart();
   };
   document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
 } else {
-  loadProgress(); paintHUD(); showIntro();
+  loadProgress(); paintHUD(); bootStart();
 }
 </script>
 </body>

@@ -36,6 +36,7 @@
 
 <script src="../config.js"></script>
 <script src="../assets/tracker.js"></script>
+<script src="../assets/assignment.js"></script>
 <script>
 /* =============================================================
    WEEK 1 — ADDITION POWERS  (Year 6 SATs)
@@ -765,6 +766,23 @@ function showResults(){
   });
 }
 
+/* ---------- take-home ASSIGNMENT pool (all Week 1 addition skills) ---------- */
+function buildAssignment(){
+  return [
+    addQ(3,"ordinary"), addQ(3,"carry"), addQ(4,"ordinary"), addQ(4,"carry"),
+    addQ(5,"carry"), addQ(5,"ordinary"), addQ(6,"carry"), addQ(6,"ordinary"),
+    wordQ(3,"mix"), wordQ(4,"mix"), wordQ(5,"carry"),
+    (function(){ var g=genCarry3(4); return { kind:"column", nums:g.nums, answer:g.answer, hint:"Three numbers! Add one column at a time and carry when you pass 9." }; })(),
+    addQ(4,"carry"), addQ(5,"carry"), addQ(6,"carry"), addQ(3,"carry")
+  ];
+}
+function startAssignment(){
+  Assignment.start({ subject: undefined, week: WEEK_NUMBER, weekTitle: WEEK_TITLE,
+    minutes: 20, accent: "var(--purple)", homeHref: "../index.html", questions: buildAssignment() });
+}
+var MODE = new URLSearchParams(location.search).get("mode");
+function bootStart(){ if(MODE==="assignment") startAssignment(); else showIntro(); }
+
 /* ---------- boot ---------- */
 if(!state.student){
   // If they arrived here directly, ask the name once
@@ -777,11 +795,11 @@ if(!state.student){
       '</div></div>';
   document.getElementById("nmBtn").onclick=function(){
     var v=document.getElementById("nm").value.trim(); if(!v) return;
-    state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); showIntro();
+    state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); bootStart();
   };
   document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
 } else {
-  loadProgress(); paintHUD(); showIntro();
+  loadProgress(); paintHUD(); bootStart();
 }
 </script>
 </body>

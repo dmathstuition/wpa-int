@@ -33,6 +33,7 @@
 
 <script src="../config.js"></script>
 <script src="../assets/tracker.js"></script>
+<script src="../assets/assignment.js"></script>
 <script>
 /* =============================================================
    GRAMMAR QUEST — WEEK 1: Nouns, Verbs & Adjectives (Year 6)
@@ -580,6 +581,34 @@ function showResults(){
   });
 }
 
+/* ---------- take-home ASSIGNMENT pool (adverbs & pronouns) ---------- */
+function buildAssignment(){
+  return [
+    { kind:"tap", target:"adv", instr:"Tap all the ADVERBS (they tell HOW).", tokens:parse("The runner moved swiftly|adv and breathed heavily|adv .") },
+    { kind:"mc", q:"Which word tells us <b>WHEN</b> (time)?", options:["gently","tomorrow","outside","red"], answer:1, why:"“tomorrow” tells us WHEN — an adverb of time." },
+    { kind:"tap", target:"adv", instr:"Tap the ADVERBS (one tells WHEN, one tells WHERE).", tokens:parse("We will meet later|adv and wait here|adv .") },
+    { kind:"mc", q:"Which word is the <b>adverb</b>? “She spoke politely.”", options:["She","spoke","politely","the"], answer:2, why:"“politely” tells us how she spoke — the adverb." },
+    { kind:"tap", target:"pers", instr:"Tap all the PERSONAL pronouns.", tokens:parse("He|pers passed it|pers to them|pers after we|pers cheered .") },
+    { kind:"mc", q:"Replace the name: “Amara sings well. ____ practises daily.”", options:["She","Her","It","They"], answer:0, why:"“She” stands in for Amara and does the action." },
+    { kind:"mc", q:"Which is a <b>personal</b> pronoun?", options:["they","softly","apple","tall"], answer:0, why:"“they” replaces people — a personal pronoun." },
+    { kind:"tap", target:"poss", instr:"Tap the POSSESSIVE pronouns.", tokens:parse("This seat is mine|poss and that seat is yours|poss .") },
+    { kind:"mc", q:"Finish it: “That bag is not his, it is ____.”", options:["hers","her","she","him"], answer:0, why:"“hers” is the possessive pronoun that stands alone." },
+    { kind:"mc", q:"Which is a <b>possessive</b> pronoun?", options:["ours","we","us","where"], answer:0, why:"“ours” shows ownership — a possessive pronoun." },
+    { kind:"tap", target:"rel", instr:"Tap the RELATIVE pronouns.", tokens:parse("The car that|rel he bought , which|rel is red , is fast .") },
+    { kind:"mc", q:"Relative pronoun for <b>PEOPLE</b>: “The nurse ____ helped me.”", options:["who","which","where","what"], answer:0, why:"“who” is the relative pronoun for people." },
+    { kind:"mc", q:"“He ran <span class='hl-word'>quickly</span>.” What is <b>quickly</b>?", options:["Pronoun","Adverb","Verb"], answer:1, why:"“quickly” tells HOW he ran — an adverb." },
+    { kind:"mc", q:"“That book is <span class='hl-word'>mine</span>.” What is <b>mine</b>?", options:["Personal pronoun","Possessive pronoun","Relative pronoun"], answer:1, why:"“mine” shows ownership and stands alone — possessive." },
+    { kind:"mc", q:"“The dog <span class='hl-word'>which</span> barked ran off.” What is <b>which</b>?", options:["Adverb","Relative pronoun","Personal pronoun"], answer:1, why:"“which” links extra info about the dog — a relative pronoun." },
+    { kind:"tap", target:"pron", instr:"Tap all the PRONOUNS.", tokens:parse("She|pers told us|pers that it|pers was theirs|poss .") }
+  ];
+}
+function startAssignment(){
+  Assignment.start({ subject:SUBJECT, week:WEEK_NUMBER, weekTitle:WEEK_TITLE,
+    minutes:20, accent:"var(--purple)", homeHref:"index.html", questions:buildAssignment() });
+}
+var MODE = new URLSearchParams(location.search).get("mode");
+function bootStart(){ if(MODE==="assignment") startAssignment(); else showIntro(); }
+
 /* ---------- boot ---------- */
 if(!state.student){
   screen.innerHTML=
@@ -589,9 +618,9 @@ if(!state.student){
         '<input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;">'+
         '<button class="btn green" id="nmBtn">Start ▶</button>'+
       '</div></div>';
-  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); showIntro(); };
+  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); bootStart(); };
   document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
-} else { loadProgress(); paintHUD(); showIntro(); }
+} else { loadProgress(); paintHUD(); bootStart(); }
 </script>
 </body>
 </html>
