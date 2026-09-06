@@ -161,13 +161,17 @@ function checkAnswer(){
     state.wrong++;
     if(state.wrong<2){
       state.firstTry=false;
-      fb.className="feedback bad"; fb.innerHTML="Not quite — listen again and have another go. 👂";
+      fb.className="feedback bad"; fb.innerHTML="Not quite — that was try 1. Listen again 👂 and have <b>one more go</b> (the answer shows after 2 tries).";
       inp.value=""; inp.focus(); sayWord(0.6);
     } else {
-      // reveal the correct spelling for learning, then move on
+      // after two tries, clearly SHOW the answer so the learner can read it
       inp.disabled=true;
       fb.className="feedback bad";
-      fb.innerHTML='<div style="font-size:18px;">The correct spelling is:</div>'+tiles(q.w, inp.value, "reveal");
+      fb.innerHTML=
+        '<div style="font-size:18px;margin-bottom:6px;">👀 Here is the answer — the correct spelling is:</div>'+
+        '<div class="tiles">'+q.w.toLowerCase().split("").map(function(c){return '<span class="tile rev">'+c+'</span>';}).join("")+'</div>'+
+        '<div class="big-num" style="font-size:34px;margin-top:2px;">'+q.w+'</div>'+
+        '<div class="muted" style="margin-top:4px;">Read it, tap 🔊 Hear again, then say it aloud before you move on.</div>';
       state.total++; state.missed.push(q);
       next();
     }
