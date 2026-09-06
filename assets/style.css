@@ -389,6 +389,69 @@ h1 { font-size: clamp(28px, 6vw, 46px); letter-spacing: .3px; }
 /* small "assignment" button on hub week cards */
 .asg-btn { margin-top: 10px; font-size: 13px !important; padding: 8px 12px !important; }
 
+/* ---------- Spelling games (Spelling Zone) ---------- */
+.bee { font-size: 68px; text-align:center; animation: beeFly 3.2s ease-in-out infinite; filter: drop-shadow(0 10px 10px rgba(0,0,0,.22)); }
+@keyframes beeFly { 0%{ transform: translate(-10px,0) rotate(-4deg);} 50%{ transform: translate(10px,-10px) rotate(4deg);} 100%{ transform: translate(-10px,0) rotate(-4deg);} }
+
+.soundwave { display:flex; gap:5px; align-items:flex-end; justify-content:center; height:38px; margin:6px 0 2px; }
+.soundwave span { width:7px; height:12px; border-radius:6px; background: linear-gradient(180deg,var(--yellow),var(--orange)); }
+.soundwave.on span { animation: sw 0.9s ease-in-out infinite; }
+.soundwave span:nth-child(2){ animation-delay:.1s } .soundwave span:nth-child(3){ animation-delay:.2s }
+.soundwave span:nth-child(4){ animation-delay:.3s } .soundwave span:nth-child(5){ animation-delay:.15s }
+.soundwave span:nth-child(6){ animation-delay:.25s } .soundwave span:nth-child(7){ animation-delay:.05s }
+@keyframes sw { 0%,100%{ height:10px; } 50%{ height:34px; } }
+
+.hintbox {
+  background: linear-gradient(135deg,#fff,#eef4ff); border-left:8px solid var(--blue);
+  border-radius:14px; padding:14px 18px; font-size:19px; font-weight:700; color:#3a3466;
+  margin:14px auto; max-width:560px; box-shadow: var(--shadow-soft);
+}
+.hintbox .lbl { display:block; font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--blue); margin-bottom:4px; }
+
+.spell-input {
+  width:100%; max-width:520px; font-family: var(--font); font-size:34px; font-weight:800;
+  text-align:center; letter-spacing:4px; padding:14px; border:4px dashed var(--purple);
+  border-radius:16px; color:var(--ink); outline:none; background: linear-gradient(180deg,#fff,#f7f5ff);
+  text-transform: lowercase;
+}
+.spell-input:focus { border-style:solid; box-shadow:0 0 0 5px rgba(155,92,255,.2); }
+
+/* letter tiles (feedback + unscramble build area) */
+.tiles { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:16px 0; }
+.tile {
+  width:46px; height:54px; display:flex; align-items:center; justify-content:center;
+  font-size:28px; font-weight:800; color:var(--ink); text-transform:uppercase;
+  background: linear-gradient(180deg,#fff,#f5f3ff); border:3px solid var(--line); border-radius:12px;
+  box-shadow: 0 5px 12px rgba(35,20,80,.12); animation: pop .3s;
+}
+.tile.good { background: linear-gradient(160deg,#34e089,#12b866); color:#fff; border-color:#0f9d58; }
+.tile.bad  { background: linear-gradient(160deg,#ff6b79,#e23a4b); color:#fff; border-color:#c62537; }
+.tile.rev  { background: linear-gradient(160deg,#ffe27a,#ffd23f); color:var(--ink); border-color:var(--orange); }
+.tile.blank { color: #b9b4dd; border-style: dashed; }
+
+/* clickable letter chips (unscramble) */
+.chips { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:14px 0; }
+.chip-letter {
+  width:52px; height:60px; display:flex; align-items:center; justify-content:center;
+  font-size:30px; font-weight:800; text-transform:uppercase; color:var(--ink); cursor:pointer;
+  background: linear-gradient(180deg,#fff,#f2ecff); border:3px solid var(--line); border-radius:14px;
+  box-shadow: 0 6px 14px rgba(35,20,80,.12); transition: transform .1s, box-shadow .12s, opacity .12s;
+}
+.chip-letter:hover { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(155,92,255,.28); border-color:var(--purple); }
+.chip-letter.used { opacity:.25; pointer-events:none; transform:scale(.9); }
+
+.game-emoji { font-size: 56px; filter: drop-shadow(0 6px 6px rgba(0,0,0,.16)); }
+
+/* missing-letters blanks */
+.blank-input {
+  width:46px; height:54px; text-align:center; font-family:var(--font); font-size:28px; font-weight:800;
+  text-transform:lowercase; color:var(--ink); border:3px dashed var(--purple); border-radius:12px;
+  background:#faf7ff; outline:none;
+}
+.blank-input:focus { border-style:solid; box-shadow:0 0 0 4px rgba(155,92,255,.2); }
+.blank-input.bad  { border-color:var(--red); background:#fff0f1; }
+.blank-input.good { border-color:#0f9d58; background:#e9fbf1; color:#0f9d58; }
+
 /* ---------- Confetti canvas ---------- */
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
 

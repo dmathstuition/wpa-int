@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Unscramble 🔀</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔀</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Games</a>
+    <span class="chip">⭐ Lvl <b id="lvl">1</b></span>
+    <span class="chip streak-fire" id="streakChip">🔥 <b id="streak">0</b></span>
+    <span class="chip">💎 XP <b id="xp">0</b></span>
+    <div class="xpbar" title="XP to next level"><i id="xpFill"></i></div>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+  <div class="brand" id="brand"><span class="pyr">🔺</span><span class="nm">Whyte Pyramid Academy<small>Unscramble</small></span></div>
+  <div id="screen"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script src="../assets/words.js"></script>
+<script>
+var GAME="Unscramble", SUBJECT="Spelling", ROUND=10;
+var screen=document.getElementById("screen");
+var state={ student:MQ.getStudent()||"", level:"mix", round:[], i:0, firstTry:true, wrong:0,
+  correctFirst:0, total:0, xp:0, streak:0, best:0, missed:[], startTime:0, build:[], scrambled:[] };
+
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm"); if(el) el.innerHTML=nm+"<small>Unscramble</small>";
+  document.title="Unscramble | "+nm; })();
+
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+
+function paintHUD(){ document.getElementById("lvl").textContent=1+Math.floor(state.xp/100);
+  document.getElementById("xp").textContent=state.xp; document.getElementById("streak").textContent=state.streak;
+  document.getElementById("xpFill").style.width=(state.xp%100)+"%";
+  document.getElementById("streakChip").classList.toggle("on", state.streak>=3); }
+function addXP(n){ state.xp+=n; paintHUD(); if((state.xp-n)%100+n>=100){ MQ.sound("level"); MQ.confetti(60);} }
+
+function sayWord(rate){ var q=state.round[state.i]; if(Spell.supported()){ Spell.speak(q.w, rate||0.9); var wv=document.getElementById("wave"); if(wv){wv.classList.add("on");setTimeout(function(){if(wv)wv.classList.remove("on");},1400);} } }
+function saySentence(){ var q=state.round[state.i]; if(Spell.supported()){ Spell.speak(q.sentence,0.92); } }
+
+function chooser(){
+  var levels=[["mix","🌈 Mixed"],[1,"🌱 Warm-up"],[2,"💪 Medium"],[3,"🏆 Challenge"]];
+  screen.innerHTML='<div class="card center"><div class="game-emoji">🔀</div><h1>Unscramble</h1>'+
+    '<div class="speech">The letters are all jumbled! I\'ll say the word and show its meaning — tap the letters in the <b>right order</b> to spell it. 🧩</div>'+
+    '<div class="options" id="lvls" style="grid-template-columns:repeat(2,1fr);max-width:460px;margin:20px auto;">'+
+      levels.map(function(l){return '<button class="opt" data-l="'+l[0]+'">'+l[1]+'</button>';}).join("")+'</div>'+
+    '<p class="muted">'+ROUND+' words per round · fresh every time</p></div>';
+  Array.prototype.forEach.call(document.querySelectorAll("#lvls .opt"),function(b){ b.onclick=function(){ MQ.sound("click"); var v=b.getAttribute("data-l"); state.level=(v==="mix")?"mix":Number(v); startRound(); }; });
+}
+function startRound(){ state.round=Spell.pickRound(state.level, ROUND); state.i=0; state.correctFirst=0; state.total=0; state.streak=0; state.best=0; state.missed=[]; state.startTime=Date.now(); paintHUD(); showWord(); }
+
+function showWord(){
+  state.firstTry=true; state.wrong=0; state.build=[];
+  var q=state.round[state.i];
+  state.scrambled=Spell.scramble(q.w).split("");
+  screen.innerHTML=
+    '<div class="card">'+
+      '<div class="row" style="justify-content:space-between;">'+
+        '<span class="chip" style="background:var(--purple);color:#fff;">🔀 '+Spell.levelName(state.level==="mix"?0:state.level)+'</span>'+
+        '<span class="chip" style="background:#eee;color:#333;">Word '+(state.i+1)+' / '+state.round.length+'</span>'+
+      '</div>'+
+      '<div class="center" style="margin-top:8px;"><div class="game-emoji">🔀</div>'+
+        '<div class="soundwave" id="wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>'+
+      '<div class="hintbox"><span class="lbl">Meaning (hint)</span>'+q.hint+'</div>'+
+      '<div class="row" style="margin:4px 0 8px;">'+
+        '<button class="btn blue" id="again">🔊 Hear it</button>'+
+        '<button class="btn ghost" id="sent">💬 Sentence</button>'+
+      '</div>'+
+      '<div class="tiles" id="buildArea" style="min-height:58px;"></div>'+
+      '<div class="chips" id="chips"></div>'+
+      '<div class="row" style="margin-top:4px;">'+
+        '<button class="btn ghost" id="undo">⌫ Undo</button>'+
+        '<button class="btn ghost" id="reshuffle">🔀 Reshuffle</button>'+
+        '<button class="btn green" id="check">Check ✅</button>'+
+      '</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"></div>'+
+    '</div>';
+  renderChips(); renderBuild();
+  document.getElementById("again").onclick=function(){ sayWord(0.9); };
+  document.getElementById("sent").onclick=function(){ saySentence(); };
+  document.getElementById("undo").onclick=function(){ if(state.build.length){ state.build.pop(); renderChips(); renderBuild(); } };
+  document.getElementById("reshuffle").onclick=function(){ state.scrambled=Spell.scramble(q.w).split(""); state.build=[]; renderChips(); renderBuild(); MQ.sound("click"); };
+  document.getElementById("check").onclick=function(){ checkAnswer(); };
+  setTimeout(function(){ sayWord(0.9); }, 350);
+}
+function renderChips(){
+  var used={}; state.build.forEach(function(idx){ used[idx]=true; });
+  var host=document.getElementById("chips"); host.innerHTML="";
+  state.scrambled.forEach(function(ch,idx){
+    var d=document.createElement("div"); d.className="chip-letter"+(used[idx]?" used":""); d.textContent=ch;
+    d.onclick=function(){ if(used[idx]) return; state.build.push(idx); MQ.sound("click"); renderChips(); renderBuild(); };
+    host.appendChild(d);
+  });
+}
+function renderBuild(){
+  var host=document.getElementById("buildArea"); host.innerHTML="";
+  state.build.forEach(function(idx){ var d=document.createElement("span"); d.className="tile"; d.textContent=state.scrambled[idx]; host.appendChild(d); });
+  if(!state.build.length){ host.innerHTML='<span class="muted" style="align-self:center;">tap the letters…</span>'; }
+}
+function builtWord(){ return state.build.map(function(idx){ return state.scrambled[idx]; }).join(""); }
+
+function checkAnswer(){
+  var q=state.round[state.i], fb=document.getElementById("fb");
+  var attempt=Spell.norm(builtWord());
+  if(!attempt){ fb.className="feedback"; fb.textContent="Tap some letters first ✋"; return; }
+  if(attempt===Spell.norm(q.w)){
+    MQ.sound("correct");
+    document.querySelectorAll("#buildArea .tile").forEach(function(t){ t.classList.add("good"); });
+    if(state.firstTry){ state.streak++; state.best=Math.max(state.best,state.streak); state.correctFirst++;
+      var g=10+(state.streak>=3?5:0); addXP(g);
+      fb.className="feedback good"; fb.innerHTML=["🎉 Unscrambled!","🌟 Great!","🧩 Solved it!","🔥 Nice!"][Math.floor(Math.random()*4)]+" +"+g+" XP"+(state.streak>=3?" 🔥x"+state.streak:"");
+      MQ.confetti(state.streak>=5?110:60);
+    } else { addXP(4); fb.className="feedback good"; fb.innerHTML="✅ Correct! +4 XP"; }
+    state.total++; lockAndNext();
+  } else {
+    MQ.sound("wrong");
+    if(state.firstTry){ state.streak=0; paintHUD(); }
+    state.wrong++;
+    document.querySelectorAll("#buildArea .tile").forEach(function(t){ t.classList.add("bad"); setTimeout(function(){t.classList.remove("bad");},600); });
+    if(state.wrong<2){ state.firstTry=false; fb.className="feedback bad"; fb.innerHTML="Not quite — clear it and try again. 🔁 (Tap 🔊 to hear it.)"; state.build=[]; setTimeout(function(){ renderChips(); renderBuild(); },300); }
+    else { fb.className="feedback bad"; fb.innerHTML='<div style="font-size:18px;">The word is:</div><div class="tiles" style="justify-content:center;">'+q.w.toLowerCase().split("").map(function(c){return '<span class="tile rev">'+c+'</span>';}).join("")+'</div>'; state.total++; state.missed.push(q); lockAndNext(); }
+  }
+}
+function lockAndNext(){
+  document.getElementById("check").disabled=true;
+  var ctr=document.getElementById("controls");
+  ctr.innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:12px;">'+((state.i+1>=state.round.length)?"See results ▶":"Next word ▶")+'</button>';
+  var nb=document.getElementById("nextBtn"); nb.focus();
+  nb.onclick=function(){ MQ.sound("click"); Spell.stop(); state.i++; if(state.i>=state.round.length) results(); else showWord(); };
+}
+
+function results(){
+  Spell.stop();
+  var acc=state.total?Math.round(state.correctFirst/state.total*100):0;
+  var rt=MQ.rating(acc); var mins=Math.max(1,Math.round((Date.now()-state.startTime)/60000));
+  MQ.sound("win"); MQ.confetti(200);
+  var missedHtml = state.missed.length
+    ? '<div style="text-align:left;max-width:520px;margin:14px auto;"><b>📖 Words to practise:</b><div class="tiles" style="justify-content:flex-start;margin-top:8px;">'+state.missed.map(function(q){return '<span class="chip" style="background:#f0e8ff;color:var(--ink);font-size:16px;">'+q.w+'</span>';}).join("")+'</div></div>'
+    : '<p style="font-weight:800;color:var(--green);font-size:20px;">Flawless — no words to review! 🏆</p>';
+  screen.innerHTML='<div class="card center"><div class="game-emoji" style="font-size:76px;">'+rt.emoji+'</div><h1>Round Complete!</h1>'+
+    '<div class="speech">Great work, '+(state.student||"speller")+'! Here is your report.</div>'+
+    '<div class="row" style="margin:18px 0;gap:22px;">'+
+      '<div><div class="big-num" style="font-size:52px;">'+acc+'%</div><div class="muted">Accuracy</div></div>'+
+      '<div><div class="big-num" style="font-size:52px;">'+state.correctFirst+'/'+state.total+'</div><div class="muted">First try</div></div>'+
+      '<div><div class="big-num" style="font-size:52px;">🔥'+state.best+'</div><div class="muted">Best streak</div></div></div>'+
+    '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+    '<p style="font-size:20px;font-weight:800;color:var(--purple);">Rating: '+rt.label+'</p>'+missedHtml+
+    '<p class="muted" id="saveState">💾 Saving…</p>'+
+    '<div class="row" style="margin-top:8px;"><button class="btn green" id="againBtn">🔁 New round</button><button class="btn blue" id="lvlBtn">🎚️ Change level</button><a class="btn orange" href="index.html" style="text-decoration:none;">🏠 Games</a></div></div>';
+  document.getElementById("againBtn").onclick=function(){ startRound(); };
+  document.getElementById("lvlBtn").onclick=function(){ chooser(); };
+  MQ.logResult({ student:state.student||"Unknown", subject:SUBJECT, week:"",
+    weekTitle:GAME+" ("+Spell.levelName(state.level==="mix"?0:state.level)+")", game:GAME,
+    level:(state.level==="mix"?"Mixed":Spell.levelName(state.level)),
+    accuracy:acc, correct:state.correctFirst, totalQuestions:state.total, xp:state.xp, bestStreak:state.best,
+    stars:rt.stars, rating:rt.label, minutes:mins,
+    school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||"" })
+  .then(function(res){ var s=document.getElementById("saveState"); if(!s)return;
+    if(res&&res.ok) s.textContent="✅ Result saved — your tutor can see it!"; else if(res&&res.offline) s.textContent="📴 Saved on this device."; else s.textContent="⚠️ Saved on this device (server not reached)."; });
+}
+
+if(!state.student){
+  screen.innerHTML='<div class="card center" style="max-width:520px;"><div class="game-emoji">🔀</div><div class="speech">What is your name, speller?</div>'+
+    '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Start ▶</button></div></div>';
+  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); paintHUD(); chooser(); };
+  document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
+} else { paintHUD(); chooser(); }
+</script>
+</body>
+</html>

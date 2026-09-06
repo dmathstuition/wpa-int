@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spelling Bee 🐝</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Games</a>
+    <span class="chip">⭐ Lvl <b id="lvl">1</b></span>
+    <span class="chip streak-fire" id="streakChip">🔥 <b id="streak">0</b></span>
+    <span class="chip">💎 XP <b id="xp">0</b></span>
+    <div class="xpbar" title="XP to next level"><i id="xpFill"></i></div>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+
+  <div class="brand" id="brand"><span class="pyr">🔺</span><span class="nm">Whyte Pyramid Academy<small>Spelling Bee</small></span></div>
+  <div id="screen"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script src="../assets/words.js"></script>
+<script>
+var GAME="Spelling Bee", SUBJECT="Spelling", ROUND=10;
+var screen=document.getElementById("screen");
+var state={ student:MQ.getStudent()||"", level:"mix", round:[], i:0, firstTry:true, wrong:0,
+  correctFirst:0, total:0, xp:0, streak:0, best:0, missed:[], startTime:0 };
+
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm"); if(el) el.innerHTML=nm+"<small>Spelling Bee</small>";
+  document.title="Spelling Bee | "+nm; })();
+
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+
+function paintHUD(){ document.getElementById("lvl").textContent=1+Math.floor(state.xp/100);
+  document.getElementById("xp").textContent=state.xp; document.getElementById("streak").textContent=state.streak;
+  document.getElementById("xpFill").style.width=(state.xp%100)+"%";
+  document.getElementById("streakChip").classList.toggle("on", state.streak>=3); }
+function addXP(n){ state.xp+=n; var nl=1+Math.floor(state.xp/100); paintHUD(); if((state.xp-n)%100+n>=100){ MQ.sound("level"); MQ.confetti(60);} }
+function toast(msg){ var t=document.createElement("div"); t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:18px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);animation:popIn .3s;";
+  document.body.appendChild(t); setTimeout(function(){t.style.transition="opacity .4s";t.style.opacity="0";setTimeout(function(){t.remove();},400);},1100); }
+
+/* ---------- level chooser ---------- */
+function chooser(){
+  var levels=[["mix","🌈 Mixed"],[1,"🌱 Warm-up"],[2,"💪 Medium"],[3,"🏆 Challenge"]];
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="bee">🐝</div>'+
+      '<h1>Spelling Bee</h1>'+
+      '<div class="speech">Pick a level, hero! I\'ll <b>say a word</b> and show you what it means. Listen, then type the spelling. '+(Spell.supported()?"🔊":"⚠️ (voice not available on this device — the word will flash briefly instead)")+'</div>'+
+      '<div class="options" id="lvls" style="grid-template-columns:repeat(2,1fr);max-width:460px;margin:20px auto;">'+
+        levels.map(function(l){ return '<button class="opt" data-l="'+l[0]+'">'+l[1]+'</button>'; }).join("")+
+      '</div>'+
+      '<p class="muted">'+ROUND+' words per round · fresh every time</p>'+
+    '</div>';
+  Array.prototype.forEach.call(document.querySelectorAll("#lvls .opt"),function(b){
+    b.onclick=function(){ MQ.sound("click"); var v=b.getAttribute("data-l"); state.level=(v==="mix")?"mix":Number(v); startRound(); };
+  });
+}
+
+function startRound(){
+  state.round=Spell.pickRound(state.level, ROUND); state.i=0; state.correctFirst=0; state.total=0;
+  state.streak=0; state.best=0; state.missed=[]; state.startTime=Date.now(); paintHUD(); showWord();
+}
+
+/* ---------- speak the current word ---------- */
+function sayWord(rate){
+  var w=state.round[state.i].w;
+  var wave=document.getElementById("wave");
+  if(Spell.supported()){
+    Spell.speak(w, rate||0.9);
+    if(wave){ wave.classList.add("on"); setTimeout(function(){ if(wave) wave.classList.remove("on"); }, 1400); }
+  } else {
+    // fallback: flash the word briefly for devices without TTS
+    var fl=document.getElementById("flash");
+    if(fl){ fl.textContent=w.toUpperCase(); fl.style.opacity="1"; setTimeout(function(){ if(fl) fl.style.opacity="0"; }, 1600); }
+  }
+}
+function saySentence(){
+  var q=state.round[state.i];
+  if(Spell.supported()){ Spell.speak(q.sentence, 0.92); var wave=document.getElementById("wave"); if(wave){ wave.classList.add("on"); setTimeout(function(){ if(wave) wave.classList.remove("on"); },2200);} }
+  else { var fl=document.getElementById("flash"); if(fl){ fl.textContent=q.sentence; fl.style.opacity="1"; setTimeout(function(){ if(fl) fl.style.opacity="0"; },2600); } }
+}
+
+/* ---------- show a word ---------- */
+function showWord(){
+  state.firstTry=true; state.wrong=0;
+  var q=state.round[state.i];
+  screen.innerHTML=
+    '<div class="card">'+
+      '<div class="row" style="justify-content:space-between;">'+
+        '<span class="chip" style="background:var(--orange);color:#fff;">🐝 '+Spell.levelName(state.level==="mix"?0:state.level)+'</span>'+
+        '<span class="chip" style="background:#eee;color:#333;">Word '+(state.i+1)+' / '+state.round.length+'</span>'+
+      '</div>'+
+      '<div class="center" style="margin-top:8px;">'+
+        '<div class="bee">🐝</div>'+
+        '<div class="soundwave" id="wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>'+
+        '<div id="flash" style="min-height:26px;font-size:22px;font-weight:800;color:var(--purple);opacity:0;transition:opacity .3s;"></div>'+
+      '</div>'+
+      '<div class="hintbox"><span class="lbl">Meaning (hint)</span>'+q.hint+'</div>'+
+      '<div class="row" style="margin:6px 0 10px;">'+
+        '<button class="btn blue" id="again">🔊 Hear again</button>'+
+        '<button class="btn ghost" id="slow">🐢 Slower</button>'+
+        '<button class="btn ghost" id="sent">💬 In a sentence</button>'+
+      '</div>'+
+      '<div class="center"><input class="spell-input" id="ans" placeholder="type the word…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"><button class="btn big green" id="check" style="margin-top:14px;">Check ✅</button></div>'+
+    '</div>';
+  document.getElementById("again").onclick=function(){ sayWord(0.9); };
+  document.getElementById("slow").onclick=function(){ sayWord(0.55); };
+  document.getElementById("sent").onclick=function(){ saySentence(); };
+  var inp=document.getElementById("ans"); inp.focus();
+  inp.addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("check").click(); });
+  document.getElementById("check").onclick=function(){ checkAnswer(); };
+  setTimeout(function(){ sayWord(0.9); }, 350);   // auto-say on show
+}
+
+/* ---------- build feedback tiles ---------- */
+function tiles(correct, typed, mode){
+  var c=correct.toLowerCase(), t=(typed||"").toLowerCase();
+  var html='<div class="tiles">';
+  for(var k=0;k<c.length;k++){
+    var cls="tile";
+    if(mode==="reveal"){ cls += (t[k]===c[k]) ? " good" : " rev"; }
+    else if(mode==="good"){ cls += " good"; }
+    html+='<span class="'+cls+'">'+c[k]+'</span>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function checkAnswer(){
+  var q=state.round[state.i], inp=document.getElementById("ans");
+  var typed=Spell.norm(inp.value);
+  if(!typed){ inp.focus(); return; }
+  var fb=document.getElementById("fb");
+  if(typed===Spell.norm(q.w)){
+    inp.disabled=true; MQ.sound("correct");
+    fb.className="feedback good"; fb.innerHTML=tiles(q.w, q.w, "good");
+    if(state.firstTry){ state.streak++; state.best=Math.max(state.best,state.streak); state.correctFirst++;
+      var g=10+(state.streak>=3?5:0); addXP(g);
+      fb.innerHTML+='<div style="margin-top:6px;">'+["🎉 Perfect spelling!","🌟 Superb!","🐝 Bee-rilliant!","🔥 Nailed it!"][Math.floor(Math.random()*4)]+" +"+g+" XP"+(state.streak>=3?" 🔥x"+state.streak:"")+'</div>';
+      MQ.confetti(state.streak>=5?110:60);
+    } else { addXP(4); fb.innerHTML+='<div style="margin-top:6px;">✅ Correct! +4 XP</div>'; }
+    state.total++;
+    next();
+  } else {
+    MQ.sound("wrong");
+    if(state.firstTry){ state.streak=0; paintHUD(); }
+    state.wrong++;
+    if(state.wrong<2){
+      state.firstTry=false;
+      fb.className="feedback bad"; fb.innerHTML="Not quite — listen again and have another go. 👂";
+      inp.value=""; inp.focus(); sayWord(0.6);
+    } else {
+      // reveal the correct spelling for learning, then move on
+      inp.disabled=true;
+      fb.className="feedback bad";
+      fb.innerHTML='<div style="font-size:18px;">The correct spelling is:</div>'+tiles(q.w, inp.value, "reveal");
+      state.total++; state.missed.push(q);
+      next();
+    }
+  }
+}
+
+function next(){
+  Spell.stop();
+  var ctr=document.getElementById("controls");
+  ctr.innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:14px;">'+((state.i+1>=state.round.length)?"See results ▶":"Next word ▶")+'</button>';
+  var nb=document.getElementById("nextBtn"); nb.focus();
+  nb.onclick=function(){ MQ.sound("click"); state.i++; if(state.i>=state.round.length) results(); else showWord(); };
+}
+
+/* ---------- results + log ---------- */
+function results(){
+  Spell.stop();
+  var acc=state.total?Math.round(state.correctFirst/state.total*100):0;
+  var rt=MQ.rating(acc); var mins=Math.max(1,Math.round((Date.now()-state.startTime)/60000));
+  MQ.sound("win"); MQ.confetti(200);
+  var missedHtml = state.missed.length
+    ? '<div style="text-align:left;max-width:520px;margin:14px auto;"><b>📖 Words to practise:</b><div class="tiles" style="justify-content:flex-start;margin-top:8px;">'+
+        state.missed.map(function(q){ return '<span class="chip" style="background:#f0e8ff;color:var(--ink);font-size:16px;">'+q.w+'</span>'; }).join("")+'</div></div>'
+    : '<p style="font-weight:800;color:var(--green);font-size:20px;">Flawless — no words to review! 🏆</p>';
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="bee" style="font-size:78px;">'+rt.emoji+'</div>'+
+      '<h1>Round Complete!</h1>'+
+      '<div class="speech">Great buzzing, '+(state.student||"speller")+'! Here is your spelling report.</div>'+
+      '<div class="row" style="margin:18px 0;gap:22px;">'+
+        '<div><div class="big-num" style="font-size:52px;">'+acc+'%</div><div class="muted">Accuracy</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+state.correctFirst+'/'+state.total+'</div><div class="muted">First try</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">🔥'+state.best+'</div><div class="muted">Best streak</div></div>'+
+      '</div>'+
+      '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+      '<p style="font-size:20px;font-weight:800;color:var(--purple);">Rating: '+rt.label+'</p>'+
+      missedHtml+
+      '<p class="muted" id="saveState">💾 Saving your result…</p>'+
+      '<div class="row" style="margin-top:8px;">'+
+        '<button class="btn green" id="againBtn">🔁 New round</button>'+
+        '<button class="btn blue" id="lvlBtn">🎚️ Change level</button>'+
+        '<a class="btn orange" href="index.html" style="text-decoration:none;">🏠 Games</a>'+
+      '</div>'+
+    '</div>';
+  document.getElementById("againBtn").onclick=function(){ startRound(); };
+  document.getElementById("lvlBtn").onclick=function(){ chooser(); };
+
+  MQ.logResult({
+    student: state.student||"Unknown", subject: SUBJECT, week:"",
+    weekTitle: GAME+" ("+Spell.levelName(state.level==="mix"?0:state.level)+")",
+    game: GAME, level: (state.level==="mix"?"Mixed":Spell.levelName(state.level)),
+    accuracy: acc, correct: state.correctFirst, totalQuestions: state.total,
+    xp: state.xp, bestStreak: state.best, stars: rt.stars, rating: rt.label, minutes: mins,
+    school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  }).then(function(res){ var s=document.getElementById("saveState"); if(!s) return;
+    if(res&&res.ok) s.textContent="✅ Result saved — your tutor can see it!";
+    else if(res&&res.offline) s.textContent="📴 Saved on this device.";
+    else s.textContent="⚠️ Saved on this device (server not reached).";
+  });
+}
+
+/* ---------- boot ---------- */
+if(!state.student){
+  screen.innerHTML='<div class="card center" style="max-width:520px;"><div class="bee">🐝</div><div class="speech">Buzz! What is your name, speller?</div>'+
+    '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Start ▶</button></div></div>';
+  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); paintHUD(); chooser(); };
+  document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
+} else { paintHUD(); chooser(); }
+</script>
+</body>
+</html>

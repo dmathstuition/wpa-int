@@ -134,6 +134,37 @@ tab has the same columns, so *madam’s* report per subject is one clean tab.
 **Re-deploy `Code.gs`** (Manage deployments ▸ edit ▸ New version) after updating
 it so the tab-routing takes effect — your existing Maths data is untouched.
 
+## 🐝 Spelling Zone (word games)
+
+A third area — `games/index.html` — is **not tied to any week**; it's an
+always-available set of word games to build exam spelling. Reach it from the
+**🐝 Games** link in either subject hub. Every game **says the word out loud**
+(browser text-to-speech) and shows its **meaning as a hint**, so the learner
+practises real spelling-bee skills:
+
+- **🐝 Spelling Bee** — hears the word + meaning (with *Hear again / Slower /
+  In a sentence* buttons), then types the spelling; animated letter feedback,
+  and the correct spelling is revealed after two misses for learning.
+- **🔀 Unscramble** — the letters are jumbled; tap them into the right order.
+- **🧩 Missing Letters** — some letters are hidden; type them into the gaps.
+
+Each game plays a **fresh round** (10 words, pickable level: Warm-up / Medium /
+Challenge / Mixed) so it's replayable every week. The typing box has
+autocorrect/spellcheck **off** so it can't give the answer away.
+
+**Word bank:** `assets/words.js` holds ~48 Year 5/6 SATs statutory spellings
+with a meaning and an example sentence each. **Add words any week** by appending
+`{ w, hint, sentence, level }` entries — all three games use the same bank.
+
+**Reporting:** results log to their own **“Spelling”** Sheet tab (subject
+`Spelling`), with the game + level in the title (e.g. *Spelling Bee (Medium)*),
+so *madam* sees spelling practice separately. (Re-deploy `Code.gs` once, as with
+the other subject tabs.)
+
+> Text-to-speech uses the device's built-in voices (no files, works offline).
+> If a device has no voice available, the game briefly flashes the word instead
+> so it still works.
+
 ## 📝 Timed take-home assignments (per topic)
 
 Every live topic has a **20-minute timed assignment** the learner can do on

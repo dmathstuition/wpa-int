@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spelling Zone — Word Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hud">
+    <span class="chip">🐝 <b>Spelling Zone</b></span>
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">➕ Maths</a>
+    <a class="chip" href="../english/index.html" style="text-decoration:none;color:#fff;">📚 English</a>
+    <span class="chip" id="whoChip">👤 <b id="whoName">Speller</b></span>
+    <button class="btn ghost" id="soundBtn">🔊 Sound</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Spelling Zone</small></span>
+  </div>
+
+  <h1 class="title-pop">🐝 SPELLING ZONE 🔤</h1>
+  <p class="subtitle">Listen, spell, unscramble — become a spelling champion! ⭐</p>
+
+  <div class="card" id="nameCard" style="margin-top:22px; max-width:560px;">
+    <div class="bee">🐝</div>
+    <div class="speech">Buzz buzz! Ready to train your spelling? What's your name?</div>
+    <div class="row" style="margin-top:18px;">
+      <input class="pill-input" id="nameInput" placeholder="Type your name…" maxlength="24" style="flex:1 1 220px;" />
+      <button class="btn green" id="startBtn">Let's go! ▶</button>
+    </div>
+  </div>
+
+  <div id="area" class="hide">
+    <div class="weekgrid" id="gameGrid"></div>
+
+    <div class="card" id="tipCard" style="margin-top:22px;">
+      <h2>🎧 How the Spelling Bee works</h2>
+      <p style="font-weight:700;color:#4a4470;">The game <b>says a word out loud</b> and shows you its <b>meaning</b> as a hint. Listen carefully (you can hear it again, slower, or in a sentence), then <b>type the spelling</b>. New words every time — play a fresh round each week! 🐝</p>
+      <p class="muted" id="bankNote"></p>
+    </div>
+  </div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script src="../assets/words.js"></script>
+<script>
+var GAMES = [
+  { title:"Spelling Bee", emoji:"🐝", file:"spelling-bee.html", tag:"LISTEN & SPELL",
+    desc:"Hear the word and its meaning, then type the correct spelling." },
+  { title:"Unscramble", emoji:"🔀", file:"unscramble.html", tag:"BUILD THE WORD",
+    desc:"The letters are jumbled! Tap them in the right order." },
+  { title:"Missing Letters", emoji:"🧩", file:"missing-letters.html", tag:"FILL THE GAPS",
+    desc:"Some letters are hidden — listen and complete the word." }
+];
+
+(function(){
+  var nm=(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm"); if(el) el.innerHTML=nm+"<small>Spelling Zone</small>";
+  document.title=nm+" — Spelling Zone";
+})();
+
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent = MQ.soundEnabled() ? "🔊 Sound" : "🔇 Muted"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); MQ.sound("click"); };
+paintSound();
+
+function renderGames(){
+  var grid=document.getElementById("gameGrid"); grid.innerHTML="";
+  GAMES.forEach(function(g,i){
+    var el=document.createElement("div");
+    el.className="weekcard"; el.style.animationDelay=(i*0.08)+"s"; el.style.cursor="pointer";
+    el.innerHTML=
+      '<div class="game-emoji">'+g.emoji+'</div>'+
+      '<h3>'+g.title+'</h3>'+
+      '<p class="muted" style="min-height:52px;font-size:14px;">'+g.desc+'</p>'+
+      '<span class="tag live">▶ '+g.tag+'</span>';
+    el.onclick=function(){ MQ.sound("click"); window.location.href=g.file; };
+    grid.appendChild(el);
+  });
+  var bn=document.getElementById("bankNote");
+  if(bn) bn.textContent="📚 Word bank: "+WORDS.length+" exam words (Warm-up, Medium & Challenge). Tutors can add more any week in assets/words.js.";
+}
+
+function begin(name){
+  MQ.setStudent(name);
+  document.getElementById("whoName").textContent=name;
+  document.getElementById("nameCard").classList.add("hide");
+  document.getElementById("area").classList.remove("hide");
+  renderGames(); MQ.sound("level");
+}
+document.getElementById("startBtn").onclick=function(){
+  var n=document.getElementById("nameInput").value.trim(); if(!n){ document.getElementById("nameInput").focus(); return; }
+  begin(n);
+};
+document.getElementById("nameInput").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("startBtn").click(); });
+(function(){ var s=MQ.getStudent(); if(s){ document.getElementById("nameInput").value=s; begin(s); } })();
+</script>
+</body>
+</html>
