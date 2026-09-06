@@ -49,10 +49,15 @@
 
 </div>
 
-<script src="../config.js"></script>
-<script src="../assets/tracker.js"></script>
-<script src="../assets/words.js"></script>
+<script src="../config.js?v=3"></script>
+<script src="../assets/tracker.js?v=3"></script>
+<script src="../assets/words.js?v=3"></script>
 <script>
+if(typeof MQ==="undefined"||typeof WORDS==="undefined"){
+  var _n=document.getElementById("nameCard");
+  if(_n) _n.innerHTML='<div class="bee">🐝</div><h2 class="center">Just a moment…</h2><p class="muted center" style="font-weight:700;">The word list didn\'t load fully. Please tap reload.</p><div class="center"><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("Spelling Zone dependencies did not load");
+}
 var GAMES = [
   { title:"Spelling Bee", emoji:"🐝", file:"spelling-bee.html", tag:"LISTEN & SPELL",
     desc:"Hear the word and its meaning, then type the correct spelling." },

@@ -23,10 +23,15 @@
   <div id="screen"></div>
 </div>
 
-<script src="../config.js"></script>
-<script src="../assets/tracker.js"></script>
-<script src="../assets/words.js"></script>
+<script src="../config.js?v=3"></script>
+<script src="../assets/tracker.js?v=3"></script>
+<script src="../assets/words.js?v=3"></script>
 <script>
+if(typeof MQ==="undefined"||typeof Spell==="undefined"||typeof WORDS==="undefined"){
+  var _s=document.getElementById("screen");
+  if(_s) _s.innerHTML='<div class="card center"><div class="game-emoji">🧩</div><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">The word list didn\'t load fully. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("Spelling Zone dependencies did not load");
+}
 var GAME="Missing Letters", SUBJECT="Spelling", ROUND=10;
 var screen=document.getElementById("screen");
 var state={ student:MQ.getStudent()||"", level:"mix", round:[], i:0, firstTry:true, wrong:0,
