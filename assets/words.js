@@ -120,7 +120,7 @@
     { w:"vegetable",    hint:"a plant grown for food, like a carrot", sentence:"Eat at least one vegetable at dinner.", level:3 },
     { w:"disastrous",   hint:"very bad; causing great harm",       sentence:"The flood was disastrous for the town.", level:3 },
     { w:"exaggerate",   hint:"to make something sound bigger than it is", sentence:"Don't exaggerate how tall you are.", level:3 },
-    { w:"twelfth",      hint:"coming after eleventh",              sentence:"December is the twelfth month.", level:3 }
+    { w:"twelfth",      hint:"coming after eleventh",              sentence:"December is the twelfth month.", level:3 },
     { w:"achievement",   hint:"something successfully completed or accomplished", sentence:"Winning the prize was a great achievement.", level:3 },
     { w:"apparent",      hint:"easy to notice or understand", sentence:"It became apparent that he was upset.", level:3 },
     { w:"appreciate",    hint:"to understand the value of something", sentence:"I really appreciate your help.", level:3 },
