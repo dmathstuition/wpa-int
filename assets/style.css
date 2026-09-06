@@ -186,11 +186,20 @@ h1 { font-size: clamp(28px, 6vw, 46px); letter-spacing: .3px; }
 .btn.green { background: linear-gradient(160deg, #34e089, #12b866); }
 .btn.blue  { background: linear-gradient(160deg, #5aa8ff, #2f6bff); }
 .btn.orange{ background: linear-gradient(160deg, #ffb057, #ff7f2a); }
+/* Ghost = secondary button. Dark-on-light by default (readable on white
+   cards); white-on-dark only inside the HUD. */
 .btn.ghost {
-  background: rgba(255,255,255,.18); box-shadow: none; color:#fff;
-  font-size:15px; padding:9px 15px; border: 1px solid rgba(255,255,255,.25);
+  background: #efeafd; color: var(--ink);
+  box-shadow: 0 4px 0 rgba(35,20,80,.10);
+  font-size:15px; padding:9px 15px; border: 2px solid #dcd5f6;
 }
 .btn.ghost::before { display:none; }
+.btn.ghost:hover { background:#e6def9; filter:none; }
+.btn.ghost:active { box-shadow: 0 1px 0 rgba(35,20,80,.10); }
+.hud .btn.ghost {
+  background: rgba(255,255,255,.18); color:#fff; border-color: rgba(255,255,255,.28); box-shadow:none;
+}
+.hud .btn.ghost:hover { background: rgba(255,255,255,.30); }
 .btn:disabled { opacity: .5; cursor: not-allowed; filter: grayscale(.4); box-shadow: 0 3px 0 rgba(0,0,0,.14); }
 
 /* Answer option buttons */
