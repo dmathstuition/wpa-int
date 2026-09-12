@@ -10,6 +10,47 @@ rate performance and report progress to *madam* each week.
 
 ---
 
+## 🏠 Start here: `home.html`
+
+`home.html` is the **master front door**. It has one big card per area, so a
+learner (or you) can pick where to go:
+
+| Card | Goes to |
+|------|---------|
+| 🔢 **Number Foundations** | `foundations/index.html` — counting 1–10 |
+| ➕ **Maths Missions** | `index.html` — addition & subtraction weeks |
+| 📚 **English — Grammar Quest** | `english/index.html` |
+| 🐝 **Spelling Games** | `games/index.html` |
+
+Send the learner **`…/home.html`** as the starting link. (The existing hubs are
+untouched and still cross-link to each other.)
+
+## 🔢 Number Foundations (counting 1–10, with a finger whiteboard)
+
+`foundations/index.html` is a foundation module for a **special learner
+(speech delay + ADHD)** — audio-first, very visual, big buttons, cartoon guide
+(**Bobo the Bear** 🐻), and heavy repetition. It dwells on **one number at a
+time**, each with its own colour and themed cartoons (1 = ☀️ sun, 2 = 🦆 ducks,
+3 = 🍎 apples …). Every number runs four short repetition steps:
+
+1. **Meet** — a huge animated digit + word; the game *says* the number and pops
+   the objects in one at a time, counting aloud.
+2. **Count** — tap each cartoon; it counts out loud (one-to-one correspondence).
+3. **Find it** — “Tap the number 3!” — repeated **number identification** (the
+   core skill), with a gentle hint after a wrong tap.
+4. **Write it** — an **interactive whiteboard**: trace the number with a finger
+   (touch/stylus/mouse) over a dashed guide, then ✨ Done. *Hear it* and *Clear*
+   buttons; always encouraging, never blocking.
+
+A **Number Map** lets him jump to any number; finished numbers earn a ⭐ that
+persists on the device. Sized for a ~40-minute session. Results log to their own
+**“Numbers”** Sheet tab (subject `Numbers`, e.g. *Number 3 — Counting 1 to 10*),
+so *madam* can see which numbers were practised and whether he identified each
+first try. Text-to-speech uses the device's built-in voice (no files); if a
+device has no voice, the visuals and whiteboard still work.
+
+---
+
 ## 🗂️ What's in here
 
 ```

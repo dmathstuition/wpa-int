@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Number Foundations 🔢</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔢</text></svg>" />
+<style>
+  /* ---- Number Foundations specific ---- */
+  .bear { font-size:66px; text-align:center; animation: bob 2.2s ease-in-out infinite; filter: drop-shadow(0 8px 8px rgba(0,0,0,.2)); }
+  .big-digit { font-size: clamp(120px, 42vw, 240px); font-weight:800; line-height:.95; text-align:center; letter-spacing:2px; animation: pop .5s cubic-bezier(.2,1.5,.4,1); }
+  .numword { text-align:center; font-size: clamp(30px,9vw,44px); font-weight:800; text-transform:capitalize; letter-spacing:3px; margin-top:-6px; }
+  .obj-row { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin:18px auto; max-width:640px; }
+  .obj { font-size: clamp(40px,12vw,60px); line-height:1; animation: popIn .4s both; }
+  .obj.tap { cursor:pointer; transition: transform .1s ease, filter .15s; border-radius:16px; }
+  .obj.tap:hover { transform: translateY(-4px) scale(1.06); }
+  .obj.tap:active { transform: scale(.86); }
+  .obj.counted { transform: scale(1.15); }
+  .obj.used { opacity:.32; transform: scale(.85); }
+  .countbar { text-align:center; font-size:40px; font-weight:800; color:var(--purple); min-height:48px; }
+
+  .numpick { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin:18px 0; }
+  .numcard {
+    width: clamp(90px,26vw,130px); height: clamp(110px,30vw,150px); border-radius:24px;
+    display:flex; align-items:center; justify-content:center; font-size: clamp(60px,18vw,84px); font-weight:800;
+    background: linear-gradient(180deg,#fff,#f6f4ff); border:5px solid var(--line); color:var(--ink);
+    box-shadow: 0 10px 22px rgba(35,20,80,.14); cursor:pointer; transition: transform .1s, box-shadow .12s, border-color .15s;
+  }
+  .numcard:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 18px 30px rgba(75,139,255,.28); }
+  .numcard.correct { background: linear-gradient(160deg,#34e089,#12b866); color:#fff; border-color:#0f9d58; animation: pop .4s; }
+  .numcard.wrong { animation: shake .4s; border-color: var(--red); }
+  .numcard.hint { animation: glowpulse 1s ease-in-out infinite; border-color: var(--yellow); }
+  @keyframes glowpulse { 0%,100%{ box-shadow:0 0 0 0 rgba(255,210,63,.5);} 50%{ box-shadow:0 0 0 12px rgba(255,210,63,.15);} }
+
+  /* whiteboard */
+  .board-wrap { max-width:640px; margin:10px auto; }
+  canvas.board { width:100%; height:300px; background:#fff; border-radius:20px; border:5px dashed var(--purple);
+    touch-action:none; display:block; box-shadow: inset 0 2px 8px rgba(35,20,80,.08); }
+
+  /* number path map */
+  .numpath { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin:18px auto; max-width:640px; }
+  .stone {
+    width: clamp(72px,20vw,92px); height: clamp(72px,20vw,92px); border-radius:24px; position:relative; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-weight:800;
+    box-shadow: 0 10px 20px rgba(20,12,55,.28), inset 0 2px 0 rgba(255,255,255,.4);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .stone:hover { transform: translateY(-4px) scale(1.06); }
+  .stone .sd { font-size: clamp(30px,9vw,40px); line-height:1; }
+  .stone .se { font-size: clamp(16px,5vw,22px); }
+  .stone .tick { position:absolute; top:-8px; right:-8px; font-size:24px; background:#fff; border-radius:50%; }
+  .huge-emoji { font-size:80px; text-align:center; animation: bob 2.2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="../home.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <span class="chip">⭐ Stars <b id="stars">0</b></span>
+    <a class="chip" href="#" id="mapLink" style="text-decoration:none;color:#fff;">🗺️ Numbers</a>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+  <div class="brand" id="brand"><span class="pyr">🔺</span><span class="nm">Whyte Pyramid Academy<small>Number Foundations</small></span></div>
+  <div id="screen"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><div class="huge-emoji">🔢</div><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* ---------- number data (each number a different theme/colour) ---------- */
+var NUMS=[
+  { n:1, word:"one",   emoji:"☀️", label:"sun",         color:"#f5a623" },
+  { n:2, word:"two",   emoji:"🦆", label:"ducks",       color:"#4b8bff" },
+  { n:3, word:"three", emoji:"🍎", label:"apples",      color:"#ff5b6b" },
+  { n:4, word:"four",  emoji:"🐸", label:"frogs",       color:"#2bd576" },
+  { n:5, word:"five",  emoji:"⭐", label:"stars",       color:"#ffbf00" },
+  { n:6, word:"six",   emoji:"🐟", label:"fish",        color:"#22c3d6" },
+  { n:7, word:"seven", emoji:"🦋", label:"butterflies", color:"#9b5cff" },
+  { n:8, word:"eight", emoji:"🍩", label:"donuts",      color:"#ff7fb0" },
+  { n:9, word:"nine",  emoji:"🎈", label:"balloons",    color:"#ff8a3d" },
+  { n:10,word:"ten",   emoji:"🍪", label:"cookies",     color:"#c98a5e" }
+];
+var ONES=["","one","two","three","four","five","six","seven","eight","nine","ten"];
+var MASCOT="🐻";
+
+/* ---------- speech (audio-first for the learner) ---------- */
+function say(text, rate){
+  try{
+    if(!MQ.soundEnabled()) return;
+    if(!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(String(text));
+    u.rate=rate||0.85; u.pitch=1.15; u.volume=1; u.lang="en-GB";
+    var vs=window.speechSynthesis.getVoices()||[];
+    var v=vs.find(function(x){return /en[-_]GB/i.test(x.lang);})||vs.find(function(x){return /^en/i.test(x.lang);})||null;
+    if(v) u.voice=v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+try{ if("speechSynthesis" in window){ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=function(){ window.speechSynthesis.getVoices(); }; } }catch(e){}
+
+/* ---------- state ---------- */
+var screen=document.getElementById("screen");
+var state={ student:MQ.getStudent()||"", stars:0, done:{}, curN:1, step:0, findFirstTry:true };
+var timers=[];
+function clearTimers(){ timers.forEach(function(t){ clearTimeout(t); }); timers=[]; }
+function later(fn,ms){ var t=setTimeout(fn,ms); timers.push(t); return t; }
+
+function progKey(){ return "numfound_"+(state.student||"").toLowerCase(); }
+function loadProg(){ var p=MQ.readLocal(progKey()); if(p){ state.stars=p.stars||0; state.done=p.done||{}; } }
+function saveProg(){ MQ.saveLocal(progKey(), { stars:state.stars, done:state.done, updated:Date.now() }); }
+
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm"); if(el) el.innerHTML=nm+"<small>Number Foundations</small>";
+  document.title="Number Foundations | "+nm; })();
+
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+function paintStars(){ document.getElementById("stars").textContent=state.stars; }
+document.getElementById("mapLink").onclick=function(e){ e.preventDefault(); clearTimers(); showMap(); };
+
+/* ---------- helpers ---------- */
+function objRow(cfg, count, tappable){
+  var h='<div class="obj-row">';
+  for(var i=0;i<count;i++){ h+='<span class="obj'+(tappable?' tap':'')+'" data-i="'+i+'" style="animation-delay:'+(i*0.06)+'s">'+cfg.emoji+'</span>'; }
+  return h+'</div>';
+}
+
+/* =============================================================
+   START / MAP
+   ============================================================= */
+function boot(){
+  if(!state.student){
+    screen.innerHTML='<div class="card center" style="max-width:520px;"><div class="bear">'+MASCOT+'</div><div class="speech">Hi! I\'m Bobo the Bear. What is your name?</div>'+
+      '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Start ▶</button></div></div>';
+    document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); loadProg(); paintStars(); showMap(); };
+    document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
+  } else { loadProg(); paintStars(); showMap(); }
+}
+
+function showMap(){
+  clearTimers();
+  var stones="";
+  NUMS.forEach(function(c){
+    stones+='<div class="stone" data-n="'+c.n+'" style="background:linear-gradient(160deg,'+c.color+',#00000022);">'+
+      (state.done[c.n]?'<span class="tick">⭐</span>':'')+
+      '<span class="sd">'+c.n+'</span><span class="se">'+c.emoji+'</span></div>';
+  });
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="bear">'+MASCOT+'</div>'+
+      '<h1>Let\'s Count! 🔢</h1>'+
+      '<div class="speech">Tap a number to learn it, or start at the beginning. We\'ll count, find, and write each number! 🖍️</div>'+
+      '<button class="btn big green" id="startBtn" style="margin:16px auto 8px;max-width:420px;">▶ Start at number 1</button>'+
+      '<div class="numpath">'+stones+'</div>'+
+      '<p class="muted">Numbers with a ⭐ are done — you can always play again!</p>'+
+    '</div>';
+  document.getElementById("startBtn").onclick=function(){ MQ.sound("click"); startNumber(1); };
+  Array.prototype.forEach.call(document.querySelectorAll(".stone"),function(s){
+    s.onclick=function(){ MQ.sound("click"); startNumber(Number(s.getAttribute("data-n"))); };
+  });
+  say("Let's count! Tap a number.");
+}
+
+/* =============================================================
+   PER-NUMBER FLOW:  meet -> count -> find -> write -> done
+   ============================================================= */
+function startNumber(n){ clearTimers(); state.curN=n; state.step=0; state.findFirstTry=true; runStep(); }
+function advance(){ clearTimers(); state.step++; runStep(); }
+function runStep(){
+  var c=NUMS[state.curN-1];
+  if(state.step===0) return meet(c);
+  if(state.step===1) return countTap(c);
+  if(state.step===2) return findNum(c);
+  if(state.step===3) return writeNum(c);
+  return complete(c);
+}
+function header(c, label){
+  return '<div class="row" style="justify-content:space-between;">'+
+    '<span class="chip" style="background:'+c.color+';color:#fff;">'+c.emoji+' Number '+c.n+'</span>'+
+    '<span class="chip" style="background:#eee;color:#333;">'+label+'</span></div>';
+}
+
+/* --- STEP 1: Meet the number --- */
+function meet(c){
+  screen.innerHTML=
+    '<div class="card">'+ header(c,"Step 1 · Meet") +
+      '<div class="center"><div class="bear">'+MASCOT+'</div></div>'+
+      '<div class="big-digit" style="color:'+c.color+';">'+c.n+'</div>'+
+      '<div class="numword" style="color:'+c.color+';">'+c.word+'</div>'+
+      '<div id="objs"></div>'+
+      '<div class="row" style="margin-top:8px;">'+
+        '<button class="btn blue" id="again">🔊 Say it again</button>'+
+        '<button class="btn big green" id="next">▶ Next</button>'+
+      '</div>'+
+    '</div>';
+  var objs=document.getElementById("objs");
+  function play(){
+    objs.innerHTML='<div class="obj-row" id="or"></div>';
+    var or=document.getElementById("or");
+    say("This is number "+c.word+". "+c.word+"!");
+    for(var i=1;i<=c.n;i++){ (function(i){
+      later(function(){ var s=document.createElement("span"); s.className="obj"; s.textContent=c.emoji; or.appendChild(s); say(ONES[i]); }, 900+i*750);
+    })(i); }
+    later(function(){ say(c.n+" "+c.label+"!"); }, 900+(c.n+1)*750);
+  }
+  document.getElementById("again").onclick=function(){ clearTimers(); play(); };
+  document.getElementById("next").onclick=function(){ MQ.sound("click"); advance(); };
+  play();
+}
+
+/* --- STEP 2: Tap and count --- */
+function countTap(c){
+  screen.innerHTML=
+    '<div class="card">'+ header(c,"Step 2 · Count") +
+      '<div class="instr" style="margin-top:10px;">👉 Tap each '+c.label.replace(/s$/,"")+' and count!</div>'+
+      objRow(c, c.n, true)+
+      '<div class="countbar" id="cb">0</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"><button class="btn ghost" id="repeat">🔊 Say the numbers</button></div>'+
+    '</div>';
+  var got=0;
+  say("Tap each one and count with me!");
+  Array.prototype.forEach.call(document.querySelectorAll(".obj.tap"),function(o){
+    o.onclick=function(){
+      if(o.classList.contains("used")) return;
+      o.classList.add("used","counted"); got++;
+      document.getElementById("cb").textContent=got; say(ONES[got]); MQ.sound("click");
+      if(got>=c.n){
+        MQ.sound("win"); MQ.confetti(70);
+        var fb=document.getElementById("fb"); fb.className="feedback good"; fb.innerHTML="🎉 "+c.n+" "+c.label+"! Well counted!";
+        say("That's "+c.word+"! "+c.n+" "+c.label+"!");
+        document.getElementById("controls").innerHTML='<button class="btn big green" id="next">▶ Next</button>';
+        document.getElementById("next").onclick=function(){ MQ.sound("click"); advance(); };
+      }
+    };
+  });
+  document.getElementById("repeat").onclick=function(){ var s=""; for(var i=1;i<=c.n;i++) s+=ONES[i]+", "; say(s); };
+}
+
+/* --- STEP 3: Find / identify the number (repetition of identification) --- */
+function findNum(c){
+  var opts={}; opts[c.n]=true;
+  while(Object.keys(opts).length<3){ var r=1+Math.floor(Math.random()*10); opts[r]=true; }
+  var arr=Object.keys(opts).map(Number).sort(function(){return Math.random()-.5;});
+  screen.innerHTML=
+    '<div class="card">'+ header(c,"Step 3 · Find it") +
+      '<div class="instr" style="margin-top:10px;">🔎 Find and tap the number <b style="color:'+c.color+'">'+c.n+'</b> ('+c.word+')</div>'+
+      '<div class="numpick" id="pick">'+arr.map(function(x){return '<div class="numcard" data-x="'+x+'">'+x+'</div>';}).join("")+'</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"><button class="btn ghost" id="hear">🔊 Say it again</button></div>'+
+    '</div>';
+  say("Find number "+c.word+". Tap the "+c.word+"!");
+  document.getElementById("hear").onclick=function(){ say("Find number "+c.word+". Tap the "+c.word+"!"); };
+  var wrongs=0;
+  Array.prototype.forEach.call(document.querySelectorAll("#pick .numcard"),function(card){
+    card.onclick=function(){
+      var x=Number(card.getAttribute("data-x"));
+      if(x===c.n){
+        card.classList.add("correct"); MQ.sound("correct"); MQ.confetti(80);
+        var fb=document.getElementById("fb"); fb.className="feedback good"; fb.innerHTML="✅ Yes! That's "+c.n+" — "+c.word+"!";
+        say("Yes! "+c.word+"!");
+        document.querySelectorAll("#pick .numcard").forEach(function(k){ k.style.pointerEvents="none"; });
+        document.getElementById("controls").innerHTML='<button class="btn big green" id="next">▶ Next</button>';
+        document.getElementById("next").onclick=function(){ MQ.sound("click"); advance(); };
+      } else {
+        card.classList.add("wrong"); MQ.sound("wrong"); state.findFirstTry=false; wrongs++;
+        var fb=document.getElementById("fb"); fb.className="feedback bad"; fb.innerHTML="That is "+x+". Find "+c.n+" ("+c.word+").";
+        say("That is "+ONES[x]+". Find "+c.word+".");
+        setTimeout(function(){ card.classList.remove("wrong"); },400);
+        if(wrongs>=1){ document.querySelectorAll("#pick .numcard").forEach(function(k){ if(Number(k.getAttribute("data-x"))===c.n) k.classList.add("hint"); }); }
+      }
+    };
+  });
+}
+
+/* --- STEP 4: Write it on the whiteboard (finger tracing) --- */
+var board=null;
+function writeNum(c){
+  screen.innerHTML=
+    '<div class="card">'+ header(c,"Step 4 · Write it") +
+      '<div class="instr" style="margin-top:10px;">🖍️ Trace the number <b style="color:'+c.color+'">'+c.n+'</b> with your finger. Follow the dotted line!</div>'+
+      '<div class="board-wrap"><canvas class="board" id="board"></canvas></div>'+
+      '<div class="row" style="margin-top:10px;">'+
+        '<button class="btn ghost" id="hear">🔊 Hear it</button>'+
+        '<button class="btn ghost" id="clear">🧹 Clear</button>'+
+        '<button class="btn big green" id="done">✨ Done!</button>'+
+      '</div>'+
+      '<div class="feedback" id="fb"></div>'+
+    '</div>';
+  say("Now write number "+c.word+". Trace it with your finger!");
+  board=initBoard(document.getElementById("board"), String(c.n), c.color);
+  document.getElementById("hear").onclick=function(){ say("Number "+c.word); };
+  document.getElementById("clear").onclick=function(){ board.clear(); MQ.sound("click"); };
+  document.getElementById("done").onclick=function(){
+    var fb=document.getElementById("fb");
+    if(board.dist()<120){ fb.className="feedback"; fb.innerHTML="✏️ Have a go — trace the "+c.n+" along the dots!"; say("Trace the number "+c.word); return; }
+    MQ.sound("win"); MQ.confetti(90); fb.className="feedback good"; fb.innerHTML="🌟 Beautiful writing!";
+    say("Beautiful writing! That's number "+c.word+".");
+    document.querySelector("#done").disabled=true;
+    setTimeout(function(){ advance(); }, 900);
+  };
+}
+
+/* pointer-drawing whiteboard with a dashed guide numeral */
+function initBoard(canvas, digit, color){
+  var ctx=canvas.getContext("2d");
+  var rect=canvas.getBoundingClientRect();
+  var dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(rect.width*dpr); canvas.height=Math.round(rect.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  var W=rect.width, H=rect.height, dist=0, drawing=false, last=null;
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  function guide(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.font="800 "+Math.floor(H*0.72)+"px 'Baloo 2', 'Comic Sans MS', sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillStyle="rgba(40,26,94,.06)"; ctx.fillText(digit, W/2, H/2);
+    ctx.lineWidth=4; ctx.setLineDash([9,12]); ctx.strokeStyle="rgba(120,110,180,.6)"; ctx.strokeText(digit, W/2, H/2);
+    ctx.restore();
+    ctx.setLineDash([]);
+  }
+  guide();
+  function pos(e){ var r=canvas.getBoundingClientRect(); return { x:e.clientX-r.left, y:e.clientY-r.top }; }
+  canvas.addEventListener("pointerdown",function(e){ e.preventDefault(); drawing=true; last=pos(e); try{ canvas.setPointerCapture(e.pointerId); }catch(_){} });
+  canvas.addEventListener("pointermove",function(e){ if(!drawing) return; e.preventDefault(); var p=pos(e);
+    ctx.strokeStyle=color; ctx.lineWidth=18; ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+    dist+=Math.hypot(p.x-last.x,p.y-last.y); last=p; });
+  canvas.addEventListener("pointerup",function(e){ drawing=false; });
+  canvas.addEventListener("pointercancel",function(){ drawing=false; });
+  return { clear:function(){ dist=0; guide(); }, dist:function(){ return dist; } };
+}
+
+/* --- COMPLETE a number --- */
+function complete(c){
+  clearTimers();
+  if(!state.done[c.n]){ state.stars++; }
+  state.done[c.n]=true; saveProg(); paintStars();
+  MQ.sound("win"); MQ.confetti(160);
+  say("Hooray! You did number "+c.word+"!");
+  var last=(c.n>=10);
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="huge-emoji">'+(last?"🏆":"🎉")+'</div>'+
+      '<h1>'+(last?"You did it! 1 to 10! 🎉":"You finished number "+c.n+"!")+'</h1>'+
+      '<div class="big-digit" style="color:'+c.color+';font-size:120px;">'+c.n+'</div>'+
+      '<p style="font-size:24px;font-weight:800;">⭐ '+c.word.charAt(0).toUpperCase()+c.word.slice(1)+' complete! ⭐</p>'+
+      '<div class="row" style="margin-top:8px;">'+
+        (last? '' : '<button class="btn big green" id="next">▶ Number '+(c.n+1)+'</button>')+
+        '<button class="btn blue" id="map">🗺️ Number Map</button>'+
+        '<a class="btn orange" href="../home.html" style="text-decoration:none;">🏠 Home</a>'+
+      '</div>'+
+    '</div>';
+  var nb=document.getElementById("next"); if(nb) nb.onclick=function(){ MQ.sound("click"); startNumber(c.n+1); };
+  document.getElementById("map").onclick=function(){ MQ.sound("click"); showMap(); };
+
+  // log this number to the tutor's sheet (own "Numbers" tab)
+  MQ.logResult({
+    student: state.student||"Unknown", subject:"Numbers", week:"",
+    weekTitle:"Number "+c.n+" — Counting 1 to 10", number:c.n,
+    identifiedFirstTry: state.findFirstTry, accuracy: state.findFirstTry?100:70,
+    correct: state.findFirstTry?1:0, totalQuestions:1, stars:state.stars,
+    rating: state.findFirstTry?"Identified first try":"Practised",
+    school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  });
+}
+
+boot();
+</script>
+</body>
+</html>
