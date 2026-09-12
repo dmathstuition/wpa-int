@@ -14,7 +14,7 @@
 
   <!-- HUD -->
   <div class="hud">
-    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="../maths.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
     <span class="chip">⭐ Lvl <b id="lvl">1</b></span>
     <span class="chip streak-fire" id="streakChip">🔥 <b id="streak">0</b></span>
     <span class="chip">💎 XP <b id="xp">0</b></span>
@@ -734,7 +734,7 @@ function showResults(){
       '<p class="muted" id="saveState">💾 Saving your result…</p>' +
       '<div class="row" style="margin-top:8px;">' +
         '<button class="btn green" id="againBtn">🔁 Play again</button>' +
-        '<a class="btn blue" href="../index.html" style="text-decoration:none;">🏠 Home</a>' +
+        '<a class="btn blue" href="../maths.html" style="text-decoration:none;">🏠 Home</a>' +
       '</div>' +
     '</div>';
 
@@ -778,7 +778,7 @@ function buildAssignment(){
 }
 function startAssignment(){
   Assignment.start({ subject: undefined, week: WEEK_NUMBER, weekTitle: WEEK_TITLE,
-    minutes: 20, accent: "var(--purple)", homeHref: "../index.html", questions: buildAssignment() });
+    minutes: 20, accent: "var(--purple)", homeHref: "../maths.html", questions: buildAssignment() });
 }
 var MODE = new URLSearchParams(location.search).get("mode");
 function bootStart(){ if(MODE==="assignment") startAssignment(); else showIntro(); }

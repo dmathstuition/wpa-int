@@ -68,7 +68,7 @@
 <body>
 <div class="wrap">
   <div class="hud">
-    <a class="chip" href="../home.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
     <span class="chip">⭐ Stars <b id="stars">0</b></span>
     <a class="chip" href="#" id="mapLink" style="text-decoration:none;color:#fff;">🗺️ Numbers</a>
     <button class="btn ghost" id="soundBtn">🔊</button>
@@ -461,7 +461,7 @@ function complete(c){
       '<div class="row" style="margin-top:8px;">'+
         (last? '' : '<button class="btn big green" id="next">▶ Number '+(c.n+1)+'</button>')+
         '<button class="btn blue" id="map">🗺️ Number Map</button>'+
-        '<a class="btn orange" href="../home.html" style="text-decoration:none;">🏠 Home</a>'+
+        '<a class="btn orange" href="../index.html" style="text-decoration:none;">🏠 Home</a>'+
       '</div>'+
     '</div>';
   var nb=document.getElementById("next"); if(nb) nb.onclick=function(){ MQ.sound("click"); startNumber(c.n+1); };
