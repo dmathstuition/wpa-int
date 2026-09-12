@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SATs Maths — Addition & Subtraction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+<style>
+  /* ---- SATs / CBT specific ---- */
+  .modegrid { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; margin-top:22px; }
+  .modecard { flex:1 1 300px; max-width:360px; }
+  .qnum { font-size:15px; font-weight:800; color:#fff; padding:4px 12px; border-radius:999px; background:var(--purple); }
+
+  /* CBT exam bar */
+  .cbt-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between;
+    background:linear-gradient(90deg,#4b8bff,#9b5cff); color:#fff; padding:12px 16px; border-radius:18px; margin-bottom:14px; }
+  .cbt-bar .t { font-size:26px; font-weight:800; letter-spacing:1px; }
+  .cbt-bar .t.warn { animation: pulseWarn 1s infinite; }
+  @keyframes pulseWarn { 0%,100%{ color:#fff; } 50%{ color:#ffe08a; } }
+  .cbt-bar .meta { font-weight:800; font-size:15px; opacity:.95; }
+
+  /* question palette */
+  .palette { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:16px 0 6px; }
+  .pal { width:42px; height:42px; border-radius:12px; border:2px solid var(--line); background:#fff; color:var(--ink);
+    font-weight:800; font-size:15px; cursor:pointer; position:relative; transition:transform .1s; }
+  .pal:hover { transform:translateY(-2px); }
+  .pal.done { background:linear-gradient(160deg,#34e089,#12b866); color:#fff; border-color:#0f9d58; }
+  .pal.cur { outline:4px solid rgba(120,90,220,.45); outline-offset:2px; }
+  .pal.flag::after { content:"🚩"; position:absolute; top:-9px; right:-8px; font-size:15px; }
+
+  .qbox { font-size:20px; font-weight:800; color:var(--ink); line-height:1.45; margin:6px 0 10px; }
+  .qbox small { display:block; font-size:14px; font-weight:700; color:#8a83b3; margin-top:4px; }
+  .rev-item { border:2px solid var(--line); border-radius:16px; padding:14px 16px; margin:12px 0; text-align:left; }
+  .rev-item.ok { border-color:#22bd6b; background:#effaf3; }
+  .rev-item.no { border-color:var(--red); background:#fdeef0; }
+  .rev-item .ya { font-weight:800; }
+  .rev-badge { float:right; font-size:22px; }
+  .solbox { margin-top:8px; background:#f4f1ff; border-radius:12px; padding:10px 12px; font-weight:700; color:#4a4470; }
+  .flagbtn.on { background:#ffdf6b; border-color:#e6b800; color:#5a4600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="maths.html" style="text-decoration:none;color:#fff;">➕ Maths</a>
+    <span class="chip" id="whoChip">👤 <b id="whoName">Learner</b></span>
+    <button class="btn ghost" id="soundBtn">🔊 Sound</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>SATs Maths</small></span>
+  </div>
+
+  <h1 class="title-pop">🎯 SATs MATHS 🖥️</h1>
+  <p class="subtitle">Addition &amp; Subtraction — SAT questions and a timed practice test ⏱️</p>
+
+  <div id="screen"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* ============================================================
+   SAT question bank — Addition & Subtraction (KS2 style)
+   kinds:  "input" (numeric answer)   "mc" (multiple choice)
+   optional col:{op:"add",nums:[...]} or {op:"sub",M,S} renders a
+   vertical column layout instead of a text prompt.
+   ============================================================ */
+var BANK=[
+  // ---------- arithmetic (fluency) ----------
+  { k:"input", t:"add", q:"Work out the total.", col:{op:"add",nums:[3458,2976]}, a:6434,
+    hint:"Add ones first, carry when a column makes 10 or more.", sol:"3,458 + 2,976 = 6,434 (carry from ones, tens and hundreds)." },
+  { k:"input", t:"add", q:"Work out 47,209 + 8,684.", col:{op:"add",nums:[47209,8684]}, a:55893,
+    hint:"Line up the digits by place value.", sol:"47,209 + 8,684 = 55,893." },
+  { k:"input", t:"sub", q:"Work out the difference.", col:{op:"sub",M:8000,S:2647}, a:5353,
+    hint:"You must exchange across the zeros.", sol:"8,000 − 2,647 = 5,353." },
+  { k:"input", t:"sub", q:"Work out 6,004 − 1,878.", col:{op:"sub",M:6004,S:1878}, a:4126,
+    hint:"Exchange from the thousands to fill the empty tens.", sol:"6,004 − 1,878 = 4,126." },
+  { k:"input", t:"add", q:"Work out 12,345 + 6,789.", col:{op:"add",nums:[12345,6789]}, a:19134,
+    hint:"Careful with the carries.", sol:"12,345 + 6,789 = 19,134." },
+  { k:"input", t:"sub", q:"Work out 45,000 − 27,600.", col:{op:"sub",M:45000,S:27600}, a:17400,
+    hint:"Exchange from the thousands.", sol:"45,000 − 27,600 = 17,400." },
+  { k:"input", t:"add", q:"Work out 2,468 + 13,579.", col:{op:"add",nums:[2468,13579]}, a:16047,
+    hint:"Line up the units — the numbers are different lengths.", sol:"2,468 + 13,579 = 16,047." },
+  { k:"input", t:"sub", q:"Work out 100,000 − 46,325.", col:{op:"sub",M:100000,S:46325}, a:53675,
+    hint:"Lots of exchanging across the zeros!", sol:"100,000 − 46,325 = 53,675." },
+  // ---------- missing number (inverse) ----------
+  { k:"input", t:"add", q:"Find the missing number:<br>□ + 3,600 = 9,200", a:5600,
+    hint:"Use the inverse: 9,200 − 3,600.", sol:"9,200 − 3,600 = 5,600, so □ = 5,600." },
+  { k:"input", t:"sub", q:"Find the missing number:<br>7,500 − □ = 2,850", a:4650,
+    hint:"7,500 − 2,850 gives the number taken away.", sol:"7,500 − 2,850 = 4,650, so □ = 4,650." },
+  { k:"input", t:"sub", q:"Find the missing number:<br>6,000 − □ = 2,455", a:3545,
+    hint:"Subtract: 6,000 − 2,455.", sol:"6,000 − 2,455 = 3,545, so □ = 3,545." },
+
+  // ---------- reasoning / word problems ----------
+  { k:"input", t:"mix", q:"A shop had <b>3,250</b> books. It sold <b>1,846</b> and then a delivery of <b>900</b> arrived. How many books does the shop have now?", a:2304,
+    hint:"Subtract the sold books, then add the delivery.", sol:"3,250 − 1,846 = 1,404, then 1,404 + 900 = 2,304 books." },
+  { k:"input", t:"add", q:"Two numbers add up to <b>8,000</b>. One of them is <b>3,450</b>. What is the other number?", a:4550,
+    hint:"8,000 − 3,450.", sol:"8,000 − 3,450 = 4,550." },
+  { k:"input", t:"sub", q:"A cinema had <b>875</b> people on Friday and <b>968</b> on Saturday. How many <b>more</b> people came on Saturday?", a:93,
+    hint:"‘How many more’ means subtract.", sol:"968 − 875 = 93 more people." },
+  { k:"input", t:"sub", q:"A charity target is <b>£4,500</b>. They raised <b>£2,780</b>, then <b>£1,050</b> more. How much money is still needed?", a:670,
+    hint:"Add what they raised, then subtract from the target.", sol:"2,780 + 1,050 = 3,830; 4,500 − 3,830 = £670 still needed." },
+  { k:"input", t:"add", q:"A lorry drives <b>2,340</b> m, then a further <b>1,875</b> m. What is the total distance in metres?", a:4215,
+    hint:"Add the two distances.", sol:"2,340 + 1,875 = 4,215 m." },
+  { k:"input", t:"mix", q:"Mr Ola had <b>£5,000</b>. He spent <b>£1,875</b> on a laptop and <b>£640</b> on a phone. How much money is left?", a:2485,
+    hint:"Add both amounts spent, then subtract from £5,000.", sol:"1,875 + 640 = 2,515; 5,000 − 2,515 = £2,485 left." },
+  { k:"input", t:"mix", q:"A number machine <b>adds 2,600</b>, then <b>subtracts 1,450</b>. If the input is <b>3,000</b>, what is the output?", a:4150,
+    hint:"Do the steps in order.", sol:"3,000 + 2,600 = 5,600; 5,600 − 1,450 = 4,150." },
+  { k:"input", t:"add", q:"The difference between two numbers is <b>1,240</b>. The smaller number is <b>3,560</b>. What is the larger number?", a:4800,
+    hint:"Add the difference to the smaller number.", sol:"3,560 + 1,240 = 4,800." },
+  { k:"input", t:"sub", q:"In a bar model the whole is <b>9,500</b>. One part is <b>4,275</b>. What is the other part?", a:5225,
+    hint:"Whole − known part.", sol:"9,500 − 4,275 = 5,225." },
+
+  // ---------- multiple choice reasoning ----------
+  { k:"mc", t:"sub", q:"Which calculation would <b>check</b> that 4,832 + 1,169 = 6,001 is correct?",
+    options:["6,001 − 1,169","6,001 + 1,169","4,832 + 6,001","4,832 × 1,169"], a:0,
+    hint:"Subtraction is the inverse of addition.", sol:"To check an addition, subtract one part from the total: 6,001 − 1,169 = 4,832. ✔" },
+  { k:"mc", t:"add", q:"<b>Estimate</b> 4,918 + 3,072 by rounding each number to the nearest 1,000.",
+    options:["7,000","8,000","9,000","12,000"], a:1,
+    hint:"4,918 rounds to 5,000; 3,072 rounds to 3,000.", sol:"5,000 + 3,000 = 8,000 (estimate)." },
+  { k:"mc", t:"sub", q:"Which pair of numbers has a <b>difference of 2,500</b>?",
+    options:["7,300 and 4,800","6,200 and 4,200","9,000 and 5,500","3,000 and 1,000"], a:0,
+    hint:"Subtract each pair and look for 2,500.", sol:"7,300 − 4,800 = 2,500. ✔" },
+  { k:"mc", t:"sub", q:"Find the missing number:<br>□ − 2,450 = 3,550",
+    options:["5,000","6,000","1,100","900"], a:1,
+    hint:"Use the inverse: 3,550 + 2,450.", sol:"3,550 + 2,450 = 6,000, so □ = 6,000." },
+  { k:"mc", t:"mix", q:"A jug holds <b>2,000 ml</b>. <b>750 ml</b> is poured out, then <b>400 ml</b> is added. How much is in the jug now?",
+    options:["1,650 ml","1,350 ml","2,650 ml","1,250 ml"], a:0,
+    hint:"Subtract, then add.", sol:"2,000 − 750 = 1,250; 1,250 + 400 = 1,650 ml." }
+];
+
+/* ---------- small helpers ---------- */
+function el(id){ return document.getElementById(id); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function commas(n){ return Number(n).toLocaleString("en-GB"); }
+var screen=el("screen");
+
+/* vertical column layouts (self-contained, reuse .colsum styles) */
+function verticalSum(nums){
+  var strs=nums.map(String), width=Math.max.apply(null,strs.map(function(s){return s.length;}));
+  var rows=strs.map(function(s,idx){
+    var padded=s.padStart(width," ").split("");
+    var op=idx>0?'<td class="op">+</td>':'<td></td>';
+    return '<tr>'+op+padded.map(function(d){return '<td>'+(d===" "?"":d)+'</td>';}).join("")+'</tr>';
+  }).join("");
+  var line='<td></td>'+Array(width).fill('<td></td>').join("");
+  return '<div class="colsum"><table>'+rows+'<tr class="line">'+line+'</tr></table></div>';
+}
+function verticalSub(M,S){
+  var Ms=String(M),Ss=String(S),width=Math.max(Ms.length,Ss.length);
+  function row(str,op){ var p=str.padStart(width," ").split("");
+    return '<tr>'+(op?'<td class="op">−</td>':'<td></td>')+p.map(function(d){return '<td>'+(d===" "?"":d)+'</td>';}).join("")+'</tr>'; }
+  var line='<td></td>'+Array(width).fill('<td></td>').join("");
+  return '<div class="colsum"><table>'+row(Ms,false)+row(Ss,true)+'<tr class="line">'+line+'</tr></table></div>';
+}
+function qBody(q){
+  if(q.col){ return '<div class="demo-wrap">'+(q.col.op==="add"?verticalSum(q.col.nums):verticalSub(q.col.M,q.col.S))+'</div>'; }
+  return '<div class="qbox">'+q.q+'</div>';
+}
+function answerLabel(q){ return q.k==="mc" ? q.options[q.a] : commas(q.a); }
+function qTitle(q){
+  if(!q.col) return q.q.replace(/<br>/g," ");
+  if(q.col.op==="add") return q.col.nums.map(commas).join(" + ");
+  return commas(q.col.M)+" − "+commas(q.col.S);
+}
+
+/* ---------- brand + sound + name ---------- */
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=nm+"<small>SATs Maths</small>";
+  document.title=nm+" — SATs Maths"; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊 Sound":"🔇 Muted"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); MQ.sound("click"); }; paintSound();
+var student=MQ.getStudent()||"";
+
+/* =============================================================
+   HOME: name gate + two modes
+   ============================================================= */
+function home(){
+  if(!student){
+    screen.innerHTML=
+      '<div class="card center" style="max-width:540px;">'+
+        '<div class="mascot">🎯</div>'+
+        '<div class="speech">Hi! Ready for some SATs maths practice? What is your name?</div>'+
+        '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Type your name…" maxlength="24" style="flex:1 1 220px;"><button class="btn green" id="nmBtn">Let\'s go ▶</button></div>'+
+      '</div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v){ el("nm").focus(); return; } student=v; MQ.setStudent(v); el("whoName").textContent=v; MQ.sound("level"); menu(); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+  } else { el("whoName").textContent=student; menu(); }
+}
+
+function menu(){
+  el("whoName").textContent=student||"Learner";
+  screen.innerHTML=
+    '<div class="modegrid">'+
+      '<div class="card modecard center" style="border-top:10px solid #2bd576;">'+
+        '<div class="mascot">📚</div>'+
+        '<h2>SAT Practice</h2>'+
+        '<p class="muted" style="min-height:66px;font-weight:700;">Work through SAT-style addition &amp; subtraction questions at your own pace. Instant feedback, hints and full worked answers.</p>'+
+        '<button class="btn big green" id="practiceBtn">▶ Start practice</button>'+
+      '</div>'+
+      '<div class="card modecard center" style="border-top:10px solid #4b8bff;">'+
+        '<div class="mascot">🖥️</div>'+
+        '<h2>CBT Test · 30 min</h2>'+
+        '<p class="muted" style="min-height:66px;font-weight:700;">A real exam-style computer test: <b>15 questions</b>, a <b>30-minute</b> timer, flag &amp; revisit questions, then a full marked report.</p>'+
+        '<button class="btn big blue" id="cbtBtn">🖥️ Start the 30-min test</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="card" id="bestCard" style="margin-top:20px;">'+
+      '<h2>📈 <span id="pn">Your</span> best CBT scores</h2>'+
+      '<p class="muted" id="bestNote">Take a CBT test to start your record. Every test is saved for your tutor. 🎯</p>'+
+      '<div id="bestList"></div>'+
+    '</div>';
+  el("practiceBtn").onclick=function(){ MQ.sound("level"); startPractice(); };
+  el("cbtBtn").onclick=function(){ MQ.sound("click"); cbtIntro(); };
+  loadBest();
+}
+
+function loadBest(){
+  el("pn").textContent=(student||"Your")+"'s";
+  MQ.fetchHistory(student,"Maths SATs").then(function(rows){
+    rows=(rows||[]).filter(function(r){ return (r.student||"").toLowerCase()===(student||"").toLowerCase() && r.mode==="CBT"; });
+    if(!rows.length) return;
+    rows.sort(function(a,b){ return (Number(b.accuracy)||0)-(Number(a.accuracy)||0); });
+    el("bestNote").textContent="Best marked tests (highest first) 🏅";
+    el("bestList").innerHTML=rows.slice(0,5).map(function(r){
+      var acc=Number(r.accuracy)||0, rt=MQ.rating(acc);
+      return '<div style="display:flex;align-items:center;gap:12px;margin:10px 0;">'+
+        '<b style="width:96px;">'+(r.correct||0)+' / '+(r.totalQuestions||15)+'</b>'+
+        '<div class="xpbar" style="flex:1;background:#eee;"><i style="width:'+acc+'%;"></i></div>'+
+        '<span style="width:52px;text-align:right;font-weight:800;">'+acc+'%</span>'+
+        '<span style="width:96px;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</span></div>';
+    }).join("");
+  });
+}
+
+/* =============================================================
+   PRACTICE MODE — one at a time, instant feedback + solutions
+   ============================================================= */
+function startPractice(){
+  var Q=shuffle(BANK), i=0, correct=0, answered=0, firstTry=true;
+  function shell(body){
+    var pct=Math.round(i/Q.length*100);
+    screen.innerHTML=
+      '<div class="card">'+
+        '<div class="row" style="justify-content:space-between;">'+
+          '<span class="qnum">📚 Practice</span>'+
+          '<span class="chip" style="background:#eee;color:#333;">Q '+(i+1)+' / '+Q.length+'</span>'+
+        '</div>'+
+        '<div class="xpbar" style="background:#eee;margin:12px 0 6px;"><i style="width:'+pct+'%;"></i></div>'+
+        body+
+        '<div class="feedback" id="fb"></div>'+
+        '<div class="center" id="controls"></div>'+
+      '</div>';
+  }
+  function next(){
+    el("controls").innerHTML='<button class="btn big green" id="nx">'+(i+1>=Q.length?"See results ▶":"Next ▶")+'</button>';
+    el("nx").focus();
+    el("nx").onclick=function(){ MQ.sound("click"); i++; if(i>=Q.length) done(); else show(); };
+  }
+  function reveal(ok,q){
+    var fb=el("fb");
+    fb.className="feedback "+(ok?"good":"bad");
+    fb.innerHTML=(ok?"🎉 Correct!":"❌ Not quite — the answer is <b>"+answerLabel(q)+"</b>")+
+      '<div class="solbox">💡 '+q.sol+'</div>';
+  }
+  function show(){
+    firstTry=true;
+    var q=Q[i];
+    if(q.k==="mc"){
+      shell(qBody(q)+'<div class="options" id="opts">'+q.options.map(function(o,ix){return '<button class="opt" data-i="'+ix+'">'+o+'</button>';}).join("")+'</div>');
+      el("controls").innerHTML='<button class="btn ghost" id="hintBtn">💡 Hint</button>';
+      el("hintBtn").onclick=function(){ var f=el("fb"); f.className="feedback"; f.textContent="💡 "+q.hint; };
+      Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+        b.onclick=function(){
+          var ix=Number(b.getAttribute("data-i"));
+          if(ix===q.a){ b.classList.add("correct"); document.querySelectorAll("#opts .opt").forEach(function(x){x.disabled=true;});
+            if(firstTry){correct++;} answered++; MQ.sound("correct"); MQ.confetti(60); reveal(true,q); next();
+          } else { b.classList.add("wrong"); b.disabled=true; firstTry=false; MQ.sound("wrong");
+            var f=el("fb"); f.className="feedback bad"; f.innerHTML="Not quite — try another. 💡"; }
+        };
+      });
+      return;
+    }
+    // input
+    shell(qBody(q)+'<div class="center" style="margin-top:12px;"><input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?"></div>');
+    el("controls").innerHTML='<button class="btn green" id="checkBtn">Check ✅</button> <button class="btn ghost" id="hintBtn">💡 Hint</button>';
+    var inp=el("ans"); inp.focus();
+    el("hintBtn").onclick=function(){ var f=el("fb"); f.className="feedback"; f.textContent="💡 "+q.hint; };
+    el("checkBtn").onclick=function(){
+      var v=Number(String(inp.value).replace(/[,\s]/g,""));
+      if(inp.value===""||isNaN(v)){ var f=el("fb"); f.className="feedback"; f.textContent="Type a number first ✏️"; return; }
+      if(v===q.a){ inp.disabled=true; if(firstTry){correct++;} answered++; MQ.sound("correct"); MQ.confetti(60); reveal(true,q); next(); }
+      else { firstTry=false; MQ.sound("wrong"); var f=el("fb"); f.className="feedback bad"; f.innerHTML="Not quite — have another go. 💡 "+q.hint; inp.value=""; inp.focus(); }
+    };
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter") el("checkBtn").click(); });
+  }
+  function done(){
+    var acc=answered?Math.round(correct/answered*100):0, rt=MQ.rating(acc);
+    MQ.sound("win"); MQ.confetti(180);
+    screen.innerHTML=
+      '<div class="card center">'+
+        '<div class="mascot" style="font-size:76px;">'+rt.emoji+'</div>'+
+        '<h1>Practice complete!</h1>'+
+        '<div class="speech">Well done, '+(student||"star")+'! You practised '+Q.length+' SAT questions.</div>'+
+        '<div class="row" style="margin:18px 0;gap:26px;"><div><div class="big-num" style="font-size:52px;">'+acc+'%</div><div class="muted">Accuracy</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+correct+'/'+Q.length+'</div><div class="muted">First-try correct</div></div></div>'+
+        '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+        '<div class="row" style="margin-top:8px;"><button class="btn green" id="again">🔁 Practise again</button>'+
+        '<button class="btn blue" id="toCbt">🖥️ Try the 30-min test</button>'+
+        '<button class="btn ghost" id="toMenu">🏠 SATs menu</button></div>'+
+      '</div>';
+    el("again").onclick=function(){ MQ.sound("click"); startPractice(); };
+    el("toCbt").onclick=function(){ MQ.sound("click"); cbtIntro(); };
+    el("toMenu").onclick=function(){ MQ.sound("click"); menu(); };
+  }
+  show();
+}
+
+/* =============================================================
+   CBT TEST — 30 minutes, navigable, flaggable, marked report
+   ============================================================= */
+var CBT_COUNT=15, CBT_MINUTES=30;
+function cbtIntro(){
+  screen.innerHTML=
+    '<div class="card center" style="border-top:10px solid #4b8bff;">'+
+      '<div class="mascot">🖥️</div>'+
+      '<h1>CBT Test — Addition &amp; Subtraction</h1>'+
+      '<div class="speech">This is a real exam-style test, '+(student||"explorer")+'.</div>'+
+      '<ul style="text-align:left;max-width:480px;margin:16px auto;font-weight:700;color:#4a4470;">'+
+        '<li>⏱️ <b>30 minutes</b> · <b>'+CBT_COUNT+' questions</b> on addition &amp; subtraction.</li>'+
+        '<li>Move with <b>Next</b> / <b>Back</b>, or tap a number to jump.</li>'+
+        '<li>Not sure? <b>🚩 Flag</b> a question and come back to it.</li>'+
+        '<li>No feedback during the test — you get a <b>full marked report</b> at the end.</li>'+
+        '<li>The test <b>submits automatically</b> when the timer reaches 0.</li>'+
+      '</ul>'+
+      '<div class="row"><button class="btn big blue" id="go">🖥️ Begin the 30-minute test</button>'+
+      '<button class="btn ghost" id="back">← Back</button></div>'+
+    '</div>';
+  el("go").onclick=function(){ MQ.sound("level"); runCBT(); };
+  el("back").onclick=function(){ MQ.sound("click"); menu(); };
+}
+
+function runCBT(){
+  var Q=shuffle(BANK).slice(0,CBT_COUNT);
+  var ans=Q.map(function(){ return null; });   // number or option-index
+  var flag=Q.map(function(){ return false; });
+  var cur=0, startTime=Date.now(), endAt=startTime+CBT_MINUTES*60*1000, timer=null, finished=false;
+
+  function paintTimer(){
+    var left=Math.max(0,Math.round((endAt-Date.now())/1000));
+    var m=Math.floor(left/60), s=left%60;
+    var t=el("cbtTime"); if(t){ t.textContent="⏱ "+m+":"+String(s).padStart(2,"0"); t.classList.toggle("warn",left<=120); }
+    return left;
+  }
+  function tick(){ var left=paintTimer(); if(left<=0){ clearInterval(timer); submit(true); } }
+
+  function answeredCount(){ return ans.filter(function(x){ return x!==null && x!==""; }).length; }
+
+  function render(){
+    var q=Q[cur];
+    var pal="";
+    for(var p=0;p<Q.length;p++){
+      var done=(ans[p]!==null && ans[p]!=="");
+      pal+='<button class="pal'+(done?" done":"")+(p===cur?" cur":"")+(flag[p]?" flag":"")+'" data-p="'+p+'">'+(p+1)+'</button>';
+    }
+    var body;
+    if(q.k==="mc"){
+      body=qBody(q)+'<div class="options" id="opts">'+q.options.map(function(o,ix){
+        return '<button class="opt'+(ans[cur]===ix?" correct":"")+'" data-i="'+ix+'">'+o+'</button>'; }).join("")+'</div>';
+    } else {
+      var cv=(ans[cur]===null?"":ans[cur]);
+      body=qBody(q)+'<div class="center" style="margin-top:12px;"><input class="answer-input" id="ans" inputmode="numeric" autocomplete="off" placeholder="= ?" value="'+cv+'"></div>';
+    }
+    screen.innerHTML=
+      '<div class="cbt-bar">'+
+        '<span class="t" id="cbtTime">⏱ 30:00</span>'+
+        '<span class="meta">Question '+(cur+1)+' of '+Q.length+'</span>'+
+        '<span class="meta">Answered '+answeredCount()+' / '+Q.length+'</span>'+
+      '</div>'+
+      '<div class="card">'+
+        '<div class="row" style="justify-content:space-between;">'+
+          '<span class="qnum" style="background:'+(q.t==="sub"?"#ff5b6b":q.t==="add"?"#2bd576":"#9b5cff")+';">'+(q.t==="add"?"➕ Addition":q.t==="sub"?"➖ Subtraction":"🔀 Multi-step")+'</span>'+
+          '<button class="btn ghost flagbtn'+(flag[cur]?" on":"")+'" id="flagBtn">'+(flag[cur]?"🚩 Flagged":"🚩 Flag")+'</button>'+
+        '</div>'+
+        body+
+        '<div class="row" style="margin-top:16px;justify-content:space-between;">'+
+          '<button class="btn ghost" id="prev"'+(cur===0?" disabled":"")+'>← Back</button>'+
+          (cur+1>=Q.length
+            ? '<button class="btn big green" id="submit">✅ Submit test</button>'
+            : '<button class="btn big blue" id="nextq">Next →</button>')+
+        '</div>'+
+        '<div class="palette">'+pal+'</div>'+
+        '<div class="center"><button class="btn ghost" id="endEarly">🏁 Finish &amp; submit now</button></div>'+
+      '</div>';
+    paintTimer();
+
+    // wire input / options
+    if(q.k==="mc"){
+      Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+        b.onclick=function(){ ans[cur]=Number(b.getAttribute("data-i")); MQ.sound("click");
+          document.querySelectorAll("#opts .opt").forEach(function(x){x.classList.remove("correct");}); b.classList.add("correct"); syncPalette(); };
+      });
+    } else {
+      var inp=el("ans");
+      inp.oninput=function(){ var raw=String(inp.value).replace(/[,\s]/g,""); ans[cur]=(raw===""?"":(isNaN(Number(raw))?"":Number(raw))); syncPalette(); };
+      inp.addEventListener("keydown",function(e){ if(e.key==="Enter"){ if(cur+1<Q.length){ go(cur+1); } else { el("submit").focus(); } } });
+      inp.focus();
+    }
+    el("flagBtn").onclick=function(){ flag[cur]=!flag[cur]; MQ.sound("click"); render(); };
+    var pv=el("prev"); if(pv) pv.onclick=function(){ if(cur>0) go(cur-1); };
+    var nq=el("nextq"); if(nq) nq.onclick=function(){ go(cur+1); };
+    var sb=el("submit"); if(sb) sb.onclick=function(){ confirmSubmit(); };
+    el("endEarly").onclick=function(){ confirmSubmit(); };
+    Array.prototype.forEach.call(document.querySelectorAll(".pal"),function(b){
+      b.onclick=function(){ go(Number(b.getAttribute("data-p"))); };
+    });
+  }
+  function syncPalette(){
+    // lightweight update of the current palette tile + counters without full re-render
+    var meta=document.querySelectorAll(".cbt-bar .meta")[1]; if(meta) meta.textContent="Answered "+answeredCount()+" / "+Q.length;
+    var tile=document.querySelector('.pal[data-p="'+cur+'"]');
+    if(tile){ var done=(ans[cur]!==null && ans[cur]!==""); tile.classList.toggle("done",done); }
+  }
+  function go(p){ if(p<0||p>=Q.length) return; cur=p; MQ.sound("click"); render(); }
+
+  function confirmSubmit(){
+    var unanswered=ans.filter(function(x){ return x===null||x===""; }).length;
+    var flagged=flag.filter(Boolean).length;
+    var msg="Submit your test now?";
+    var extra=[];
+    if(unanswered) extra.push(unanswered+" not answered");
+    if(flagged) extra.push(flagged+" flagged");
+    if(extra.length) msg+="\n\nYou still have "+extra.join(" and ")+".";
+    if(window.confirm(msg)) submit(false);
+  }
+
+  function submit(timedOut){
+    if(finished) return; finished=true;
+    if(timer) clearInterval(timer);
+    var correct=0, answered=0;
+    var review=Q.map(function(q,ix){
+      var given=ans[ix];
+      var didAnswer=(given!==null && given!=="");
+      var isRight = q.k==="mc" ? (given===q.a) : (Number(given)===q.a);
+      if(didAnswer) answered++;
+      if(isRight) correct++;
+      return { q:q, given:given, didAnswer:didAnswer, right:isRight };
+    });
+    var acc=Math.round(correct/Q.length*100);   // marked out of the whole paper
+    var rt=MQ.rating(acc);
+    var used=Math.max(1,Math.round((Date.now()-startTime)/60000));
+    MQ.sound("win"); MQ.confetti(220);
+
+    var reviewHtml=review.map(function(r,ix){
+      var q=r.q;
+      var yours = !r.didAnswer ? '<span style="color:#b23">— (blank)</span>'
+                 : (q.k==="mc" ? q.options[r.given] : commas(r.given));
+      return '<div class="rev-item '+(r.right?"ok":"no")+'">'+
+        '<span class="rev-badge">'+(r.right?"✅":"❌")+'</span>'+
+        '<div style="font-weight:800;margin-bottom:4px;">Q'+(ix+1)+'. '+qTitle(q)+'</div>'+
+        '<div class="ya">Your answer: '+yours+'</div>'+
+        (r.right?'':'<div class="ya" style="color:#0a8a3f;">Correct answer: '+answerLabel(q)+'</div>')+
+        '<div class="solbox">💡 '+q.sol+'</div>'+
+      '</div>';
+    }).join("");
+
+    screen.innerHTML=
+      '<div class="card center">'+
+        '<div class="mascot" style="font-size:78px;">'+rt.emoji+'</div>'+
+        '<h1>'+(timedOut?"⏰ Time\'s up — test submitted":"Test submitted!")+'</h1>'+
+        '<div class="speech">Here is your marked SATs report, '+(student||"explorer")+'.</div>'+
+        '<div class="row" style="margin:18px 0;gap:22px;">'+
+          '<div><div class="big-num" style="font-size:54px;">'+correct+'/'+Q.length+'</div><div class="muted">Score</div></div>'+
+          '<div><div class="big-num" style="font-size:54px;">'+acc+'%</div><div class="muted">Marks</div></div>'+
+          '<div><div class="big-num" style="font-size:54px;">'+used+'</div><div class="muted">Minutes used</div></div>'+
+        '</div>'+
+        '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+        '<p style="font-size:20px;font-weight:800;color:var(--purple);">Rating: '+rt.label+'</p>'+
+        '<p class="muted" id="saveState">💾 Saving your result…</p>'+
+        '<div class="row" style="margin-top:6px;"><button class="btn green" id="retry">🔁 New test</button>'+
+        '<button class="btn ghost" id="toMenu">🏠 SATs menu</button></div>'+
+      '</div>'+
+      '<div class="card"><h2>📋 Question-by-question review</h2>'+reviewHtml+'</div>';
+    el("retry").onclick=function(){ MQ.sound("click"); cbtIntro(); };
+    el("toMenu").onclick=function(){ MQ.sound("click"); menu(); };
+
+    MQ.logResult({
+      student: student||"Unknown", subject:"Maths SATs", mode:"CBT",
+      week:"", weekTitle:"SATs CBT — Addition & Subtraction",
+      accuracy:acc, correct:correct, answered:answered, totalQuestions:Q.length,
+      stars:rt.stars, rating:rt.label, minutes:used, timedOut:!!timedOut,
+      school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+      tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+    }).then(function(res){
+      var s=el("saveState"); if(!s) return;
+      if(res&&res.ok) s.textContent="✅ Test saved — your tutor can see your report!";
+      else if(res&&res.offline) s.textContent="📴 Saved on this device (tutor: add the Apps Script link to sync).";
+      else s.textContent="⚠️ Couldn't reach the server, but your result is saved on this device.";
+    });
+  }
+
+  render();
+  timer=setInterval(tick,1000);
+}
+
+home();
+</script>
+</body>
+</html>
