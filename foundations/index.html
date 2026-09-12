@@ -40,6 +40,16 @@
   canvas.board { width:100%; height:300px; background:#fff; border-radius:20px; border:5px dashed var(--purple);
     touch-action:none; display:block; box-shadow: inset 0 2px 8px rgba(35,20,80,.08); }
 
+  /* trace / blank mode toggle */
+  .boardmode { font-size:16px; padding:8px 16px; }
+  .boardmode.active { background: var(--purple); color:#fff; border-color: var(--purple); box-shadow: 0 6px 14px rgba(120,90,220,.32); }
+
+  /* pen colour chips (free whiteboard) */
+  .pen-chip { width:44px; height:44px; border-radius:50%; border:3px solid #fff; cursor:pointer;
+    font-size:20px; line-height:1; box-shadow:0 4px 10px rgba(20,12,55,.22); transition:transform .1s; }
+  .pen-chip:hover { transform: translateY(-3px) scale(1.08); }
+  .pen-chip.sel { outline:4px solid rgba(36,26,94,.45); outline-offset:2px; transform: scale(1.12); }
+
   /* number path map */
   .numpath { display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin:18px auto; max-width:640px; }
   .stone {
@@ -90,6 +100,23 @@ var NUMS=[
 ];
 var ONES=["","one","two","three","four","five","six","seven","eight","nine","ten"];
 var MASCOT="🐻";
+
+/* Handwriting (school-form) numeral stroke skeletons, drawn in a 100 x 150 box.
+   These are the shapes children write in books — a two-curve 3, an open 4,
+   a plain 1 — used as the tracing "road". Each has a start point (green dot). */
+var DIGIT_PATHS={
+  "0":"M50,22 C30,22 24,52 24,75 C24,100 30,130 50,130 C70,130 76,100 76,75 C76,50 70,22 50,22 Z",
+  "1":"M32,46 L54,26 L54,132",
+  "2":"M27,48 C29,25 73,24 72,49 C71,69 40,92 25,131 L81,131",
+  "3":"M28,44 C36,23 74,26 70,49 C67,64 47,64 47,64 C73,64 81,97 60,117 C45,128 27,120 25,101",
+  "4":"M63,24 L23,97 L83,97 M65,24 L65,132",
+  "5":"M73,26 L38,26 L33,65 C56,54 81,65 79,97 C77,123 44,133 26,112",
+  "6":"M69,28 C43,30 26,60 26,92 C26,116 46,133 55,128 C75,121 75,93 55,88 C40,84 28,99 30,105",
+  "7":"M25,28 L82,28 L44,132",
+  "8":"M50,24 C29,24 30,58 50,67 C73,76 72,24 50,24 M50,67 C25,76 23,132 50,132 C77,132 75,76 50,67",
+  "9":"M69,50 C69,28 32,27 30,50 C28,73 66,78 69,53 L58,132"
+};
+var DIGIT_STARTS={ "0":[50,22],"1":[32,46],"2":[27,48],"3":[28,44],"4":[63,24],"5":[73,26],"6":[69,28],"7":[25,28],"8":[50,24],"9":[69,50] };
 
 /* ---------- speech (audio-first for the learner) ---------- */
 function say(text, rate){
@@ -163,8 +190,10 @@ function showMap(){
       '<button class="btn big green" id="startBtn" style="margin:16px auto 8px;max-width:420px;">▶ Start at number 1</button>'+
       '<div class="numpath">'+stones+'</div>'+
       '<p class="muted">Numbers with a ⭐ are done — you can always play again!</p>'+
+      '<button class="btn orange" id="freeBtn" style="margin:6px auto 0;max-width:420px;">🎨 Free Whiteboard — practise writing</button>'+
     '</div>';
   document.getElementById("startBtn").onclick=function(){ MQ.sound("click"); startNumber(1); };
+  document.getElementById("freeBtn").onclick=function(){ MQ.sound("click"); freeBoard(); };
   Array.prototype.forEach.call(document.querySelectorAll(".stone"),function(s){
     s.onclick=function(){ MQ.sound("click"); startNumber(Number(s.getAttribute("data-n"))); };
   });
@@ -288,7 +317,11 @@ var board=null;
 function writeNum(c){
   screen.innerHTML=
     '<div class="card">'+ header(c,"Step 4 · Write it") +
-      '<div class="instr" style="margin-top:10px;">🖍️ Trace the number <b style="color:'+c.color+'">'+c.n+'</b> with your finger. Follow the dotted line!</div>'+
+      '<div class="instr" id="instr" style="margin-top:10px;">🖍️ Trace the number <b style="color:'+c.color+'">'+c.n+'</b> — follow the dotted line from the green dot 🟢</div>'+
+      '<div class="row" style="margin:6px 0 2px;gap:8px;">'+
+        '<button class="btn ghost boardmode active" id="mTrace">✏️ Trace</button>'+
+        '<button class="btn ghost boardmode" id="mBlank">⬜ Blank board</button>'+
+      '</div>'+
       '<div class="board-wrap"><canvas class="board" id="board"></canvas></div>'+
       '<div class="row" style="margin-top:10px;">'+
         '<button class="btn ghost" id="hear">🔊 Hear it</button>'+
@@ -297,13 +330,24 @@ function writeNum(c){
       '</div>'+
       '<div class="feedback" id="fb"></div>'+
     '</div>';
-  say("Now write number "+c.word+". Trace it with your finger!");
-  board=initBoard(document.getElementById("board"), String(c.n), c.color);
+  say("Now write number "+c.word+". Trace it with your finger, starting at the green dot!");
+  board=initBoard(document.getElementById("board"), String(c.n), c.color, "trace");
+  function setMode(m){
+    board.setMode(m);
+    document.getElementById("mTrace").classList.toggle("active", m==="trace");
+    document.getElementById("mBlank").classList.toggle("active", m==="blank");
+    document.getElementById("instr").innerHTML = m==="trace"
+      ? '🖍️ Trace the number <b style="color:'+c.color+'">'+c.n+'</b> — follow the dotted line from the green dot 🟢'
+      : '⬜ Blank board — write number <b style="color:'+c.color+'">'+c.n+'</b> your own way! Practise as much as you like.';
+    MQ.sound("click");
+  }
+  document.getElementById("mTrace").onclick=function(){ setMode("trace"); };
+  document.getElementById("mBlank").onclick=function(){ setMode("blank"); };
   document.getElementById("hear").onclick=function(){ say("Number "+c.word); };
   document.getElementById("clear").onclick=function(){ board.clear(); MQ.sound("click"); };
   document.getElementById("done").onclick=function(){
     var fb=document.getElementById("fb");
-    if(board.dist()<120){ fb.className="feedback"; fb.innerHTML="✏️ Have a go — trace the "+c.n+" along the dots!"; say("Trace the number "+c.word); return; }
+    if(board.dist()<120){ fb.className="feedback"; fb.innerHTML="✏️ Have a go — write the "+c.n+" on the board!"; say("Write the number "+c.word); return; }
     MQ.sound("win"); MQ.confetti(90); fb.className="feedback good"; fb.innerHTML="🌟 Beautiful writing!";
     say("Beautiful writing! That's number "+c.word+".");
     document.querySelector("#done").disabled=true;
@@ -311,34 +355,93 @@ function writeNum(c){
   };
 }
 
-/* pointer-drawing whiteboard with a dashed guide numeral */
-function initBoard(canvas, digit, color){
+/* pointer-drawing whiteboard.
+   mode "trace" shows a school-form numeral guide (road + dashed centre + start dot);
+   mode "blank" is a plain white board for free practice. */
+function initBoard(canvas, text, color, mode){
+  mode=mode||"trace";
   var ctx=canvas.getContext("2d");
   var rect=canvas.getBoundingClientRect();
   var dpr=window.devicePixelRatio||1;
   canvas.width=Math.round(rect.width*dpr); canvas.height=Math.round(rect.height*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  var W=rect.width, H=rect.height, dist=0, drawing=false, last=null;
+  var W=rect.width, H=rect.height, dist=0, drawing=false, last=null, pen=color;
   ctx.lineCap="round"; ctx.lineJoin="round";
-  function guide(){
-    ctx.clearRect(0,0,W,H);
-    ctx.save();
-    ctx.font="800 "+Math.floor(H*0.72)+"px 'Baloo 2', 'Comic Sans MS', sans-serif";
-    ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillStyle="rgba(40,26,94,.06)"; ctx.fillText(digit, W/2, H/2);
-    ctx.lineWidth=4; ctx.setLineDash([9,12]); ctx.strokeStyle="rgba(120,110,180,.6)"; ctx.strokeText(digit, W/2, H/2);
-    ctx.restore();
-    ctx.setLineDash([]);
+
+  function drawGuide(){
+    if(mode!=="trace") return;
+    var chars=String(text).split(""), unitW=100, unitH=150, gap=20;
+    var totalW=chars.length*unitW + (chars.length-1)*gap;
+    var s=Math.min((H*0.74)/unitH, (W*0.86)/totalW);
+    var ox=(W-totalW*s)/2, oy=(H-unitH*s)/2;
+    chars.forEach(function(ch,idx){
+      var d=DIGIT_PATHS[ch]; if(!d) return;
+      var dx=ox + idx*(unitW+gap)*s;
+      var mat, pth=new Path2D();
+      try { mat=new DOMMatrix([s,0,0,s,dx,oy]); pth.addPath(new Path2D(d), mat); }
+      catch(e){ pth=null; }
+      if(!pth) return;
+      ctx.save();
+      ctx.setLineDash([]); ctx.strokeStyle="rgba(150,140,205,.20)"; ctx.lineWidth=20; ctx.stroke(pth);  // the "road"
+      ctx.strokeStyle="rgba(110,98,180,.75)"; ctx.lineWidth=3; ctx.setLineDash([8,12]); ctx.stroke(pth); // dashed centre
+      ctx.setLineDash([]);
+      var st=DIGIT_STARTS[ch];
+      if(st){ var sx=dx+st[0]*s, sy=oy+st[1]*s; ctx.beginPath(); ctx.fillStyle="#22bd6b"; ctx.arc(sx,sy,9,0,6.29); ctx.fill();
+        ctx.beginPath(); ctx.fillStyle="#fff"; ctx.arc(sx,sy,3.2,0,6.29); ctx.fill(); }
+      ctx.restore();
+    });
   }
-  guide();
+  function redraw(){ ctx.clearRect(0,0,W,H); drawGuide(); }
+  redraw();
+
   function pos(e){ var r=canvas.getBoundingClientRect(); return { x:e.clientX-r.left, y:e.clientY-r.top }; }
   canvas.addEventListener("pointerdown",function(e){ e.preventDefault(); drawing=true; last=pos(e); try{ canvas.setPointerCapture(e.pointerId); }catch(_){} });
   canvas.addEventListener("pointermove",function(e){ if(!drawing) return; e.preventDefault(); var p=pos(e);
-    ctx.strokeStyle=color; ctx.lineWidth=18; ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+    ctx.setLineDash([]); ctx.strokeStyle=pen; ctx.lineWidth=16; ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
     dist+=Math.hypot(p.x-last.x,p.y-last.y); last=p; });
-  canvas.addEventListener("pointerup",function(e){ drawing=false; });
+  canvas.addEventListener("pointerup",function(){ drawing=false; });
   canvas.addEventListener("pointercancel",function(){ drawing=false; });
-  return { clear:function(){ dist=0; guide(); }, dist:function(){ return dist; } };
+
+  return {
+    clear:function(){ dist=0; redraw(); },
+    dist:function(){ return dist; },
+    setMode:function(m){ mode=m; dist=0; redraw(); },
+    setColor:function(c){ pen=c; }
+  };
+}
+
+/* --- Standalone plain whiteboard (free practice, any number, any form) --- */
+var freeB=null;
+function freeBoard(){
+  clearTimers();
+  var pens=[["#4b8bff","💙"],["#ff5b6b","❤️"],["#2bd576","💚"],["#9b5cff","💜"],["#f5a623","🧡"],["#241a5e","🖤"]];
+  screen.innerHTML=
+    '<div class="card">'+
+      '<div class="row" style="justify-content:space-between;">'+
+        '<span class="chip" style="background:var(--purple);color:#fff;">🎨 Free Whiteboard</span>'+
+        '<span class="chip" style="background:#eee;color:#333;">Write anything!</span>'+
+      '</div>'+
+      '<div class="instr" style="margin-top:10px;">✍️ A plain board — practise writing your numbers 0–9 any way you like!</div>'+
+      '<div class="row" id="pens" style="gap:10px;margin:8px 0;"></div>'+
+      '<div class="board-wrap"><canvas class="board" id="fboard" style="border-color:#cdbff2;"></canvas></div>'+
+      '<div class="row" style="margin-top:10px;">'+
+        '<button class="btn ghost" id="say19">🔊 Count 1 to 10</button>'+
+        '<button class="btn ghost" id="fclear">🧹 Clear</button>'+
+        '<button class="btn blue" id="fback">🗺️ Back to numbers</button>'+
+      '</div>'+
+    '</div>';
+  freeB=initBoard(document.getElementById("fboard"), "", "#4b8bff", "blank");
+  var pensEl=document.getElementById("pens");
+  pens.forEach(function(p,i){
+    var b=document.createElement("button"); b.className="pen-chip"+(i===0?" sel":""); b.textContent=p[1];
+    b.style.background=p[0]; b.onclick=function(){ freeB.setColor(p[0]); MQ.sound("click");
+      Array.prototype.forEach.call(pensEl.children,function(x){x.classList.remove("sel");}); b.classList.add("sel"); };
+    pensEl.appendChild(b);
+  });
+  document.getElementById("say19").onclick=function(){ say("one, two, three, four, five, six, seven, eight, nine, ten"); };
+  document.getElementById("fclear").onclick=function(){ freeB.clear(); MQ.sound("click"); };
+  document.getElementById("fback").onclick=function(){ MQ.sound("click"); showMap(); };
+  say("This is your free whiteboard. Write any number you like!");
 }
 
 /* --- COMPLETE a number --- */
