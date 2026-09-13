@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Week 3 — Punctuation Marks | Grammar Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <span class="chip">⭐ Lvl <b id="lvl">1</b></span>
+    <span class="chip streak-fire" id="streakChip">🔥 <b id="streak">0</b></span>
+    <span class="chip">💎 XP <b id="xp">0</b></span>
+    <div class="xpbar" title="XP to next level"><i id="xpFill"></i></div>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Grammar Quest</small></span>
+  </div>
+
+  <div class="stagemap" id="stagemap"></div>
+  <div id="screen"></div>
+
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script src="../assets/assignment.js"></script>
+<script>
+/* =============================================================
+   GRAMMAR QUEST — WEEK 3: Punctuation Marks (Year 6)
+   Focus: full stop (.), question mark (?) and comma (,).
+   Story-led, self-discovery, teacher-guided. Same engine as
+   Weeks 1–2 — only the content (parse/buildStages/buildAssignment)
+   changes.
+   ============================================================= */
+var WEEK_NUMBER = 3;
+var WEEK_TITLE  = "Punctuation Marks";
+var SUBJECT     = "English";
+var OWL = "🦉";
+
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+/* Turn a tagged string into selectable tokens.
+   For this punctuation week the only word-flag is |comma — it marks a
+   word that should be FOLLOWED by a comma (e.g. list items). Real
+   punctuation marks (. , ? !) are auto-detected and shown but not tapped. */
+function parse(str){
+  return str.trim().split(/\s+/).map(function(t){
+    var m=t.split("|"), w=m[0], f=m[1]||"";
+    var isP=/^[.,!?;:]+$/.test(w);
+    return { w:w, comma:/comma/.test(f), punct:isP };
+  });
+}
+
+/* =============================================================
+   THE LESSON  (stages -> flow of steps)
+   step kinds: slide | tap | mc
+   ============================================================= */
+function buildStages(){
+  return [
+    /* ------------------- FULL STOP ------------------- */
+    { key:"fullstop", emoji:"🛑", title:"The Stopping Gem", color:"var(--red)",
+      gem:"🛑", flow:[
+      { kind:"slide", html:"Welcome back to the <b>Land of Words</b>, explorer! 🦉 This week we collect <b>Punctuation Gems</b> — the tiny marks that make writing make sense. First: the <b>Stopping Gem</b> 🛑 — the <b>FULL STOP</b> (.)." },
+      { kind:"slide", html:"A <b>full stop</b> (.) shows a sentence has <b>finished</b>. We use it at the end of a <b>telling sentence</b> (a statement) or a <b>command</b>. Every sentence also <b>starts with a capital letter</b>." },
+      { kind:"mc", q:"Which mark finishes this telling sentence?<br>“I love my new bike ___”", options:[".","?","!",","], answer:0,
+        why:"“I love my new bike.” is a statement — it ends with a full stop (.)." },
+      { kind:"mc", q:"Which sentence is written <b>correctly</b>?", options:["the dog barked","The dog barked.","the dog barked ,"], answer:1,
+        why:"A sentence needs a CAPITAL letter to start and a FULL STOP to end: “The dog barked.”" },
+      { kind:"slide", html:"A full stop also ends a <b>command</b> (a bossy sentence): “Sit down.” “Close the door.” It tells us to <b>stop</b> — the idea is complete." },
+      { kind:"mc", q:"Choose the correct end mark for this command:<br>“Please tidy your room ___”", options:[".","?"], answer:0,
+        why:"A command ends with a full stop: “Please tidy your room.”" },
+      { kind:"mc", q:"Which one still <b>needs a full stop</b> at the end?", options:["Are you cold?","We walked to school","Wow!"], answer:1,
+        why:"“We walked to school” is an unfinished statement — it needs a full stop: “We walked to school.”" }
+    ]},
+
+    { break:true, emoji:"🤸", title:"Brain Break!", text:"Stand tall, reach for the sky ☁️, then shake it out. Ready in…" },
+
+    /* ------------------- QUESTION MARK ------------------- */
+    { key:"question", emoji:"❓", title:"The Asking Gem", color:"var(--blue)",
+      gem:"❓", flow:[
+      { kind:"slide", html:"Next gem: the <b>Asking Gem</b> ❓ — the <b>QUESTION MARK</b> (?). We use it at the end of a sentence that <b>asks something</b>." },
+      { kind:"slide", html:"Questions often begin with a <b>question word</b>: <b>who, what, where, when, why, how</b> — or with <b>is, are, do, can, will</b>. “Where is my bag?” “Are you ready?”" },
+      { kind:"mc", q:"Which mark finishes this asking sentence?<br>“Where are my shoes ___”", options:[".","?","!"], answer:1,
+        why:"“Where are my shoes?” is a question — it ends with a question mark (?)." },
+      { kind:"mc", q:"Which sentence is a <b>question</b>?", options:["Close the door.","Are you coming with us?","I am very tired."], answer:1,
+        why:"“Are you coming with us?” asks something, so it needs a question mark." },
+      { kind:"mc", q:"Choose the correct end mark:<br>“What time does the film start ___”", options:[".","?"], answer:1,
+        why:"It begins with the question word “What” and asks something — it ends with a question mark (?)." },
+      { kind:"mc", q:"Statement or question?<br>“The cake is ready ___”", options:["Full stop  .","Question mark  ?"], answer:0,
+        why:"“The cake is ready.” is telling us something — a statement, so it takes a full stop." },
+      { kind:"mc", q:"Which end mark is missing?<br>“Why is the sky blue ___”", options:[".","?"], answer:1,
+        why:"“Why…?” asks a question, so it ends with a question mark." }
+    ]},
+
+    { break:true, emoji:"💧", title:"Brain Break!", text:"Three big breaths 🌬️ and a sip of water 💧. Wiggle your fingers. Ready in…" },
+
+    /* ------------------- COMMA ------------------- */
+    { key:"comma", emoji:"✋", title:"The Pause Gem", color:"var(--purple)",
+      gem:"✋", flow:[
+      { kind:"slide", html:"The last gem: the <b>Pause Gem</b> ✋ — the <b>COMMA</b> (,). A comma tells the reader to take a <b>short pause</b>. Its most common job is to <b>separate items in a list</b>." },
+      { kind:"slide", html:"In a list of three or more, put a comma between the items — but <b>not</b> before the final “and”:<br>“I bought <b>apples, pears, plums</b> and grapes.”" },
+      { kind:"tap", discovery:true, target:"comma", instr:"🔍 DISCOVER: tap the words that should have a <u>comma after them</u> in this list.",
+        tokens:parse("I like red|comma blue|comma green and gold ."),
+        reveal:"Brilliant! A comma goes after <b>red</b> and after <b>blue</b> — “I like red, blue, green and gold.” No comma before “and”. 🌟" },
+      { kind:"mc", q:"Which list is punctuated <b>correctly</b>?", options:["I need a pen a ruler and a book.","I need a pen, a ruler and a book.","I need, a pen a ruler, and a book."], answer:1,
+        why:"Commas separate the list items, with no comma before “and”: “a pen, a ruler and a book.”" },
+      { kind:"tap", target:"comma", instr:"Tap the words that need a <b>comma after them</b>.",
+        tokens:parse("We packed hats|comma coats|comma boots and gloves ."),
+        why:"Commas go after hats and coats: “hats, coats, boots and gloves.”" },
+      { kind:"slide", html:"A comma also gives a pause after a <b>starting word or phrase</b>: “<b>Yes,</b> I agree.” “<b>After lunch,</b> we went outside.”" },
+      { kind:"mc", q:"Where should the comma go?", options:["After lunch we went outside.","After lunch, we went outside.","After, lunch we went outside."], answer:1,
+        why:"A comma follows the starting phrase: “After lunch, we went outside.”" },
+      { kind:"mc", q:"Choose the correctly punctuated sentence:", options:["Yes I would love to come.","Yes, I would love to come.","Yes I would, love to come."], answer:1,
+        why:"A comma comes after “Yes” to show a pause: “Yes, I would love to come.”" }
+    ]},
+
+    /* ------------------- BOSS ------------------- */
+    { key:"boss", emoji:"👑", title:"PUNCTUATION MASTER CHALLENGE", color:"var(--orange)",
+      gem:"👑", flow:[
+      { kind:"slide", html:"You've collected all three gems! 🛑❓✋ Now the <b>Punctuation Master Challenge</b>: choose the right mark every time. Show your mastery! 🐉" },
+      { kind:"mc", q:"“Do you like pizza ___”<br>Which end mark?", options:["Full stop  .","Question mark  ?"], answer:1,
+        why:"It asks something (“Do you…?”) — a question mark." },
+      { kind:"mc", q:"“The train left the station ___”<br>Which end mark?", options:["Full stop  .","Question mark  ?"], answer:0,
+        why:"It tells us something — a statement, so a full stop." },
+      { kind:"mc", q:"Which sentence is punctuated <b>correctly</b>?", options:["what is your name","What is your name?","What is your name."], answer:1,
+        why:"A question needs a capital letter and a question mark: “What is your name?”" },
+      { kind:"tap", target:"comma", instr:"Tap the words that need a <b>comma after them</b>.",
+        tokens:parse("She grows carrots|comma beans|comma peas and corn ."),
+        why:"Commas go after carrots and beans: “carrots, beans, peas and corn.”" },
+      { kind:"mc", q:"Which sentence uses the comma <b>correctly</b>?", options:["Before bed, I brush my teeth.","Before, bed I brush my teeth.","Before bed I brush, my teeth."], answer:0,
+        why:"The comma follows the starting phrase: “Before bed, I brush my teeth.”" },
+      { kind:"mc", q:"“Please pass me the salt ___”<br>Which end mark fits this command?", options:["Full stop  .","Question mark  ?"], answer:0,
+        why:"A command ends with a full stop: “Please pass me the salt.”" }
+    ]}
+  ];
+}
+
+/* =============================================================
+   ENGINE  (identical to Weeks 1–2)
+   ============================================================= */
+var state = {
+  student: MQ.getStudent() || "",
+  xp:0, level:1, streak:0, bestStreak:0,
+  idx:0, si:0, firstTry:true,
+  correctFirst:0, totalQ:0, stageStats:{},
+  completed:{}, maxCleared:-1,
+  startTime:Date.now()
+};
+var STAGES = buildStages();
+var screen = document.getElementById("screen");
+
+(function(){
+  var nm=(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var el=document.querySelector("#brand .nm"); if(el) el.innerHTML=nm+"<small>Grammar Quest</small>";
+  document.title="Week "+WEEK_NUMBER+" — "+WEEK_TITLE+" | "+nm;
+})();
+
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); };
+paintSound();
+
+function paintHUD(){
+  document.getElementById("lvl").textContent=state.level;
+  document.getElementById("xp").textContent=state.xp;
+  document.getElementById("streak").textContent=state.streak;
+  document.getElementById("xpFill").style.width=(state.xp%100)+"%";
+  document.getElementById("streakChip").classList.toggle("on", state.streak>=3);
+}
+function addXP(n){
+  state.xp+=n;
+  var nl=1+Math.floor(state.xp/100);
+  if(nl>state.level){ state.level=nl; MQ.sound("level"); MQ.confetti(70); toast("⬆️ LEVEL "+nl+"!"); }
+  paintHUD();
+}
+function toast(msg){
+  var t=document.createElement("div");
+  t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:18px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);animation:popIn .3s;";
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },1100);
+}
+function paintMap(){
+  var map=document.getElementById("stagemap"); if(!map) return; map.innerHTML="";
+  STAGES.forEach(function(s, realIdx){
+    if(s.break) return;
+    var d=document.createElement("div");
+    var done=!!state.completed[s.key], active=(realIdx===state.idx);
+    d.className="node clickable"+(done?" done":"")+(active?" active":"");
+    d.textContent=done?"✓":s.emoji;
+    d.title="Go to: "+s.title+(done?" (done ✓)":"");
+    d.setAttribute("role","button"); d.tabIndex=0;
+    d.onclick=function(){ jumpToStage(realIdx); };
+    d.onkeydown=function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); jumpToStage(realIdx); } };
+    map.appendChild(d);
+  });
+}
+
+function jumpToStage(realIdx){
+  if(realIdx<0 || realIdx>=STAGES.length || STAGES[realIdx].break) return;
+  MQ.sound("click");
+  state.idx=realIdx; state.si=0;
+  showStageIntro(STAGES[realIdx]);
+}
+
+function progKey(){ return "eng"+WEEK_NUMBER+"prog_"+(state.student||"").toLowerCase(); }
+function loadProgress(){
+  var p=MQ.readLocal(progKey());
+  if(p){ state.completed=p.completed||{}; state.maxCleared=(typeof p.maxCleared==="number")?p.maxCleared:-1; }
+}
+function saveProgress(){ MQ.saveLocal(progKey(), { completed:state.completed, maxCleared:state.maxCleared, updated:Date.now() }); }
+function resumeTarget(){
+  for(var i=0;i<STAGES.length;i++){ if(STAGES[i].break) continue; if(!state.completed[STAGES[i].key]) return i; }
+  return null;
+}
+
+function countSteps(){ return STAGES.reduce(function(n,s){ return n+(s.flow?s.flow.filter(function(x){return x.kind!=="slide"&&!x.discovery;}).length:0); },0); }
+
+function showIntro(){
+  paintMap();
+  var rt=resumeTarget(), doneCount=Object.keys(state.completed).length, buttons, welcome;
+  if(doneCount>0 && rt!=null){
+    welcome="Welcome back, "+(state.student||"explorer")+"! You've collected <b>"+doneCount+"</b> gem"+(doneCount===1?"":"s")+". Continue where you left off, or tap any icon above to jump to a stage. 🦉";
+    buttons='<button class="btn big green" id="contBtn">▶ Continue: '+STAGES[rt].emoji+' '+STAGES[rt].title+'</button>'+
+            '<button class="btn blue" id="goBtn" style="margin-top:10px;">↺ Start from the beginning</button>';
+  } else if(doneCount>0){
+    welcome="Welcome back, "+(state.student||"explorer")+"! 🏆 You've collected <b>every</b> punctuation gem. Tap any icon above to revisit, or replay from the start.";
+    buttons='<button class="btn big green" id="goBtn">🔁 Replay from the start</button>';
+  } else {
+    welcome="Hoot! I am <b>Professor Hoot</b>. This week we master the marks that shape every sentence — the <b>full stop</b>, <b>question mark</b> and <b>comma</b>. Tap any icon above to jump around. Ready, "+(state.student||"explorer")+"?";
+    buttons='<button class="btn big green" id="goBtn">🚀 START THE QUEST</button>';
+  }
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot">'+OWL+'</div>'+
+      '<h1>Week '+WEEK_NUMBER+': '+WEEK_TITLE+'</h1>'+
+      '<div class="speech">'+welcome+'</div>'+
+      '<div class="row" style="margin-top:18px;flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto;">'+buttons+'</div>'+
+      '<p class="muted" style="margin-top:12px;">Tip: answer on your first try to grow your 🔥 streak!</p>'+
+    '</div>';
+  document.getElementById("goBtn").onclick=function(){ MQ.sound("click"); state.idx=0; nextStage(true); };
+  var cb=document.getElementById("contBtn"); if(cb) cb.onclick=function(){ jumpToStage(rt); };
+}
+
+function nextStage(first){
+  if(!first) state.idx++;
+  if(state.idx>=STAGES.length) return showResults();
+  var s=STAGES[state.idx];
+  if(s.break) return showBreak(s);
+  state.si=0;
+  showStageIntro(s);
+}
+
+function showStageIntro(s){
+  paintMap();
+  screen.innerHTML=
+    '<div class="card center" style="border-top:10px solid '+(s.color||"var(--blue)")+';">'+
+      '<div style="font-size:64px;">'+s.emoji+'</div>'+
+      '<h1>'+s.title+'</h1>'+
+      '<div class="speech">A new gem awaits! Let\'s learn, then prove it. 💪</div>'+
+      '<button class="btn big blue" id="stgBtn" style="margin-top:18px;">Begin ▶</button>'+
+    '</div>';
+  document.getElementById("stgBtn").onclick=function(){ MQ.sound("click"); showStep(); };
+}
+
+function showBreak(s){
+  paintMap();
+  var secs=15;
+  screen.innerHTML=
+    '<div class="card center" style="background:linear-gradient(135deg,#fff,#eafff3);">'+
+      '<div class="mascot" style="font-size:74px;">'+s.emoji+'</div>'+
+      '<h1>'+s.title+'</h1>'+
+      '<div class="speech">'+s.text+' <b id="bt">'+secs+'</b>s</div>'+
+      '<button class="btn green" id="skipBreak" style="margin-top:16px;">I\'m ready! ▶</button>'+
+    '</div>';
+  var iv=setInterval(function(){ secs--; var bt=document.getElementById("bt"); if(bt)bt.textContent=secs; if(secs<=0){ clearInterval(iv); nextStage(); } },1000);
+  document.getElementById("skipBreak").onclick=function(){ clearInterval(iv); MQ.sound("click"); nextStage(); };
+}
+
+function currentStage(){ return STAGES[state.idx]; }
+function advance(){
+  var s=currentStage();
+  state.si++;
+  if(state.si>=s.flow.length) return showStageClear(s);
+  showStep();
+}
+
+function stepHeader(s, label){
+  return '<div class="row" style="justify-content:space-between;">'+
+    '<span class="chip" style="background:'+(s.color||"var(--blue)")+';color:#fff;">'+s.emoji+' '+s.title+'</span>'+
+    '<span class="chip" style="background:#eee;color:#333;">'+label+'</span></div>';
+}
+
+function showStep(){
+  paintMap();
+  var s=currentStage();
+  var step=s.flow[state.si];
+  state.firstTry=true;
+  if(step.kind==="slide") return renderSlide(s, step);
+  if(step.kind==="tap")   return renderTap(s, step);
+  if(step.kind==="mc")    return renderMC(s, step);
+}
+
+function renderSlide(s, step){
+  screen.innerHTML=
+    '<div class="card">'+
+      stepHeader(s, "📖 Learn")+
+      '<div style="display:flex;gap:14px;align-items:flex-start;margin-top:14px;">'+
+        '<div style="font-size:52px;line-height:1;">'+OWL+'</div>'+
+        '<div class="speech" style="text-align:left;margin:0;flex:1;">'+step.html+'</div>'+
+      '</div>'+
+      '<div class="center"><button class="btn big blue" id="nextBtn" style="margin-top:18px;">Got it ▶</button></div>'+
+    '</div>';
+  document.getElementById("nextBtn").onclick=function(){ MQ.sound("click"); advance(); };
+}
+
+function renderTap(s, step){
+  var discovery=!!step.discovery;
+  var tokensHtml=step.tokens.map(function(t,i){
+    if(t.punct) return '<span class="token punct">'+t.w+'</span>';
+    return '<span class="token" data-i="'+i+'">'+t.w+'</span>';
+  }).join("");
+  screen.innerHTML=
+    '<div class="card">'+
+      stepHeader(s, discovery?"🔍 Discover":"✏️ Your turn")+
+      '<div class="instr" style="margin-top:12px;">'+step.instr+'</div>'+
+      '<div class="sentence" id="sent">'+tokensHtml+'</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls">'+
+        '<button class="btn green" id="checkBtn">Check ✅</button>'+
+      '</div>'+
+    '</div>';
+  var sel={};
+  Array.prototype.forEach.call(document.querySelectorAll("#sent .token[data-i]"), function(el){
+    el.onclick=function(){
+      if(el.classList.contains("locked")) return;
+      var i=el.getAttribute("data-i");
+      if(sel[i]){ delete sel[i]; el.classList.remove("sel"); }
+      else { sel[i]=true; el.classList.add("sel"); }
+      MQ.sound("click");
+    };
+  });
+  document.getElementById("checkBtn").onclick=function(){ checkTap(s, step, sel, discovery); };
+}
+
+function checkTap(s, step, sel, discovery){
+  var fb=document.getElementById("fb");
+  var correctIdx={}; step.tokens.forEach(function(t,i){ if(t[step.target] && !t.punct) correctIdx[i]=true; });
+  var chosen=Object.keys(sel), wanted=Object.keys(correctIdx);
+  var wrongPicks=chosen.filter(function(i){ return !correctIdx[i]; });
+  var missed=wanted.filter(function(i){ return !sel[i]; });
+
+  if(discovery){
+    document.querySelectorAll("#sent .token[data-i]").forEach(function(el){
+      var i=el.getAttribute("data-i"); el.classList.add("locked");
+      if(correctIdx[i]) el.classList.add("correct");
+    });
+    MQ.sound("correct"); MQ.confetti(50); addXP(6);
+    fb.className="feedback good"; fb.innerHTML="Great exploring! +6 XP 🌟";
+    var ctr=document.getElementById("controls");
+    ctr.innerHTML='<div class="reveal-box">'+step.reveal+'</div>'+
+      '<button class="btn big green" id="nextBtn" style="margin-top:14px;">Continue ▶</button>';
+    document.getElementById("nextBtn").onclick=function(){ MQ.sound("click"); advance(); };
+    return;
+  }
+
+  if(wrongPicks.length===0 && missed.length===0){
+    document.querySelectorAll("#sent .token[data-i]").forEach(function(el){
+      var i=el.getAttribute("data-i"); el.classList.add("locked");
+      if(correctIdx[i]) el.classList.add("correct");
+    });
+    MQ.sound("correct");
+    if(state.firstTry){ state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak); recordStage(true); state.correctFirst++;
+      var g=10+(state.streak>=3?5:0); addXP(g);
+      fb.className="feedback good"; fb.innerHTML=pick(["🎉 Perfect!","💥 Nailed it!","🌟 Superb!","🔥 Yes!"])+" +"+g+" XP"+(state.streak>=3?" 🔥x"+state.streak:"");
+      MQ.confetti(state.streak>=5?110:60);
+    } else { addXP(4); fb.className="feedback good"; fb.innerHTML="✅ Correct! +4 XP — you got there!"; }
+    state.totalQ++;
+    showNext(step);
+  } else {
+    MQ.sound("wrong");
+    if(state.firstTry){ recordStage(false); state.streak=0; paintHUD(); }
+    state.firstTry=false;
+    wrongPicks.forEach(function(i){ var el=document.querySelector('#sent .token[data-i="'+i+'"]'); if(el){ el.classList.add("wrong"); setTimeout(function(){ el.classList.remove("wrong"); },700); } });
+    var msg="";
+    if(wrongPicks.length && missed.length) msg="Some are wrong and some are missing.";
+    else if(wrongPicks.length) msg="One or more of your choices isn't right — un-tap it.";
+    else msg="You've missed "+missed.length+" — keep looking!";
+    fb.className="feedback bad"; fb.innerHTML="Not quite — "+msg+" 💡";
+    var ctr=document.getElementById("controls");
+    if(!document.getElementById("hintBtn")){
+      ctr.insertAdjacentHTML("beforeend",' <button class="btn ghost" id="hintBtn">💡 Hint</button>');
+      document.getElementById("hintBtn").onclick=function(){
+        var stillMissed=wanted.filter(function(i){ return !document.querySelector('#sent .token[data-i="'+i+'"]').classList.contains("sel"); });
+        if(stillMissed.length){ var el=document.querySelector('#sent .token[data-i="'+stillMissed[0]+'"]'); el.classList.add("miss"); }
+      };
+    }
+  }
+}
+
+function renderMC(s, step){
+  screen.innerHTML=
+    '<div class="card">'+
+      stepHeader(s, "✏️ Your turn")+
+      '<div class="center" style="margin:14px 0 4px;font-size:22px;font-weight:800;">'+step.q+'</div>'+
+      '<div class="options" id="opts">'+
+        step.options.map(function(o,i){ return '<button class="opt" data-i="'+i+'">'+o+'</button>'; }).join("")+
+      '</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"></div>'+
+    '</div>';
+  Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"), function(btn){
+    btn.onclick=function(){ checkMC(s, step, Number(btn.getAttribute("data-i")), btn); };
+  });
+}
+function checkMC(s, step, i, btn){
+  var fb=document.getElementById("fb");
+  if(i===step.answer){
+    btn.classList.add("correct");
+    document.querySelectorAll("#opts .opt").forEach(function(b){ b.disabled=true; });
+    MQ.sound("correct");
+    if(state.firstTry){ state.streak++; state.bestStreak=Math.max(state.bestStreak,state.streak); recordStage(true); state.correctFirst++;
+      var g=10+(state.streak>=3?5:0); addXP(g);
+      fb.className="feedback good"; fb.innerHTML=pick(["🎉 Correct!","🌟 Well done!","💥 Yes!","🔥 Spot on!"])+" +"+g+" XP"+(state.streak>=3?" 🔥x"+state.streak:"");
+      MQ.confetti(state.streak>=5?110:60);
+    } else { addXP(4); fb.className="feedback good"; fb.innerHTML="✅ Correct! +4 XP"; }
+    if(step.why){ fb.innerHTML+='<div class="reveal-box" style="margin-top:10px;">'+step.why+'</div>'; }
+    state.totalQ++;
+    showNext(step);
+  } else {
+    btn.classList.add("wrong"); btn.disabled=true;
+    MQ.sound("wrong");
+    if(state.firstTry){ recordStage(false); state.streak=0; paintHUD(); }
+    state.firstTry=false;
+    fb.className="feedback bad"; fb.innerHTML="Not quite — try another. 💡";
+  }
+}
+
+function recordStage(ok){
+  var key=currentStage().key;
+  if(!state.stageStats[key]) state.stageStats[key]={correct:0,total:0};
+  state.stageStats[key].total++;
+  if(ok) state.stageStats[key].correct++;
+}
+function showNext(step){
+  paintHUD();
+  var ctr=document.getElementById("controls");
+  ctr.innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:16px;">Next ▶</button>';
+  var nb=document.getElementById("nextBtn"); nb.focus();
+  nb.onclick=function(){ MQ.sound("click"); advance(); };
+}
+
+function showStageClear(s){
+  var st=state.stageStats[s.key]||{correct:0,total:0};
+  var pct=st.total?Math.round(st.correct/st.total*100):100;
+  state.completed[s.key]=true;
+  state.maxCleared=Math.max(state.maxCleared, state.idx);
+  saveProgress();
+  MQ.sound("win"); MQ.confetti(140);
+  paintMap();
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="gem">'+ (s.gem||"💎") +'</div>'+
+      '<h1>Gem Collected!</h1>'+
+      '<h2 style="color:'+(s.color||"var(--blue)")+';">'+s.title+'</h2>'+
+      '<p style="font-size:20px;font-weight:800;">Score: '+st.correct+' / '+st.total+' ('+pct+'%)</p>'+
+      '<p style="font-size:34px;">'+MQ.rating(pct).emoji+' '+"⭐".repeat(MQ.rating(pct).stars)+'</p>'+
+      '<button class="btn big blue" id="contBtn">Continue ▶</button>'+
+    '</div>';
+  document.getElementById("contBtn").onclick=function(){ MQ.sound("click"); nextStage(); };
+}
+
+function showResults(){
+  document.getElementById("stagemap").innerHTML="";
+  var acc=state.totalQ?Math.round(state.correctFirst/state.totalQ*100):0;
+  var rt=MQ.rating(acc);
+  var mins=Math.max(1,Math.round((Date.now()-state.startTime)/60000));
+  MQ.sound("win"); MQ.confetti(200);
+
+  var breakdown=STAGES.filter(function(s){return !s.break;}).map(function(s){
+    var st=state.stageStats[s.key]||{correct:0,total:0};
+    var p=st.total?Math.round(st.correct/st.total*100):0;
+    return '<div style="display:flex;align-items:center;gap:10px;margin:8px 0;">'+
+      '<span style="width:30px;">'+s.emoji+'</span>'+
+      '<b style="flex:1;text-align:left;">'+s.title+'</b>'+
+      '<div class="xpbar" style="flex:1;background:#eee;"><i style="width:'+p+'%;"></i></div>'+
+      '<span style="width:70px;text-align:right;font-weight:800;">'+st.correct+'/'+st.total+'</span></div>';
+  }).join("");
+
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot" style="font-size:80px;">'+rt.emoji+'</div>'+
+      '<h1>Quest Complete!</h1>'+
+      '<div class="speech">Magnificent work, '+(state.student||"explorer")+'! You collected every Punctuation Gem 🛑❓✋. Here is your report card.</div>'+
+      '<div class="row" style="margin:18px 0;gap:20px;">'+
+        '<div><div class="big-num" style="font-size:56px;">'+acc+'%</div><div class="muted">Accuracy</div></div>'+
+        '<div><div class="big-num" style="font-size:56px;">'+state.xp+'</div><div class="muted">Total XP</div></div>'+
+        '<div><div class="big-num" style="font-size:56px;">🔥'+state.bestStreak+'</div><div class="muted">Best streak</div></div>'+
+      '</div>'+
+      '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+      '<p style="font-size:22px;font-weight:800;color:var(--purple);">Rating: '+rt.label+'</p>'+
+      '<div style="max-width:520px;margin:14px auto;text-align:left;">'+breakdown+'</div>'+
+      '<p class="muted" id="saveState">💾 Saving your result…</p>'+
+      '<div class="row" style="margin-top:8px;">'+
+        '<button class="btn green" id="againBtn">🔁 Play again</button>'+
+        '<button class="btn blue asg-go" id="asgGoBtn">📝 20-min Assignment</button>'+
+        '<a class="btn orange" href="index.html" style="text-decoration:none;">🏠 Home</a>'+
+      '</div>'+
+    '</div>';
+  document.getElementById("againBtn").onclick=function(){ location.reload(); };
+  document.getElementById("asgGoBtn").onclick=function(){ MQ.sound("click"); startAssignment(); };
+
+  var payload={
+    student:state.student||"Unknown",
+    subject:SUBJECT,
+    week:WEEK_NUMBER, weekTitle:WEEK_TITLE,
+    accuracy:acc, correct:state.correctFirst, totalQuestions:state.totalQ,
+    xp:state.xp, bestStreak:state.bestStreak, stars:rt.stars, rating:rt.label,
+    minutes:mins, stages:state.stageStats,
+    school:(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG && window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  };
+  MQ.logResult(payload).then(function(res){
+    var el=document.getElementById("saveState"); if(!el) return;
+    if(res && res.ok) el.textContent="✅ Result saved. Your tutor can see your progress!";
+    else if(res && res.offline) el.textContent="📴 Saved on this device (tutor: add the Apps Script link to sync).";
+    else el.textContent="⚠️ Couldn't reach the server, but your result is saved on this device.";
+  });
+}
+
+/* ---------- take-home ASSIGNMENT pool (punctuation, 20 min) ---------- */
+function buildAssignment(){
+  return [
+    // full stop
+    { kind:"mc", q:"Which mark ends this telling sentence?<br>“The bus is late ___”", options:[".","?","!"], answer:0, why:"A statement ends with a full stop: “The bus is late.”" },
+    { kind:"mc", q:"Which sentence is written <b>correctly</b>?", options:["my sister is kind","My sister is kind.","my sister is kind?"], answer:1, why:"Capital letter to start, full stop to end: “My sister is kind.”" },
+    { kind:"mc", q:"Choose the end mark for this command:<br>“Wash your hands ___”", options:[".","?"], answer:0, why:"A command ends with a full stop: “Wash your hands.”" },
+    { kind:"mc", q:"Which one still <b>needs a full stop</b>?", options:["Is it raining?","We ate our lunch","Hooray!"], answer:1, why:"“We ate our lunch” is a statement — it needs a full stop." },
+    // question mark
+    { kind:"mc", q:"Which mark ends this asking sentence?<br>“How old are you ___”", options:[".","?","!"], answer:1, why:"It asks a question, so it ends with a question mark (?)." },
+    { kind:"mc", q:"Which sentence is a <b>question</b>?", options:["Please sit down.","Where do you live?","I have a dog."], answer:1, why:"“Where do you live?” asks something — it needs a question mark." },
+    { kind:"mc", q:"Statement or question?<br>“Dinner is ready ___”", options:["Full stop  .","Question mark  ?"], answer:0, why:"It tells us something — a full stop." },
+    { kind:"mc", q:"Choose the correct end mark:<br>“Can we go to the park ___”", options:[".","?"], answer:1, why:"“Can we…?” asks something — a question mark." },
+    // comma — lists
+    { kind:"tap", target:"comma", instr:"Tap the words that need a <b>comma after them</b>.", tokens:parse("I packed socks|comma shirts|comma shorts and shoes .") , why:"Commas go after socks and shirts." },
+    { kind:"mc", q:"Which list is punctuated <b>correctly</b>?", options:["We saw lions tigers and bears.","We saw lions, tigers and bears.","We saw, lions tigers and bears."], answer:1, why:"Commas separate the items, none before “and”: “lions, tigers and bears.”" },
+    { kind:"tap", target:"comma", instr:"Tap the words that need a <b>comma after them</b>.", tokens:parse("She likes maths|comma art|comma music and games ."), why:"Commas go after maths and art." },
+    { kind:"mc", q:"Which sentence uses commas <b>correctly</b>?", options:["I need eggs, milk, and bread.","I need eggs, milk and bread.","I need eggs milk, and bread."], answer:1, why:"“eggs, milk and bread” — commas between items, none before “and”." },
+    // comma — pause / opener
+    { kind:"mc", q:"Where should the comma go?", options:["In the morning we run.","In the morning, we run.","In, the morning we run."], answer:1, why:"A comma follows the opening phrase: “In the morning, we run.”" },
+    { kind:"mc", q:"Choose the correctly punctuated sentence:", options:["No I do not agree.","No, I do not agree.","No I do, not agree."], answer:1, why:"A comma comes after “No”: “No, I do not agree.”" },
+    // mixed
+    { kind:"mc", q:"“What is your favourite colour ___”<br>Which end mark?", options:["Full stop  .","Question mark  ?"], answer:1, why:"It asks a question — a question mark." },
+    { kind:"tap", target:"comma", instr:"Tap the words that need a <b>comma after them</b>.", tokens:parse("We grow beans|comma corn|comma peas and kale ."), why:"Commas go after beans and corn." }
+  ];
+}
+function startAssignment(){
+  Assignment.start({ subject:SUBJECT, week:WEEK_NUMBER, weekTitle:WEEK_TITLE,
+    minutes:20, accent:"var(--purple)", homeHref:"index.html", questions:buildAssignment() });
+}
+var MODE = new URLSearchParams(location.search).get("mode");
+function bootStart(){ if(MODE==="assignment") startAssignment(); else showIntro(); }
+
+/* ---------- boot ---------- */
+if(!state.student){
+  screen.innerHTML=
+    '<div class="card center" style="max-width:520px;">'+
+      '<div class="mascot">'+OWL+'</div><div class="speech">Hoot! What is your name, explorer?</div>'+
+      '<div class="row" style="margin-top:16px;">'+
+        '<input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;">'+
+        '<button class="btn green" id="nmBtn">Start ▶</button>'+
+      '</div></div>';
+  document.getElementById("nmBtn").onclick=function(){ var v=document.getElementById("nm").value.trim(); if(!v)return; state.student=v; MQ.setStudent(v); loadProgress(); paintHUD(); bootStart(); };
+  document.getElementById("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") document.getElementById("nmBtn").click(); });
+} else { loadProgress(); paintHUD(); bootStart(); }
+</script>
+</body>
+</html>
