@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Factors &amp; Multiples</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>" />
+<style>
+  /* ---- Factors & Multiples specific ---- */
+  .modegrid { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; margin-top:22px; }
+  .modecard { flex:1 1 300px; max-width:360px; }
+  .qtag { font-size:15px; font-weight:800; color:#fff; padding:4px 12px; border-radius:999px; }
+
+  .numgrid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:16px auto; max-width:560px; }
+  .ntile {
+    width: clamp(48px,14vw,62px); height: clamp(48px,14vw,62px); border-radius:16px;
+    display:flex; align-items:center; justify-content:center; font-size: clamp(20px,6vw,26px); font-weight:800;
+    background:linear-gradient(180deg,#fff,#f4f1ff); border:3px solid var(--line); color:var(--ink);
+    cursor:pointer; transition:transform .08s, box-shadow .12s, background .12s, border-color .12s; user-select:none;
+  }
+  .ntile:hover { transform:translateY(-3px); box-shadow:0 10px 18px rgba(75,139,255,.22); }
+  .ntile.sel { background:linear-gradient(160deg,#ffd93b,#ffb020); border-color:#e6a100; color:#5a4600; transform:scale(1.05); }
+  .ntile.correct { background:linear-gradient(160deg,#34e089,#12b866); border-color:#0f9d58; color:#fff; }
+  .ntile.miss { outline:4px solid rgba(255,90,110,.6); outline-offset:2px; }
+  .ntile.wrong { animation: shake .4s; border-color:var(--red); }
+  .ntile.locked { pointer-events:none; }
+
+  .tt-banner { display:flex; align-items:center; gap:16px; flex-wrap:wrap; text-decoration:none; color:#fff;
+    background:linear-gradient(120deg,#ff7a18,#ff3d9a); border-radius:20px; padding:16px 18px; margin-top:20px;
+    box-shadow:0 12px 26px rgba(255,80,120,.3); cursor:pointer; }
+  .tt-banner:hover { transform:translateY(-2px); }
+  .solbox { margin-top:8px; background:#f4f1ff; border-radius:12px; padding:10px 12px; font-weight:700; color:#4a4470; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="maths.html" style="text-decoration:none;color:#fff;">➕ Maths</a>
+    <span class="chip" id="whoChip">👤 <b id="whoName">Learner</b></span>
+    <button class="btn ghost" id="soundBtn">🔊 Sound</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Factors &amp; Multiples</small></span>
+  </div>
+
+  <h1 class="title-pop">🧮 FACTORS &amp; MULTIPLES ✨</h1>
+  <p class="subtitle">Skip-count the multiples and hunt the factors — become a number detective! 🔎</p>
+
+  <div id="screen"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* Academy multiplication practice site (external). */
+var TT_URL = "https://multiplication-wpa.vercel.app/";
+
+function el(id){ return document.getElementById(id); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function isPrime(n){ if(n<2) return false; for(var d=2; d*d<=n; d++){ if(n%d===0) return false; } return true; }
+var screen=el("screen");
+
+/* ---------- brand + sound + name ---------- */
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=nm+"<small>Factors &amp; Multiples</small>";
+  document.title=nm+" — Factors & Multiples"; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊 Sound":"🔇 Muted"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); MQ.sound("click"); }; paintSound();
+var student=MQ.getStudent()||"";
+
+/* Reusable "Times Tables" external button markup. */
+function ttBanner(){
+  return '<a class="tt-banner" href="'+TT_URL+'" target="_blank" rel="noopener noreferrer" id="ttBtn">'+
+    '<span style="font-size:44px;">✖️</span>'+
+    '<span style="flex:1 1 200px;text-align:left;"><b style="font-size:19px;">Times Tables Practice</b><br>'+
+    '<span style="font-weight:700;opacity:.95;font-size:14px;">Warm up your multiplication on the Academy practice site — it powers your factors &amp; multiples! 🚀</span></span>'+
+    '<span class="tag live" style="white-space:nowrap;background:#fff;color:#c1195f;">▶ OPEN</span></a>';
+}
+
+/* ---------- grid helpers ---------- */
+function gridCorrect(step){
+  var set={};
+  for(var x=1;x<=step.upto;x++){
+    var ok=false;
+    if(step.rule==="multiple") ok=(x%step.k===0);
+    else if(step.rule==="factor") ok=(step.n%x===0);
+    else if(step.rule==="prime") ok=isPrime(x);
+    if(ok) set[x]=true;
+  }
+  return set;
+}
+
+/* =============================================================
+   HOME menu
+   ============================================================= */
+function home(){
+  if(!student){
+    screen.innerHTML=
+      '<div class="card center" style="max-width:540px;">'+
+        '<div class="mascot">🧮</div>'+
+        '<div class="speech">Hi detective! Ready to hunt factors and multiples? What is your name?</div>'+
+        '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Type your name…" maxlength="24" style="flex:1 1 220px;"><button class="btn green" id="nmBtn">Let\'s go ▶</button></div>'+
+      '</div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v){ el("nm").focus(); return; } student=v; MQ.setStudent(v); el("whoName").textContent=v; MQ.sound("level"); menu(); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+  } else { el("whoName").textContent=student; menu(); }
+}
+
+function menu(){
+  el("whoName").textContent=student||"Learner";
+  screen.innerHTML=
+    '<div class="modegrid">'+
+      '<div class="card modecard center" style="border-top:10px solid #2bd576;">'+
+        '<div class="mascot">📚</div>'+
+        '<h2>Learn It</h2>'+
+        '<p class="muted" style="min-height:64px;font-weight:700;">Step-by-step: what multiples are, what factors are, factor pairs and prime numbers — with tap-and-find games.</p>'+
+        '<button class="btn big green" id="learnBtn">▶ Start learning</button>'+
+      '</div>'+
+      '<div class="card modecard center" style="border-top:10px solid #9b5cff;">'+
+        '<div class="mascot">🎮</div>'+
+        '<h2>Practice Game</h2>'+
+        '<p class="muted" style="min-height:64px;font-weight:700;">Quick-fire mixed questions on factors &amp; multiples. Instant feedback, stars and a score for your tutor.</p>'+
+        '<button class="btn big blue" id="playBtn">🎮 Play practice</button>'+
+      '</div>'+
+    '</div>'+
+    ttBanner();
+  el("learnBtn").onclick=function(){ MQ.sound("level"); startLearn(); };
+  el("playBtn").onclick=function(){ MQ.sound("level"); startPractice(); };
+  el("ttBtn").onclick=function(){ MQ.sound("click"); };
+}
+
+/* =============================================================
+   Shared renderers for slide / mc / grid  (with a done-callback)
+   opts.scored: award + count; onDone(correctFirstTry)
+   ============================================================= */
+function renderSlide(headTag, headColor, headLabel, html, onNext){
+  screen.innerHTML=
+    '<div class="card">'+
+      '<div class="row" style="justify-content:space-between;">'+
+        '<span class="qtag" style="background:'+headColor+';">'+headTag+'</span>'+
+        '<span class="chip" style="background:#eee;color:#333;">'+headLabel+'</span></div>'+
+      '<div style="display:flex;gap:14px;align-items:flex-start;margin-top:14px;">'+
+        '<div style="font-size:48px;line-height:1;">🧮</div>'+
+        '<div class="speech" style="text-align:left;margin:0;flex:1;">'+html+'</div></div>'+
+      '<div class="center"><button class="btn big blue" id="nextBtn" style="margin-top:16px;">Got it ▶</button></div>'+
+    '</div>';
+  el("nextBtn").onclick=function(){ MQ.sound("click"); onNext(); };
+}
+
+function renderMC(headTag, headColor, headLabel, step, onDone){
+  var firstTry=true;
+  screen.innerHTML=
+    '<div class="card">'+
+      '<div class="row" style="justify-content:space-between;">'+
+        '<span class="qtag" style="background:'+headColor+';">'+headTag+'</span>'+
+        '<span class="chip" style="background:#eee;color:#333;">'+headLabel+'</span></div>'+
+      '<div class="center" style="margin:14px 0 4px;font-size:22px;font-weight:800;">'+step.q+'</div>'+
+      '<div class="options" id="opts">'+step.options.map(function(o,i){return '<button class="opt" data-i="'+i+'">'+o+'</button>';}).join("")+'</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"></div>'+
+    '</div>';
+  Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(btn){
+    btn.onclick=function(){
+      var i=Number(btn.getAttribute("data-i"));
+      var fb=el("fb");
+      if(i===step.answer){
+        btn.classList.add("correct"); document.querySelectorAll("#opts .opt").forEach(function(b){b.disabled=true;});
+        MQ.sound("correct"); MQ.confetti(60);
+        fb.className="feedback good"; fb.innerHTML="🎉 Correct!"+(step.why?'<div class="solbox">💡 '+step.why+'</div>':"");
+        nextBtn();
+      } else {
+        btn.classList.add("wrong"); btn.disabled=true; firstTry=false; MQ.sound("wrong");
+        fb.className="feedback bad"; fb.innerHTML="Not quite — try another. 💡";
+      }
+    };
+  });
+  function nextBtn(){
+    el("controls").innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:14px;">Next ▶</button>';
+    el("nextBtn").focus();
+    el("nextBtn").onclick=function(){ MQ.sound("click"); onDone(firstTry); };
+  }
+}
+
+function renderGrid(headTag, headColor, headLabel, step, onDone){
+  var firstTry=true;
+  var tiles="";
+  for(var x=1;x<=step.upto;x++){ tiles+='<div class="ntile" data-x="'+x+'">'+x+'</div>'; }
+  screen.innerHTML=
+    '<div class="card">'+
+      '<div class="row" style="justify-content:space-between;">'+
+        '<span class="qtag" style="background:'+headColor+';">'+headTag+'</span>'+
+        '<span class="chip" style="background:#eee;color:#333;">'+headLabel+'</span></div>'+
+      '<div class="instr" style="margin-top:12px;">'+step.instr+'</div>'+
+      '<div class="numgrid" id="grid">'+tiles+'</div>'+
+      '<div class="feedback" id="fb"></div>'+
+      '<div class="center" id="controls"><button class="btn green" id="checkBtn">Check ✅</button></div>'+
+    '</div>';
+  var sel={};
+  Array.prototype.forEach.call(document.querySelectorAll("#grid .ntile"),function(t){
+    t.onclick=function(){
+      if(t.classList.contains("locked")) return;
+      var x=t.getAttribute("data-x");
+      if(sel[x]){ delete sel[x]; t.classList.remove("sel"); } else { sel[x]=true; t.classList.add("sel"); }
+      MQ.sound("click");
+    };
+  });
+  el("checkBtn").onclick=function(){
+    var correct=gridCorrect(step);
+    var chosen=Object.keys(sel), wanted=Object.keys(correct);
+    var wrongPicks=chosen.filter(function(x){return !correct[x];});
+    var missed=wanted.filter(function(x){return !sel[x];});
+    var fb=el("fb");
+    if(wrongPicks.length===0 && missed.length===0){
+      document.querySelectorAll("#grid .ntile").forEach(function(t){ t.classList.add("locked"); if(correct[t.getAttribute("data-x")]) t.classList.add("correct"); });
+      MQ.sound("correct"); MQ.confetti(80);
+      fb.className="feedback good"; fb.innerHTML="🎉 All correct!"+(step.why?'<div class="solbox">💡 '+step.why+'</div>':"");
+      el("controls").innerHTML='<button class="btn big green" id="nextBtn" style="margin-top:12px;">Next ▶</button>';
+      el("nextBtn").focus(); el("nextBtn").onclick=function(){ MQ.sound("click"); onDone(firstTry); };
+    } else {
+      MQ.sound("wrong"); firstTry=false;
+      wrongPicks.forEach(function(x){ var t=document.querySelector('#grid .ntile[data-x="'+x+'"]'); if(t){ t.classList.add("wrong"); setTimeout(function(){t.classList.remove("wrong");},500); } });
+      var msg = wrongPicks.length && missed.length ? "Some are wrong and some are missing." : wrongPicks.length ? "One or more of your picks isn't right — un-tap it." : "You've missed "+missed.length+" — keep hunting!";
+      fb.className="feedback bad"; fb.innerHTML="Not quite — "+msg+" 💡";
+      // reveal a missed one as a hint
+      if(missed.length){ var h=document.querySelector('#grid .ntile[data-x="'+missed[0]+'"]'); if(h) h.classList.add("miss"); }
+    }
+  };
+}
+
+/* =============================================================
+   LEARN mode — guided stages
+   ============================================================= */
+function learnSteps(){
+  return [
+    { kind:"slide", tag:"✖️ Multiples", color:"#2bd576", html:"A <b>MULTIPLE</b> of a number is what you get when you <b>count in steps</b> of that number — its times-table answers. Multiples of <b>5</b> are 5, 10, 15, 20, 25… (that's the 5 times table!)." },
+    { kind:"grid", tag:"✖️ Multiples", color:"#2bd576", rule:"multiple", k:5, upto:30, instr:"🔎 Tap <b>all the multiples of 5</b> from 1 to 30.", why:"Multiples of 5 end in 0 or 5: 5, 10, 15, 20, 25, 30." },
+    { kind:"mc", tag:"✖️ Multiples", color:"#2bd576", q:"Count in 4s: 4, 8, 12, ___", options:["14","15","16","18"], answer:2, why:"Add 4 each time: 12 + 4 = 16." },
+    { kind:"grid", tag:"✖️ Multiples", color:"#2bd576", rule:"multiple", k:3, upto:30, instr:"🔎 Tap <b>all the multiples of 3</b> from 1 to 30.", why:"3, 6, 9, 12, 15, 18, 21, 24, 27, 30 — the 3 times table." },
+    { kind:"mc", tag:"✖️ Multiples", color:"#2bd576", q:"Which number is a <b>multiple of 7</b>?", options:["22","30","35","40"], answer:2, why:"7 × 5 = 35, so 35 is a multiple of 7." },
+
+    { kind:"break" },
+
+    { kind:"slide", tag:"🧩 Factors", color:"#4b8bff", html:"A <b>FACTOR</b> is a number that <b>divides exactly</b> into another number, with nothing left over. The factors of <b>12</b> are 1, 2, 3, 4, 6 and 12 — each one shares 12 into equal groups." },
+    { kind:"grid", tag:"🧩 Factors", color:"#4b8bff", rule:"factor", n:12, upto:12, instr:"🔎 Tap <b>all the factors of 12</b> (the numbers that divide into 12 exactly).", why:"1, 2, 3, 4, 6 and 12 all divide 12 with no remainder." },
+    { kind:"slide", tag:"🧩 Factors", color:"#4b8bff", html:"Factors come in <b>pairs</b> that multiply to make the number: for 12 → 1×12, 2×6, 3×4. <b>1</b> and the <b>number itself</b> are always factors." },
+    { kind:"mc", tag:"🧩 Factors", color:"#4b8bff", q:"Which pair <b>multiplies to make 24</b>?", options:["4 × 6","5 × 5","3 × 9","2 × 11"], answer:0, why:"4 × 6 = 24, so 4 and 6 are a factor pair of 24." },
+    { kind:"grid", tag:"🧩 Factors", color:"#4b8bff", rule:"factor", n:18, upto:18, instr:"🔎 Tap <b>all the factors of 18</b>.", why:"1, 2, 3, 6, 9 and 18 divide 18 exactly." },
+    { kind:"mc", tag:"🧩 Factors", color:"#4b8bff", q:"Which number is <b>NOT a factor</b> of 20?", options:["4","5","6","10"], answer:2, why:"20 ÷ 6 is not exact (it leaves a remainder), so 6 is not a factor of 20." },
+
+    { kind:"break" },
+
+    { kind:"slide", tag:"⭐ Primes", color:"#9b5cff", html:"A <b>PRIME NUMBER</b> has <b>exactly two factors</b>: 1 and itself. Examples: 2, 3, 5, 7, 11… <b>1 is not prime</b> (it has only one factor) and 2 is the only even prime." },
+    { kind:"grid", tag:"⭐ Primes", color:"#9b5cff", rule:"prime", upto:20, instr:"🔎 Tap <b>all the prime numbers</b> from 1 to 20.", why:"2, 3, 5, 7, 11, 13, 17, 19 — each has only two factors. (1 is not prime.)" },
+    { kind:"mc", tag:"⭐ Primes", color:"#9b5cff", q:"Which of these is a <b>prime number</b>?", options:["9","15","17","21"], answer:2, why:"17 can only be divided by 1 and 17 — exactly two factors." },
+
+    { kind:"slide", tag:"👑 Master", color:"#ff7a18", html:"You've learned <b>multiples</b> ✖️, <b>factors</b> 🧩 and <b>primes</b> ⭐! One last challenge to prove you're a Number Detective. 🔎" },
+    { kind:"grid", tag:"👑 Master", color:"#ff7a18", rule:"multiple", k:6, upto:36, instr:"🔎 Tap <b>all the multiples of 6</b> from 1 to 36.", why:"6, 12, 18, 24, 30, 36 — the 6 times table." },
+    { kind:"mc", tag:"👑 Master", color:"#ff7a18", q:"A prime number has exactly ___ factors.", options:["one","two","three"], answer:1, why:"Exactly two: 1 and the number itself." },
+    { kind:"grid", tag:"👑 Master", color:"#ff7a18", rule:"factor", n:16, upto:16, instr:"🔎 Tap <b>all the factors of 16</b>.", why:"1, 2, 4, 8 and 16 divide 16 exactly." }
+  ];
+}
+function startLearn(){
+  var steps=learnSteps(), i=0, correct=0, scored=0;
+  function go(){
+    if(i>=steps.length) return finish();
+    var s=steps[i];
+    if(s.kind==="break") return doBreak();
+    if(s.kind==="slide") return renderSlide(s.tag, s.color, "📖 Learn", s.html, function(){ i++; go(); });
+    var done=function(firstTry){ scored++; if(firstTry) correct++; i++; go(); };
+    if(s.kind==="mc")   return renderMC(s.tag, s.color, "✏️ Your turn", s, done);
+    if(s.kind==="grid") return renderGrid(s.tag, s.color, "🔎 Tap them", s, done);
+  }
+  function doBreak(){
+    var secs=12;
+    screen.innerHTML=
+      '<div class="card center" style="background:linear-gradient(135deg,#fff,#eafff3);">'+
+        '<div class="mascot" style="font-size:70px;">🤸</div><h1>Brain Break!</h1>'+
+        '<div class="speech">Stand up, count to 5 out loud and stretch! Ready in <b id="bt">'+secs+'</b>s</div>'+
+        '<button class="btn green" id="skip" style="margin-top:14px;">I\'m ready! ▶</button></div>';
+    var iv=setInterval(function(){ secs--; var bt=el("bt"); if(bt)bt.textContent=secs; if(secs<=0){ clearInterval(iv); i++; go(); } },1000);
+    el("skip").onclick=function(){ clearInterval(iv); MQ.sound("click"); i++; go(); };
+  }
+  function finish(){
+    var acc=scored?Math.round(correct/scored*100):0, rt=MQ.rating(acc);
+    MQ.sound("win"); MQ.confetti(200);
+    screen.innerHTML=
+      '<div class="card center">'+
+        '<div class="mascot" style="font-size:76px;">'+rt.emoji+'</div>'+
+        '<h1>Lesson complete! 🔎</h1>'+
+        '<div class="speech">Brilliant, '+(student||"detective")+'! You explored multiples, factors and primes.</div>'+
+        '<div class="row" style="margin:18px 0;gap:26px;"><div><div class="big-num" style="font-size:52px;">'+acc+'%</div><div class="muted">First-try score</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+correct+'/'+scored+'</div><div class="muted">Correct</div></div></div>'+
+        '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+        '<div class="row" style="margin-top:8px;"><button class="btn green" id="again">🔁 Learn again</button>'+
+        '<button class="btn blue" id="play">🎮 Practice game</button>'+
+        '<button class="btn ghost" id="toMenu">🏠 Menu</button></div>'+
+      '</div>'+ttBanner();
+    logResult("Factors & Multiples — Lesson", acc, correct, scored, rt);
+    el("again").onclick=function(){ MQ.sound("click"); startLearn(); };
+    el("play").onclick=function(){ MQ.sound("click"); startPractice(); };
+    el("toMenu").onclick=function(){ MQ.sound("click"); menu(); };
+  }
+  go();
+}
+
+/* =============================================================
+   PRACTICE mode — shuffled quick-fire pool
+   ============================================================= */
+function practicePool(){
+  return [
+    { kind:"mc", tag:"✖️ Multiples", color:"#2bd576", q:"Which number is a <b>multiple of 5</b>?", options:["12","20","23","31"], answer:1, why:"5 × 4 = 20." },
+    { kind:"mc", tag:"✖️ Multiples", color:"#2bd576", q:"Which is <b>NOT a multiple of 4</b>?", options:["8","12","14","16"], answer:2, why:"14 is not in the 4 times table (12 and 16 are)." },
+    { kind:"mc", tag:"✖️ Multiples", color:"#2bd576", q:"Is <b>35 a multiple of 7</b>?", options:["Yes","No"], answer:0, why:"7 × 5 = 35 — yes!" },
+    { kind:"mc", tag:"✖️ Multiples", color:"#2bd576", q:"Count in 8s: 8, 16, 24, ___", options:["30","32","34","36"], answer:1, why:"24 + 8 = 32." },
+    { kind:"grid", tag:"✖️ Multiples", color:"#2bd576", rule:"multiple", k:4, upto:24, instr:"Tap <b>all the multiples of 4</b> up to 24.", why:"4, 8, 12, 16, 20, 24." },
+    { kind:"grid", tag:"✖️ Multiples", color:"#2bd576", rule:"multiple", k:9, upto:36, instr:"Tap <b>all the multiples of 9</b> up to 36.", why:"9, 18, 27, 36." },
+
+    { kind:"mc", tag:"🧩 Factors", color:"#4b8bff", q:"Which number is a <b>factor of 20</b>?", options:["3","5","7","9"], answer:1, why:"20 ÷ 5 = 4 exactly, so 5 is a factor." },
+    { kind:"mc", tag:"🧩 Factors", color:"#4b8bff", q:"Which is <b>NOT a factor of 16</b>?", options:["2","4","6","8"], answer:2, why:"16 ÷ 6 is not exact, so 6 is not a factor." },
+    { kind:"mc", tag:"🧩 Factors", color:"#4b8bff", q:"Which pair <b>multiplies to make 36</b>?", options:["4 × 9","5 × 8","6 × 5","7 × 6"], answer:0, why:"4 × 9 = 36." },
+    { kind:"mc", tag:"🧩 Factors", color:"#4b8bff", q:"1 and the number itself are always ___ of a number.", options:["multiples","factors","primes"], answer:1, why:"Every number has 1 and itself as factors." },
+    { kind:"grid", tag:"🧩 Factors", color:"#4b8bff", rule:"factor", n:24, upto:24, instr:"Tap <b>all the factors of 24</b>.", why:"1, 2, 3, 4, 6, 8, 12, 24." },
+    { kind:"grid", tag:"🧩 Factors", color:"#4b8bff", rule:"factor", n:15, upto:15, instr:"Tap <b>all the factors of 15</b>.", why:"1, 3, 5, 15." },
+
+    { kind:"mc", tag:"⭐ Primes", color:"#9b5cff", q:"Which number is <b>prime</b>?", options:["9","15","17","21"], answer:2, why:"17 has exactly two factors: 1 and 17." },
+    { kind:"mc", tag:"⭐ Primes", color:"#9b5cff", q:"Is <b>1</b> a prime number?", options:["Yes","No"], answer:1, why:"No — 1 has only one factor, so it is not prime." },
+    { kind:"grid", tag:"⭐ Primes", color:"#9b5cff", rule:"prime", upto:20, instr:"Tap <b>all the prime numbers</b> up to 20.", why:"2, 3, 5, 7, 11, 13, 17, 19." }
+  ];
+}
+function startPractice(){
+  var Q=shuffle(practicePool()), i=0, correct=0;
+  function go(){
+    if(i>=Q.length) return finish();
+    var s=Q[i];
+    var done=function(firstTry){ if(firstTry) correct++; i++; go(); };
+    var label="Q "+(i+1)+" / "+Q.length;
+    if(s.kind==="mc")   return renderMC(s.tag, s.color, label, s, done);
+    if(s.kind==="grid") return renderGrid(s.tag, s.color, label, s, done);
+  }
+  function finish(){
+    var acc=Q.length?Math.round(correct/Q.length*100):0, rt=MQ.rating(acc);
+    MQ.sound("win"); MQ.confetti(200);
+    screen.innerHTML=
+      '<div class="card center">'+
+        '<div class="mascot" style="font-size:76px;">'+rt.emoji+'</div>'+
+        '<h1>Practice complete! 🎮</h1>'+
+        '<div class="speech">Great detective work, '+(student||"star")+'!</div>'+
+        '<div class="row" style="margin:18px 0;gap:26px;"><div><div class="big-num" style="font-size:52px;">'+acc+'%</div><div class="muted">Accuracy</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+correct+'/'+Q.length+'</div><div class="muted">First-try correct</div></div></div>'+
+        '<p style="font-size:30px;font-weight:800;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+        '<p class="muted" id="saveState">💾 Saving your result…</p>'+
+        '<div class="row" style="margin-top:6px;"><button class="btn green" id="again">🔁 Play again</button>'+
+        '<button class="btn blue" id="learn">📚 Learn it</button>'+
+        '<button class="btn ghost" id="toMenu">🏠 Menu</button></div>'+
+      '</div>'+ttBanner();
+    logResult("Factors & Multiples — Practice", acc, correct, Q.length, rt, "saveState");
+    el("again").onclick=function(){ MQ.sound("click"); startPractice(); };
+    el("learn").onclick=function(){ MQ.sound("click"); startLearn(); };
+    el("toMenu").onclick=function(){ MQ.sound("click"); menu(); };
+  }
+  go();
+}
+
+/* ---------- logging to tutor sheet (Maths tab) ---------- */
+function logResult(title, acc, correct, total, rt, stateId){
+  MQ.logResult({
+    student: student||"Unknown", subject:"Maths", topic:"Factors & Multiples",
+    week:"", weekTitle:title, accuracy:acc, correct:correct, totalQuestions:total,
+    stars:rt.stars, rating:rt.label,
+    school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  }).then(function(res){
+    var s=stateId?el(stateId):null; if(!s) return;
+    if(res&&res.ok) s.textContent="✅ Result saved — your tutor can see it!";
+    else if(res&&res.offline) s.textContent="📴 Saved on this device (tutor: add the Apps Script link to sync).";
+    else s.textContent="⚠️ Couldn't reach the server, but your result is saved on this device.";
+  });
+}
+
+home();
+</script>
+</body>
+</html>
