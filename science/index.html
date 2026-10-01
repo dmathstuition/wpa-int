@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Science Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="../maths.html" style="text-decoration:none;color:#fff;">➕ Maths</a>
+    <a class="chip" href="../english/index.html" style="text-decoration:none;color:#fff;">📚 English</a>
+    <span class="chip">👤 <b id="whoName">Scientist</b></span>
+    <button class="btn ghost" id="soundBtn">🔊 Sound</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Science Lab</small></span>
+  </div>
+
+  <h1 class="title-pop">🔬 SCIENCE LAB 🧪</h1>
+  <p class="subtitle">Year 6 practicals — do real experiments on screen, predict, test and record! ⚗️</p>
+
+  <div class="weekgrid" id="grid" style="margin-top:24px;"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+/* Practicals. Publish a new one: add a row with live:true and its file. */
+var PRACTICALS = [
+  { title:"Electricity", emoji:"⚡", file:"electricity.html", live:true,
+    desc:"Build circuits, test cells & bulbs, conductors vs insulators, circuit symbols." },
+  { title:"Light & Shadows", emoji:"🔦", live:false, desc:"How light travels, reflection and shadows." },
+  { title:"Living Things", emoji:"🦋", live:false, desc:"Classifying living things and their habitats." },
+  { title:"Heart & Body", emoji:"❤️", live:false, desc:"The circulatory system and healthy living." },
+  { title:"Evolution", emoji:"🦕", live:false, desc:"Fossils, inheritance and adaptation." }
+];
+
+(function(){
+  var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=nm+"<small>Science Lab</small>";
+  document.title=nm+" — Science Lab";
+  var who=(typeof MQ!=="undefined"&&MQ.getStudent&&MQ.getStudent())||"";
+  if(who) document.getElementById("whoName").textContent=who;
+})();
+var soundBtn=document.getElementById("soundBtn");
+function paintSound(){ try{ soundBtn.textContent=MQ.soundEnabled()?"🔊 Sound":"🔇 Muted"; }catch(e){} }
+soundBtn.onclick=function(){ try{ MQ.toggleSound(); paintSound(); MQ.sound("click"); }catch(e){} };
+paintSound();
+
+var grid=document.getElementById("grid");
+PRACTICALS.forEach(function(p,i){
+  var c=document.createElement("div");
+  c.className="weekcard"+(p.live?"":" locked");
+  c.style.animationDelay=(i*0.08)+"s";
+  c.innerHTML='<div class="emoji">'+(p.live?p.emoji:"🔒")+'</div><h3>'+p.title+'</h3>'+
+    '<p class="muted" style="min-height:52px;font-size:14px;">'+p.desc+'</p>'+
+    '<span class="tag '+(p.live?"live":"soon")+'">'+(p.live?"▶ ENTER THE LAB":"COMING SOON")+'</span>';
+  if(p.live){ c.style.cursor="pointer"; c.onclick=function(){ try{MQ.sound("click");}catch(e){} location.href=p.file; }; }
+  grid.appendChild(c);
+});
+</script>
+</body>
+</html>

@@ -10,20 +10,42 @@ rate performance and report progress to *madam* each week.
 
 ---
 
-## 🏠 Start here: `home.html`
+## 🏠 Start here: `index.html`
 
-`home.html` is the **master front door**. It has one big card per area, so a
-learner (or you) can pick where to go:
+`index.html` (the site root) is the **master front door**. It has one big card
+per area, so a learner (or you) can pick where to go:
 
 | Card | Goes to |
 |------|---------|
 | 🔢 **Number Foundations** | `foundations/index.html` — counting 1–10 |
-| ➕ **Maths Missions** | `index.html` — addition & subtraction weeks |
+| ➕ **Maths Missions** | `maths.html` — weekly maths, plus Factors & Multiples and Times Tables |
+| 🎯 **SATs Maths** | `sats.html` — SAT questions + 30-minute CBT test |
 | 📚 **English — Grammar Quest** | `english/index.html` |
+| 🔬 **Science Lab** | `science/index.html` — practicals (Electricity) |
 | 🐝 **Spelling Games** | `games/index.html` |
 
-Send the learner **`…/home.html`** as the starting link. (The existing hubs are
-untouched and still cross-link to each other.)
+Send the learner the **site root** as the starting link. Every hub has a 🏠 Home
+chip back to it.
+
+## 🔬 Science Lab (practicals)
+
+`science/index.html` lists the practicals; **Electricity** (`science/electricity.html`)
+is live, matched to the Year 6 "Electricity" curriculum. Learners build real
+series circuits on screen by tapping parts (cell, bulb, buzzer, motor, switch,
+wire) into gaps, then follow the scientific method — **aim → predict → test →
+record → conclude**:
+
+1. **Light It Up!** — complete circuits and switches
+2. **More Cells, More Power?** — fair test: cells vs brightness (results table + bar graph; too many cells blows the bulb)
+3. **Share the Energy** — more bulbs → each one dimmer
+4. **Conductor or Insulator?** — predict, then test 10 materials
+5. **Circuit Symbols** — recognised KS2 symbols
+6. **Fault Finder** — explain why circuits don't work
+7. **Free Lab** and a **Lab Quiz**
+
+Results log to a **Science** tab in the tutor's sheet, including the learner's
+predictions and recorded readings (in the last column). Add more practicals by
+adding a row to `PRACTICALS` in `science/index.html`.
 
 ## 🔢 Number Foundations (counting 1–10, with a finger whiteboard)
 

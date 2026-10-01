@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Electricity Lab | Science Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+<style>
+  /* ---------- Electricity Lab ---------- */
+  .mgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; margin-top:18px; }
+  .mcard { position:relative; cursor:pointer; text-align:center; padding:20px 16px; }
+  .mcard .me { font-size:46px; line-height:1; }
+  .mcard h3 { margin:8px 0 4px; }
+  .mcard .done { position:absolute; top:10px; right:12px; font-size:22px; }
+  .mcard .num { position:absolute; top:10px; left:12px; font-weight:800; font-size:13px; color:#fff; background:var(--purple); border-radius:999px; padding:2px 10px; }
+
+  .safety { background:linear-gradient(135deg,#fff8e1,#ffe9b0); border:3px solid #ffcf4d; }
+
+  .labhead { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .stepdots { display:flex; gap:6px; }
+  .stepdots i { width:12px; height:12px; border-radius:50%; background:#e3def7; display:inline-block; }
+  .stepdots i.on { background:var(--purple); }
+  .stepdots i.ok { background:#22bd6b; }
+
+  .bench { background:linear-gradient(180deg,#fdfbff,#f3efff); }
+  .boardwrap { width:100%; overflow-x:auto; }
+  svg.board { width:100%; max-width:760px; display:block; margin:0 auto; touch-action:manipulation; }
+  svg.board .w { stroke:#2d2559; stroke-width:4; stroke-linecap:round; fill:none; }
+  svg.board .thick { stroke-width:8; }
+  svg.board .lbl { font:800 17px 'Baloo 2',system-ui,sans-serif; fill:#5b5390; text-anchor:middle; }
+  svg.board .hit { fill:transparent; cursor:pointer; }
+  svg.board.view .hit { cursor:default; }
+  svg.board .slotempty { fill:rgba(155,92,255,.07); stroke:#b9aee6; stroke-width:2.5; stroke-dasharray:6 5; }
+  svg.board .slotsel { fill:rgba(255,210,63,.18); stroke:#ffb020; stroke-width:3; }
+  svg.board .flow { fill:none; stroke:#ffc400; stroke-width:5; stroke-linecap:round; stroke-dasharray:2 16; animation:flowmove 1s linear infinite; }
+  svg.board .flow.short { stroke:#ff3b3b; }
+  @keyframes flowmove { to { stroke-dashoffset:-36; } }
+  svg.board .wave { fill:none; stroke:#ff8a3d; stroke-width:3; stroke-linecap:round; animation:wavep .6s ease-in-out infinite alternate; }
+  @keyframes wavep { from { opacity:.25; } to { opacity:1; } }
+  svg.board .fan { transform-box:fill-box; transform-origin:center; animation:spin 1s linear infinite; }
+
+  .tray { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:12px 0 4px; }
+  .part { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:76px; padding:8px 10px; border-radius:16px;
+    border:3px solid var(--line); background:#fff; cursor:pointer; font-weight:800; font-size:13px; color:var(--ink);
+    box-shadow:0 6px 14px rgba(35,20,80,.10); transition:transform .1s; font-family:inherit; }
+  .part .pe { font-size:28px; line-height:1; }
+  .part:hover { transform:translateY(-3px); }
+  .part.sel { border-color:#ffb020; background:#fff7d6; transform:scale(1.06); }
+  .part.tested { opacity:.55; }
+  .part .tk { font-size:12px; }
+
+  .readings { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:12px; }
+  .rd { background:#fff; border:2px solid var(--line); border-radius:14px; padding:8px 10px; font-weight:800; font-size:14px; color:#4a4470; }
+  .rd b { font-size:18px; color:var(--ink); }
+  .meter { height:10px; border-radius:999px; background:#eee; overflow:hidden; margin-top:6px; }
+  .meter i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#ffd54a,#ff9f1a); transition:width .3s; }
+  .status { margin-top:10px; padding:10px 14px; border-radius:14px; font-weight:800; text-align:center; }
+  .status.ok { background:#e9fbf1; color:#0c7a43; }
+  .status.off { background:#f1eefc; color:#5b5390; }
+  .status.warn { background:#fff1e6; color:#b0480b; }
+  .status.bad { background:#fdeef0; color:#b3203a; }
+
+  .nb { border-left:10px solid var(--purple); }
+  .nb .lab-step { font-size:18px; font-weight:800; color:var(--ink); line-height:1.45; }
+  .nb .tagline { display:inline-block; font-size:13px; font-weight:800; color:#fff; border-radius:999px; padding:3px 12px; margin-bottom:8px; }
+  table.res { width:100%; border-collapse:collapse; margin-top:10px; font-weight:800; }
+  table.res th, table.res td { border:2px solid var(--line); padding:8px; text-align:center; }
+  table.res th { background:#f1eefc; color:#4a4470; }
+  table.res td.empty { color:#b5aed6; }
+  .bars { display:flex; align-items:flex-end; gap:18px; justify-content:center; height:150px; margin:14px 0 4px; }
+  .bars .bar { width:56px; background:linear-gradient(180deg,#ffd54a,#ff9f1a); border-radius:10px 10px 0 0; position:relative; transition:height .5s; }
+  .bars .bar span { position:absolute; top:-22px; left:0; right:0; text-align:center; font-weight:800; }
+  .bars .bl { text-align:center; font-weight:800; font-size:13px; color:#5b5390; margin-top:4px; }
+  .predbox { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:12px; }
+  .symq svg { width:220px; height:110px; }
+  .feedback .reveal-box { color:var(--ink); font-size:17px; text-align:left; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🔬 Science Lab</a>
+    <a class="chip" href="#" id="menuLink" style="text-decoration:none;color:#fff;">⚡ Experiments</a>
+    <span class="chip">👤 <b id="whoName">Scientist</b></span>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Science Lab</small></span>
+  </div>
+
+  <div id="screen"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* =============================================================
+   ELECTRICITY LAB — Year 6 (KS2 "Electricity")
+   - brightness / loudness vs number & voltage of cells
+   - components: cell, bulb (lamp), buzzer, motor, switch, wire
+   - conductors & insulators, recognised circuit symbols
+   A simple SERIES-circuit model: each load gets an equal share of
+   the cells' push.  cellsPerLoad = cells / loads  (1 cell = 1.5 V)
+   ============================================================= */
+var CELL_V = 1.5;
+var H = 45;                       // half-length of a component slot (svg units)
+var SLOT_POS = [                   // 6 slots round the loop (clockwise)
+  {x:170,y:70},{x:320,y:70},{x:470,y:70},
+  {x:470,y:290},{x:320,y:290},{x:170,y:290}
+];
+var PARTS = {
+  cell:   { name:"Cell",   emoji:"🔋" },
+  bulb:   { name:"Bulb",   emoji:"💡" },
+  buzzer: { name:"Buzzer", emoji:"🔔" },
+  motor:  { name:"Motor",  emoji:"⚙️" },
+  "switch":{ name:"Switch", emoji:"🎚️" },
+  wire:   { name:"Wire",   emoji:"➖" },
+  remove: { name:"Remove", emoji:"🗑️" }
+};
+var MATERIALS = [
+  { id:"coin",   name:"Metal coin",     emoji:"🪙", conductor:true,  why:"Metals let electricity flow — the coin is a CONDUCTOR." },
+  { id:"clip",   name:"Paper clip",     emoji:"📎", conductor:true,  why:"A paper clip is made of steel (a metal), so it CONDUCTS." },
+  { id:"key",    name:"Metal key",      emoji:"🔑", conductor:true,  why:"Keys are metal — a good CONDUCTOR." },
+  { id:"pencil", name:"Pencil lead",    emoji:"✏️", conductor:true,  why:"Surprise! Pencil 'lead' is graphite (carbon). It is not a metal, but it CONDUCTS." },
+  { id:"ruler",  name:"Plastic ruler",  emoji:"📏", conductor:false, why:"Plastic is an INSULATOR — that's why wires are covered in plastic." },
+  { id:"wood",   name:"Wooden stick",   emoji:"🪵", conductor:false, why:"Dry wood is an INSULATOR." },
+  { id:"rubber", name:"Rubber balloon", emoji:"🎈", conductor:false, why:"Rubber is an INSULATOR — electricians wear rubber gloves." },
+  { id:"glass",  name:"Glass marble",   emoji:"🔮", conductor:false, why:"Glass is an INSULATOR." },
+  { id:"paper",  name:"Paper",          emoji:"📄", conductor:false, why:"Paper is an INSULATOR." },
+  { id:"wool",   name:"Wool",           emoji:"🧶", conductor:false, why:"Wool is an INSULATOR." }
+];
+function matById(id){ for(var i=0;i<MATERIALS.length;i++) if(MATERIALS[i].id===id) return MATERIALS[i]; return null; }
+
+function el(id){ return document.getElementById(id); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+var screen=el("screen");
+
+/* ---------- brand / sound / learner ---------- */
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=nm+"<small>Science Lab</small>";
+  document.title="Electricity Lab | "+nm; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); if(!MQ.soundEnabled()) stopBuzz(); else if(lastA) updateBuzz(lastA); };
+paintSound();
+el("menuLink").onclick=function(e){ e.preventDefault(); stopBuzz(); menu(); };
+var student=MQ.getStudent()||"";
+
+function progKey(){ return "scielec_"+(student||"").toLowerCase(); }
+function loadProg(){ return MQ.readLocal(progKey()) || { done:{}, quizBest:null }; }
+function saveProg(p){ MQ.saveLocal(progKey(), p); }
+
+/* =============================================================
+   CIRCUIT MODEL
+   ============================================================= */
+function analyse(slots){
+  var a={ cells:0, bulbs:0, buzzers:0, motors:0, loads:0, switches:0,
+          openSwitch:false, gap:false, blown:false, insulator:null, emptyTest:false, testMat:null };
+  slots.forEach(function(s){
+    if(!s || !s.type){ a.gap=true; return; }
+    switch(s.type){
+      case "cell": a.cells++; break;
+      case "bulb": if(s.blown) a.blown=true; else { a.bulbs++; a.loads++; } break;
+      case "buzzer": a.buzzers++; a.loads++; break;
+      case "motor": a.motors++; a.loads++; break;
+      case "switch": a.switches++; if(!s.closed) a.openSwitch=true; break;
+      case "material":
+        if(!s.mat) a.emptyTest=true;
+        else { a.testMat=matById(s.mat); if(a.testMat && !a.testMat.conductor) a.insulator=a.testMat; }
+        break;
+    }
+  });
+  a.V = a.cells*CELL_V;
+  a.complete = !a.gap && !a.openSwitch && !a.blown && !a.insulator && !a.emptyTest;
+  a.flowing  = a.complete && a.cells>0;
+  a.short    = a.flowing && a.loads===0;
+  a.perLoad  = a.loads ? a.cells/a.loads : 0;
+  a.overload = a.flowing && a.loads>0 && a.perLoad>3;
+  a.level    = (a.flowing && a.loads) ? Math.min(a.perLoad/2.5, 1.2) : 0;   // 0..1.2
+  return a;
+}
+function lightReading(a){ return a.bulbs ? Math.round(a.level*80) : 0; }
+function soundReading(a){ return a.buzzers ? Math.round(a.level*80) : 0; }
+function motorReading(a){ return a.motors ? Math.round(a.level*250) : 0; }
+function brightWord(a){
+  if(!a.level) return "off";
+  var p=a.perLoad;
+  return p>=3?"very bright": p>=2?"bright": p>=1?"medium": p>=0.5?"dim":"very dim";
+}
+function statusOf(a){
+  if(a.short)   return { cls:"bad",  text:"⚠️ SHORT CIRCUIT! There is nothing to use the energy, so the wires and cell get very hot. Never do this with real batteries!" };
+  if(a.blown)   return { cls:"bad",  text:"💥 A bulb has BLOWN — its thin wire (filament) snapped, so the circuit is broken. Tap the broken bulb to fit a new one." };
+  if(a.gap)     return { cls:"off",  text:"🔌 There's a GAP in the circuit — fill every space so electricity can flow all the way round." };
+  if(a.emptyTest) return { cls:"off", text:"🧪 The test gap is empty — choose a material to clip in." };
+  if(a.openSwitch) return { cls:"off", text:"🎚️ The switch is OPEN — it makes a gap, so nothing works. Tap the switch to close it." };
+  if(a.insulator) return { cls:"off", text:"🚫 "+a.insulator.name+" is an INSULATOR — it stops electricity flowing." };
+  if(!a.cells)  return { cls:"off",  text:"🔋 No cell = no power. Add a cell to push the electricity round." };
+  if(a.overload) return { cls:"warn", text:"⚡ Too many cells for these parts!" };
+  var bits=[];
+  if(a.bulbs) bits.push("bulb"+(a.bulbs>1?"s":"")+" "+brightWord(a));
+  if(a.buzzers) bits.push("buzzer"+(a.buzzers>1?"s":"")+" buzzing");
+  if(a.motors) bits.push("motor"+(a.motors>1?"s":"")+" spinning");
+  return { cls:"ok", text:"✅ Complete circuit! Electricity is flowing — "+bits.join(", ")+"." };
+}
+
+/* =============================================================
+   SVG CIRCUIT SYMBOLS  (UK/KS2 recognised symbols)
+   ============================================================= */
+function ln(x1,y1,x2,y2,c){ return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" class="'+(c||"w")+'"/>'; }
+function symSVG(type, cx, cy, o){
+  o=o||{};
+  var s="";
+  if(type==="wire"){ return ln(cx-H,cy,cx+H,cy); }
+  if(type==="cell"){
+    s+=ln(cx-H,cy,cx-7,cy)+ln(cx-7,cy-22,cx-7,cy+22)+ln(cx+7,cy-12,cx+7,cy+12,"w thick")+ln(cx+7,cy,cx+H,cy);
+    s+='<text x="'+(cx-20)+'" y="'+(cy-14)+'" class="lbl" style="font-size:16px;">+</text>';
+    return s;
+  }
+  if(type==="battery"){
+    s+=ln(cx-H,cy,cx-19,cy)+ln(cx-19,cy-22,cx-19,cy+22)+ln(cx-9,cy-12,cx-9,cy+12,"w thick")+ln(cx-9,cy,cx+9,cy)
+      +ln(cx+9,cy-22,cx+9,cy+22)+ln(cx+19,cy-12,cx+19,cy+12,"w thick")+ln(cx+19,cy,cx+H,cy);
+    return s;
+  }
+  if(type==="bulb"){
+    var lv=o.level||0, r=18;
+    if(lv>0 && !o.blown) s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(r+12+40*lv)+'" fill="url(#glow)" opacity="'+Math.min(1,0.25+lv)+'"/>';
+    s+=ln(cx-H,cy,cx-r,cy)+ln(cx+r,cy,cx+H,cy);
+    var fill = o.blown?"#d9d6e4": (lv>0? "hsl(50,100%,"+(92-lv*18)+"%)" : "#fff");
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+fill+'" stroke="'+(o.blown?"#8a84a8":"#2d2559")+'" stroke-width="4"/>';
+    var d=12.7;
+    if(o.blown){
+      s+='<path d="M'+(cx-9)+','+(cy-12)+' L'+(cx-2)+','+(cy-2)+' L'+(cx-8)+','+(cy+3)+' L'+(cx+4)+','+(cy+13)+'" stroke="#6e6890" stroke-width="3" fill="none"/>';
+      s+='<text x="'+(cx+26)+'" y="'+(cy-20)+'" style="font-size:20px">💥</text>';
+    } else {
+      s+=ln(cx-d,cy-d,cx+d,cy+d)+ln(cx-d,cy+d,cx+d,cy-d);
+    }
+    return s;
+  }
+  if(type==="buzzer"){
+    s+=ln(cx-H,cy,cx-16,cy)+ln(cx+16,cy,cx+H,cy);
+    s+='<path d="M'+(cx-16)+','+cy+' A16,16 0 0 1 '+(cx+16)+','+cy+' Z" fill="#fff" stroke="#2d2559" stroke-width="4" stroke-linejoin="round"/>';
+    if(o.level>0){
+      var d1=0.6/(0.4+o.level);
+      s+='<path class="wave" style="animation-duration:'+d1.toFixed(2)+'s" d="M'+(cx+20)+','+(cy-22)+' q8,8 0,16"/>';
+      s+='<path class="wave" style="animation-duration:'+d1.toFixed(2)+'s;animation-delay:.15s" d="M'+(cx+28)+','+(cy-30)+' q14,14 0,30"/>';
+    }
+    return s;
+  }
+  if(type==="motor"){
+    s+=ln(cx-H,cy,cx-18,cy)+ln(cx+18,cy,cx+H,cy);
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="18" fill="#fff" stroke="#2d2559" stroke-width="4"/>';
+    s+='<text x="'+cx+'" y="'+(cy+7)+'" class="lbl" style="font-size:20px;fill:#2d2559">M</text>';
+    var spin = o.level>0 ? 'class="fan" style="animation-duration:'+(0.9/(0.3+o.level)).toFixed(2)+'s"' : '';
+    s+='<g '+spin+'><ellipse cx="'+cx+'" cy="'+(cy-46)+'" rx="15" ry="4" fill="#4b8bff"/><ellipse cx="'+cx+'" cy="'+(cy-46)+'" rx="4" ry="15" fill="#22c3d6"/><circle cx="'+cx+'" cy="'+(cy-46)+'" r="3" fill="#2d2559"/></g>';
+    s+=ln(cx,cy-18,cx,cy-31,"w");
+    return s;
+  }
+  if(type==="switch"){
+    s+=ln(cx-H,cy,cx-18,cy)+ln(cx+18,cy,cx+H,cy);
+    s+= o.closed ? ln(cx-18,cy,cx+18,cy) : ln(cx-18,cy,cx+14,cy-24);
+    s+='<circle cx="'+(cx-18)+'" cy="'+cy+'" r="5" fill="#2d2559"/><circle cx="'+(cx+18)+'" cy="'+cy+'" r="5" fill="#2d2559"/>';
+    return s;
+  }
+  if(type==="material"){
+    s+=ln(cx-H,cy,cx-26,cy)+ln(cx+26,cy,cx+H,cy);
+    s+='<path d="M'+(cx-30)+','+(cy-7)+' l12,4 l-12,4 Z M'+(cx+30)+','+(cy-7)+' l-12,4 l12,4 Z" fill="#e84a5f"/>';
+    if(o.mat){ var m=matById(o.mat); s+='<text x="'+cx+'" y="'+(cy+11)+'" text-anchor="middle" style="font-size:30px">'+(m?m.emoji:"?")+'</text>'; }
+    else s+='<circle cx="'+cx+'" cy="'+cy+'" r="14" fill="#fff" stroke="#b9aee6" stroke-width="2.5" stroke-dasharray="4 4"/><text x="'+cx+'" y="'+(cy+6)+'" class="lbl">?</text>';
+    return s;
+  }
+  return "";
+}
+function slotLabel(s){
+  if(!s.type) return "";
+  if(s.type==="material") return s.mat ? matById(s.mat).name : "test gap";
+  if(s.type==="switch") return s.closed ? "switch (closed)" : "switch (open)";
+  if(s.type==="bulb" && s.blown) return "bulb (blown)";
+  if(s.type==="cell") return "cell 1.5 V";
+  return PARTS[s.type].name.toLowerCase();
+}
+
+function boardSVG(slots, a, opts){
+  opts=opts||{};
+  var g='<svg class="board'+(opts.view?" view":"")+'" id="boardSvg" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs><radialGradient id="glow"><stop offset="0" stop-color="#fffbe0"/><stop offset=".45" stop-color="#ffe066" stop-opacity=".9"/><stop offset="1" stop-color="#ffcf33" stop-opacity="0"/></radialGradient>'+
+    '<pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#ece7fb" stroke-width="1"/></pattern></defs>'+
+    '<rect x="4" y="4" width="632" height="352" rx="22" fill="#fffdf8"/><rect x="4" y="4" width="632" height="352" rx="22" fill="url(#grid)"/>';
+  // wire segments between slots
+  var segs=[[50,70,125,70],[215,70,275,70],[365,70,425,70],[515,70,590,70],[590,70,590,290],
+            [590,290,515,290],[425,290,365,290],[275,290,215,290],[125,290,50,290],[50,290,50,70]];
+  segs.forEach(function(q){ g+=ln(q[0],q[1],q[2],q[3]); });
+  // electricity flow (dots moving round)
+  if(a.flowing){
+    var speed = a.short ? 0.35 : Math.max(0.45, 1.8/(0.3+a.level*1.6));
+    g+='<path class="flow'+(a.short?" short":"")+'" style="animation-duration:'+speed.toFixed(2)+'s" d="M50,70 H590 V290 H50 Z"/>';
+  }
+  slots.forEach(function(s,i){
+    var p=SLOT_POS[i];
+    if(!s.type){
+      g+='<rect x="'+(p.x-36)+'" y="'+(p.y-26)+'" width="72" height="52" rx="12" class="slotempty"/>'+
+         '<text x="'+p.x+'" y="'+(p.y+9)+'" class="lbl" style="font-size:26px;fill:#a99fd9">+</text>';
+    } else {
+      if(s.type!=="wire") g+='<rect x="'+(p.x-33)+'" y="'+(p.y-28)+'" width="66" height="56" fill="#fffdf8"/>';
+      g+=symSVG(s.type, p.x, p.y, { level: (a.flowing && !a.short) ? a.level : 0, closed:s.closed, blown:s.blown, mat:s.mat });
+      g+='<text x="'+p.x+'" y="'+(p.y+50)+'" class="lbl">'+slotLabel(s)+(s.locked?" 🔒":"")+'</text>';
+    }
+    if(!opts.view) g+='<rect class="hit" data-s="'+i+'" x="'+(p.x-48)+'" y="'+(p.y-40)+'" width="96" height="80"/>';
+  });
+  return g+'</svg>';
+}
+
+/* ---------- buzzer sound (gentle, only while a buzzer is on) ---------- */
+var AC=null, osc=null, gain=null, lastA=null;
+function updateBuzz(a){
+  var want = a && a.flowing && !a.short && a.buzzers>0 && MQ.soundEnabled();
+  if(!want){ stopBuzz(); return; }
+  try{
+    if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==="suspended") AC.resume();
+    if(!osc){
+      osc=AC.createOscillator(); gain=AC.createGain();
+      osc.type="triangle"; osc.connect(gain); gain.connect(AC.destination); gain.gain.value=0; osc.start();
+    }
+    osc.frequency.setTargetAtTime(330+a.level*260, AC.currentTime, 0.05);
+    gain.gain.setTargetAtTime(0.025+a.level*0.06, AC.currentTime, 0.05);
+  }catch(e){}
+}
+function stopBuzz(){
+  try{ if(osc){ gain.gain.setTargetAtTime(0, AC.currentTime, 0.03); var o=osc; osc=null; setTimeout(function(){ try{o.stop();}catch(e){} },150); } }catch(e){}
+}
+
+/* =============================================================
+   MISSIONS  (Aim → Predict → Test → Record → Conclude)
+   ============================================================= */
+function S(type, extra){ var s={type:type||null}; if(extra) for(var k in extra) s[k]=extra[k]; return s; }
+
+var MISSIONS = [
+  { id:"m1", emoji:"💡", title:"Light It Up!", kind:"lab", color:"#ffb020",
+    blurb:"Build your first complete circuit and control it with a switch.",
+    aim:"Find out what a circuit needs to make a bulb light.",
+    setup:function(){ return [S(),S(),S(),S(),S(),S()]; },
+    tray:["cell","bulb","switch","wire","remove"],
+    steps:[
+      { t:"goal", tag:"🔬 Build", text:"Make the bulb light! Tap a part in the tray, then tap a <b>+</b> gap on the board. You need a <b>cell</b> 🔋, a <b>bulb</b> 💡, a <b>switch</b> 🎚️ and <b>wires</b> ➖ to fill every gap. Tap the switch to <b>close</b> it.",
+        check:function(a){ return a.flowing && a.bulbs>=1 && a.switches>=1; },
+        hint:function(a){ if(a.flowing && a.bulbs>=1 && !a.switches) return "Your bulb is lit — now swap a wire for a switch so you can control it 🎚️"; return null; },
+        win:"Your bulb is glowing! ✨ Electricity flows round a <b>COMPLETE CIRCUIT</b> — out of the cell, through the wires and bulb, and back to the cell." },
+      { t:"goal", tag:"🔬 Test", text:"Now <b>OPEN the switch</b> (tap it). Watch the bulb carefully…",
+        check:function(a){ return a.switches>=1 && a.openSwitch && a.bulbs>=1 && a.cells>=1 && !a.gap; },
+        win:"The bulb went out! An <b>open switch</b> makes a gap, so the circuit is <b>broken</b> and electricity can't flow. Switches let us turn things on and off safely." },
+      { t:"mc", tag:"💡 Conclude", q:"Why does the bulb only light in a <b>complete</b> circuit?",
+        options:["Electricity needs an unbroken loop to flow round","Bulbs only work in the daytime","The wires must be a special colour"], answer:0,
+        why:"Electricity must travel all the way round an unbroken loop. Any gap — an open switch, a missing wire — stops it." }
+    ]},
+
+  { id:"m2", emoji:"🔋", title:"More Cells, More Power?", kind:"lab", color:"#2bd576",
+    blurb:"A fair test: how does the number of cells change the bulb's brightness?",
+    aim:"Find out how the NUMBER of cells affects how bright a bulb is.",
+    setup:function(){ return [S("switch",{closed:true,locked:true}), S("cell"), S("wire"), S("bulb",{locked:true}), S("wire"), S("wire")]; },
+    tray:["cell","wire"],
+    steps:[
+      { t:"predict", tag:"🤔 Predict", q:"What will happen to the bulb's brightness when you add <b>more cells</b>?",
+        options:["It will get brighter","It will get dimmer","It will stay the same"], answer:0 },
+      { t:"record", tag:"🔬 Test & 📋 Record", variable:"cells", values:[1,2,3],
+        text:"Keep <b>ONE bulb</b> (that makes it a <b>fair test</b>). Swap wires and cells so the circuit has <b>1</b>, then <b>2</b>, then <b>3</b> cells. Each time, press <b>📋 Record result</b> to save the light-sensor reading." },
+      { t:"mc", tag:"💡 Conclude", q:"What do your results show?",
+        options:["More cells → a brighter bulb","More cells → a dimmer bulb","The number of cells makes no difference"], answer:0, usePrediction:true,
+        why:"Each cell adds 1.5 volts of 'push'. More cells = higher <b>voltage</b> = more energy reaches the bulb, so it shines <b>brighter</b>. (Too many cells can blow the bulb!)" },
+      { t:"mc", tag:"⚖️ Fair test", q:"Why did we keep just <b>one bulb</b> every time?",
+        options:["So only ONE thing changes — it's a fair test","Because bulbs are expensive","To make the wires longer"], answer:0,
+        why:"In a fair test we change only ONE variable (the number of cells) and keep everything else the same." }
+    ]},
+
+  { id:"m3", emoji:"💡💡", title:"Share the Energy", kind:"lab", color:"#4b8bff",
+    blurb:"What happens to brightness when more bulbs share the same cells?",
+    aim:"Find out how adding more BULBS affects how bright each one is.",
+    setup:function(){ return [S("cell",{locked:true}), S("cell",{locked:true}), S("switch",{closed:true,locked:true}), S("bulb"), S("wire"), S("wire")]; },
+    tray:["bulb","wire"],
+    steps:[
+      { t:"predict", tag:"🤔 Predict", q:"With the same 2 cells, what happens to each bulb when you add <b>more bulbs</b>?",
+        options:["Each bulb gets brighter","Each bulb gets dimmer","They stay the same"], answer:1 },
+      { t:"record", tag:"🔬 Test & 📋 Record", variable:"bulbs", values:[1,2,3],
+        text:"Keep the <b>2 cells</b> the same. Put <b>1</b>, then <b>2</b>, then <b>3</b> bulbs in the circuit (fill the other gaps with wires). Each time press <b>📋 Record result</b>." },
+      { t:"mc", tag:"💡 Conclude", q:"What do your results show?",
+        options:["More bulbs → each bulb is dimmer","More bulbs → each bulb is brighter","More bulbs → no change"], answer:0, usePrediction:true,
+        why:"The bulbs <b>share</b> the energy from the cells. The more bulbs there are, the less each one gets — so each is <b>dimmer</b>." },
+      { t:"mc", tag:"🔔 Think further", q:"If you added more <b>buzzers</b> instead of bulbs, what would happen to each buzzer?",
+        options:["Each buzzer would be quieter","Each buzzer would be louder","No change"], answer:0,
+        why:"Buzzers share the energy just like bulbs — more buzzers means each one is quieter." }
+    ]},
+
+  { id:"m4", emoji:"🧪", title:"Conductor or Insulator?", kind:"lab", color:"#9b5cff",
+    blurb:"Clip different materials into the circuit — which ones let electricity through?",
+    aim:"Sort materials into electrical CONDUCTORS and INSULATORS.",
+    setup:function(){ return [S("cell",{locked:true}), S("cell",{locked:true}), S("switch",{closed:true,locked:true}), S("bulb",{locked:true}), S("material",{locked:true}), S("wire",{locked:true})]; },
+    tray:"materials",
+    steps:[
+      { t:"materials", tag:"🔬 Test & 📋 Record", need:6,
+        text:"Tap a material in the tray, <b>predict</b> whether the bulb will light, then watch! Test at least <b>6 materials</b>." },
+      { t:"mc", tag:"💡 Conclude", q:"Which materials were good electrical <b>conductors</b>?",
+        options:["Metals (and graphite)","Plastics","Wood, rubber and glass"], answer:0,
+        why:"Metals — and graphite — are <b>conductors</b>: electricity flows through them. Plastic, wood, rubber, glass, paper and wool are <b>insulators</b>." },
+      { t:"mc", tag:"🦺 Stay safe", q:"Why are electric wires covered in plastic?",
+        options:["Plastic is an insulator, so it keeps us safe","Plastic makes electricity faster","Just to make them colourful"], answer:0,
+        why:"The metal inside carries the electricity; the plastic <b>insulator</b> outside stops it reaching us." }
+    ]},
+
+  { id:"m5", emoji:"🔣", title:"Circuit Symbols", kind:"symbols", color:"#ff5b6b",
+    blurb:"Scientists draw circuits with symbols. Can you read them?",
+    aim:"Recognise the symbols used in circuit diagrams." },
+
+  { id:"m6", emoji:"🕵️", title:"Fault Finder", kind:"fault", color:"#ff8a3d",
+    blurb:"These circuits don't work properly. Be a detective — find out why!",
+    aim:"Use what you know to explain why circuits don't work." },
+
+  { id:"free", emoji:"🧰", title:"Free Lab", kind:"free", color:"#22c3d6",
+    blurb:"Build anything! Bulbs, buzzers, motors, switches — experiment freely.",
+    aim:"Explore! Try your own experiments.",
+    setup:function(){ return [S(),S(),S(),S(),S(),S()]; },
+    tray:["cell","bulb","buzzer","motor","switch","wire","remove"] },
+
+  { id:"quiz", emoji:"🏆", title:"Lab Quiz", kind:"quiz", color:"#c98a5e",
+    blurb:"Prove you're an Electricity Expert! Score saved for your tutor.",
+    aim:"Check everything you've learned." }
+];
+
+/* =============================================================
+   MENU
+   ============================================================= */
+function boot(){
+  if(!student){
+    screen.innerHTML='<div class="card center" style="max-width:540px;"><div class="mascot">👩‍🔬</div>'+
+      '<div class="speech">Welcome to the Science Lab! I\'m Professor Volt ⚡. What is your name, scientist?</div>'+
+      '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Enter the lab ▶</button></div></div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v) return; student=v; MQ.setStudent(v); el("whoName").textContent=v; MQ.sound("level"); menu(); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+  } else { el("whoName").textContent=student; menu(); }
+}
+
+function menu(){
+  stopBuzz();
+  var p=loadProg();
+  var cards=MISSIONS.map(function(m,i){
+    var isMission = /^m\d$/.test(m.id);
+    return '<div class="card mcard" data-m="'+i+'" style="border-top:8px solid '+m.color+';">'+
+      (isMission?'<span class="num">Experiment '+m.id.slice(1)+'</span>':'')+
+      (p.done[m.id]?'<span class="done">✅</span>':'')+
+      '<div class="me">'+m.emoji+'</div><h3>'+m.title+'</h3>'+
+      '<p class="muted" style="font-size:14px;font-weight:700;min-height:40px;">'+m.blurb+'</p>'+
+      (m.id==="quiz" && p.quizBest!=null ? '<span class="tag live">Best: '+p.quizBest+'%</span>' : '<span class="tag live">▶ START</span>')+
+    '</div>';
+  }).join("");
+  var doneCount=Object.keys(p.done).filter(function(k){return /^m\d$/.test(k);}).length;
+  screen.innerHTML=
+    '<h1 class="title-pop">⚡ ELECTRICITY LAB 🔬</h1>'+
+    '<p class="subtitle">Year 6 practical science — build circuits, test ideas, record results!</p>'+
+    '<div class="card safety" style="margin-top:18px;">'+
+      '<h2 style="margin:0 0 6px;">⚠️ Lab safety first</h2>'+
+      '<p style="margin:0;font-weight:700;color:#6b4d00;">In real experiments we only use <b>batteries (cells)</b>. <b>Never</b> touch plug sockets or mains electricity — it can kill. Never poke anything into a socket, and keep electricity away from water. 💧⚡</p>'+
+    '</div>'+
+    '<div class="card" style="margin-top:16px;"><b>🧑‍🔬 '+(student||"Scientist")+'\'s lab book:</b> '+doneCount+' / 6 experiments complete'+
+      '<div class="meter" style="margin-top:8px;height:14px;"><i style="width:'+Math.round(doneCount/6*100)+'%;background:linear-gradient(90deg,#2bd576,#22c3d6);"></i></div></div>'+
+    '<div class="mgrid">'+cards+'</div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".mcard"),function(c){
+    c.onclick=function(){ MQ.sound("click"); openMission(MISSIONS[Number(c.getAttribute("data-m"))]); };
+  });
+}
+
+/* =============================================================
+   LAB RUNNER
+   ============================================================= */
+var M=null, slots=[], tool=null, stepIdx=0, lab=null;
+function openMission(m){
+  M=m; stepIdx=0; tool=null;
+  lab={ first:0, total:0, pred:null, rows:{}, tested:{}, testOrder:[], log:{} };
+  if(m.steps) m.steps.forEach(function(s){ delete s._won; delete s._shown; });   // fresh on replay
+  if(m.kind==="symbols") return runSymbols();
+  if(m.kind==="fault")   return runFaults();
+  if(m.kind==="quiz")    return runQuiz();
+  slots=m.setup();
+  screen.innerHTML=
+    '<div class="card nb" id="note" style="border-left-color:'+m.color+';"></div>'+
+    '<div class="card bench">'+
+      '<div class="boardwrap" id="boardHost"></div>'+
+      '<div class="tray" id="tray"></div>'+
+      '<div class="readings" id="readings"></div>'+
+      '<div class="status off" id="status"></div>'+
+    '</div>';
+  renderTray(); renderLab(); renderNote();
+}
+
+function stepHeader(){
+  var dots="";
+  if(M.steps){ for(var i=0;i<M.steps.length;i++) dots+='<i class="'+(i<stepIdx?"ok":i===stepIdx?"on":"")+'"></i>'; }
+  return '<div class="labhead"><span class="chip" style="background:'+M.color+';color:#fff;">'+M.emoji+' '+M.title+'</span>'+
+    '<span class="stepdots">'+dots+'</span></div>'+
+    '<p class="muted" style="margin:8px 0 10px;font-weight:800;">🎯 Aim: '+M.aim+'</p>';
+}
+
+function renderTray(){
+  var t=el("tray"); if(!t) return;
+  if(M.tray==="materials"){
+    t.innerHTML=MATERIALS.map(function(m){
+      var r=lab.tested[m.id];
+      return '<button class="part'+(r?" tested":"")+'" data-mat="'+m.id+'"><span class="pe">'+m.emoji+'</span>'+m.name+
+        (r?'<span class="tk">'+(r.result?"💡 lit":"🚫 off")+'</span>':'')+'</button>';
+    }).join("");
+    Array.prototype.forEach.call(t.querySelectorAll("[data-mat]"),function(b){
+      b.onclick=function(){ MQ.sound("click"); askMaterial(b.getAttribute("data-mat")); };
+    });
+    return;
+  }
+  t.innerHTML=M.tray.map(function(k){
+    return '<button class="part'+(tool===k?" sel":"")+'" data-part="'+k+'"><span class="pe">'+PARTS[k].emoji+'</span>'+PARTS[k].name+'</button>';
+  }).join("")+'<div style="flex-basis:100%;text-align:center;font-weight:700;color:#8a83b3;font-size:13px;">'+
+    (tool ? (tool==="remove"?"🗑️ Tap a part on the board to remove it.":"Now tap a gap (or a part) on the board to place the <b>"+PARTS[tool].name.toLowerCase()+"</b>.") : "Pick a part, then tap the board. Tap a switch to open / close it.")+'</div>';
+  Array.prototype.forEach.call(t.querySelectorAll("[data-part]"),function(b){
+    b.onclick=function(){ var k=b.getAttribute("data-part"); tool=(tool===k?null:k); MQ.sound("click"); renderTray(); };
+  });
+}
+
+function renderLab(){
+  var a=analyse(slots);
+  // too much push for the bulbs → one bulb blows (teaches overload)
+  if(a.overload && a.bulbs>0){
+    for(var i=0;i<slots.length;i++){ if(slots[i].type==="bulb" && !slots[i].blown){ slots[i].blown=true; break; } }
+    MQ.sound("wrong");
+    a=analyse(slots);
+    lab.justBlew=true;
+  }
+  lastA=a;
+  el("boardHost").innerHTML=boardSVG(slots, a, {});
+  Array.prototype.forEach.call(document.querySelectorAll("#boardSvg .hit"),function(h){
+    h.addEventListener("click",function(){ tapSlot(Number(h.getAttribute("data-s"))); });
+  });
+  // readings
+  var lr=lightReading(a), sr=soundReading(a), mr=motorReading(a);
+  var r='<div class="rd">🔋 Voltage<br><b>'+a.V.toFixed(1)+' V</b> <span style="font-size:12px">('+a.cells+' cell'+(a.cells===1?"":"s")+')</span></div>'+
+        '<div class="rd">🔁 Circuit<br><b>'+(a.flowing?"Complete ✅":"Broken ❌")+'</b></div>'+
+        '<div class="rd">💡 Light sensor<br><b>'+lr+'</b><div class="meter"><i style="width:'+Math.min(100,lr)+'%"></i></div></div>';
+  if(a.buzzers || M.id==="free") r+='<div class="rd">🔊 Sound meter<br><b>'+sr+'</b><div class="meter"><i style="width:'+Math.min(100,sr)+'%;background:linear-gradient(90deg,#ffb36b,#ff5b6b)"></i></div></div>';
+  if(a.motors || M.id==="free")  r+='<div class="rd">⚙️ Motor speed<br><b>'+mr+' rpm</b><div class="meter"><i style="width:'+Math.min(100,mr/3)+'%;background:linear-gradient(90deg,#7fd3ff,#4b8bff)"></i></div></div>';
+  el("readings").innerHTML=r;
+  var st=statusOf(a), stEl=el("status");
+  if(lab.justBlew){ st={cls:"bad",text:"💥 POP! "+a.cells+" cells ("+(a.cells*CELL_V).toFixed(1)+" V) was too much push for the bulb — it BLEW! First swap a cell for a wire, then tap the broken bulb to fit a new one."}; lab.justBlew=false; }
+  stEl.className="status "+st.cls; stEl.innerHTML=st.text;
+  updateBuzz(a);
+  return a;
+}
+
+function tapSlot(i){
+  var s=slots[i];
+  if(s.type==="bulb" && s.blown){ s.blown=false; MQ.sound("click"); toast("🔧 New bulb fitted!"); return afterChange(); }
+  if(s.type==="switch" && (!tool || tool==="switch")){ s.closed=!s.closed; MQ.sound("click"); return afterChange(); }
+  if(s.locked){ toast(s.type==="material" ? "Choose a material from the tray below 👇" : "🔒 This part stays the same for this experiment."); return; }
+  if(!tool){ toast(s.type ? "Pick a part from the tray first — or 🗑️ Remove." : "Pick a part from the tray first 👇"); return; }
+  if(tool==="remove"){ if(!s.type) return; slots[i]=S(); MQ.sound("click"); return afterChange(); }
+  if(s.type===tool) return;
+  slots[i]=S(tool, tool==="switch"?{closed:false}:null);
+  MQ.sound("click");
+  afterChange();
+}
+function afterChange(){ var a=renderLab(); checkGoal(a); }
+
+function toast(msg){
+  var t=document.createElement("div"); t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:16px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);animation:popIn .3s;max-width:92vw;text-align:center;";
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },1600);
+}
+
+/* ---------- notebook (current step) ---------- */
+function curStep(){ return M.steps ? M.steps[stepIdx] : null; }
+function renderNote(){
+  var n=el("note"); if(!n) return;
+  if(M.kind==="free"){
+    n.innerHTML=stepHeader()+'<div class="lab-step">🧰 Free Lab — build anything you like! Try: <b>a buzzer and a bulb together</b>, <b>a motor with 1, 2 or 3 cells</b>, or <b>two switches</b>. What do you notice?</div>'+
+      '<div class="row" style="margin-top:12px;"><button class="btn ghost" id="clr">🧹 Clear board</button><button class="btn blue" id="back">⚡ Experiments</button></div>';
+    el("clr").onclick=function(){ slots=M.setup(); MQ.sound("click"); renderLab(); };
+    el("back").onclick=function(){ stopBuzz(); menu(); };
+    if(!lab.freeLogged){ lab.freeLogged=true; var p=loadProg(); p.done.free=true; saveProg(p); }
+    return;
+  }
+  var st=curStep();
+  var head=stepHeader()+'<span class="tagline" style="background:'+M.color+'">'+st.tag+'</span>';
+  if(st.t==="goal"){
+    n.innerHTML=head+'<div class="lab-step">'+st.text+'</div><div class="feedback" id="fb"></div><div class="center" id="ctl"></div>';
+    checkGoal(lastA);
+  } else if(st.t==="predict"){
+    n.innerHTML=head+'<div class="lab-step">'+st.q+'</div><div class="predbox">'+
+      st.options.map(function(o,i){ return '<button class="btn ghost" data-p="'+i+'">'+o+'</button>'; }).join("")+'</div>'+
+      '<p class="muted center" style="font-weight:700;margin-top:10px;">A prediction is your best guess — it doesn\'t have to be right! 🤔</p>';
+    Array.prototype.forEach.call(n.querySelectorAll("[data-p]"),function(b){
+      b.onclick=function(){ lab.pred={ q:st.q, choice:Number(b.getAttribute("data-p")), answer:st.answer, text:st.options[Number(b.getAttribute("data-p"))] };
+        lab.log.prediction=lab.pred.text; MQ.sound("click"); nextStep(); };
+    });
+  } else if(st.t==="record"){
+    n.innerHTML=head+'<div class="lab-step">'+st.text+'</div>'+
+      '<div class="center" style="margin-top:12px;"><button class="btn big green" id="recBtn">📋 Record result</button></div>'+
+      '<div class="feedback" id="fb"></div><div id="tbl"></div><div class="center" id="ctl"></div>';
+    el("recBtn").onclick=function(){ recordResult(st); };
+    drawTable(st);
+  } else if(st.t==="materials"){
+    n.innerHTML=head+'<div class="lab-step">'+st.text+'</div><div id="ask"></div><div class="feedback" id="fb"></div><div id="tbl"></div><div class="center" id="ctl"></div>';
+    drawMatTable(st);
+  } else if(st.t==="mc"){
+    var pre="";
+    if(st.usePrediction && lab.pred){
+      var ok = lab.pred.choice===lab.pred.answer;
+      pre='<div class="reveal-box" style="margin-bottom:10px;">🤔 You predicted: “<b>'+lab.pred.text+'</b>” — '+(ok?"your prediction was <b>correct</b>! 🎉":"your results showed something different. That's fine — scientists learn from tests! 🔬")+'</div>';
+    }
+    n.innerHTML=head+pre+'<div class="lab-step">'+st.q+'</div><div class="options" id="opts">'+
+      st.options.map(function(o,i){ return '<button class="opt" data-i="'+i+'">'+o+'</button>'; }).join("")+'</div><div class="feedback" id="fb"></div><div class="center" id="ctl"></div>';
+    var first=true;
+    Array.prototype.forEach.call(n.querySelectorAll("#opts .opt"),function(b){
+      b.onclick=function(){
+        var i=Number(b.getAttribute("data-i")), fb=el("fb");
+        if(i===st.answer){
+          b.classList.add("correct"); n.querySelectorAll("#opts .opt").forEach(function(x){x.disabled=true;});
+          lab.total++; if(first) lab.first++;
+          MQ.sound("correct"); MQ.confetti(60);
+          fb.className="feedback good"; fb.innerHTML="🎉 Correct!"+(st.why?'<div class="reveal-box" style="margin-top:8px;">'+st.why+'</div>':"");
+          showNextBtn();
+        } else { first=false; b.classList.add("wrong"); b.disabled=true; MQ.sound("wrong"); fb.className="feedback bad"; fb.textContent="Not quite — think about your experiment and try again. 💡"; }
+      };
+    });
+  }
+}
+function showNextBtn(label){
+  var c=el("ctl"); if(!c) return;
+  c.innerHTML='<button class="btn big green" id="nxt" style="margin-top:12px;">'+(label||(stepIdx+1>=M.steps.length?"Finish experiment ▶":"Next ▶"))+'</button>';
+  el("nxt").onclick=function(){ MQ.sound("click"); nextStep(); };
+}
+function nextStep(){
+  stepIdx++;
+  if(stepIdx>=M.steps.length) return missionDone();
+  tool=null; renderTray(); renderNote();
+}
+
+function checkGoal(a){
+  var st=curStep(); if(!st || st.t!=="goal" || !a) return;
+  var fb=el("fb"); if(!fb) return;
+  if(st._won) return;
+  if(st.check(a)){
+    st._won=true; MQ.sound("win"); MQ.confetti(110);
+    fb.className="feedback good"; fb.innerHTML='<div class="reveal-box">'+st.win+'</div>';
+    showNextBtn();
+  } else {
+    var h=st.hint?st.hint(a):null;
+    fb.className="feedback"; fb.innerHTML=h?("💡 "+h):"";
+  }
+}
+
+/* ---------- record results (fair test) ---------- */
+function recordResult(st){
+  var a=lastA, fb=el("fb"), v;
+  if(st.variable==="cells"){
+    if(!a.flowing){ fb.className="feedback bad"; fb.textContent="The bulb isn't lit — is every gap filled and does the circuit have a cell?"; MQ.sound("wrong"); return; }
+    if(a.loads!==1){ fb.className="feedback bad"; fb.textContent="Fair test! Keep exactly ONE bulb."; MQ.sound("wrong"); return; }
+    v=a.cells;
+  } else {
+    if(!a.flowing){ fb.className="feedback bad"; fb.textContent="Nothing is lit — check every gap is filled (bulb or wire)."; MQ.sound("wrong"); return; }
+    if(a.cells!==2){ fb.className="feedback bad"; fb.textContent="Fair test! Keep the 2 cells the same."; MQ.sound("wrong"); return; }
+    v=a.bulbs;
+  }
+  if(st.values.indexOf(v)<0){ fb.className="feedback bad"; fb.textContent="We're testing "+st.values.join(", ")+" "+st.variable+" — you have "+v+"."; MQ.sound("wrong"); return; }
+  lab.rows[v]=lightReading(a);
+  lab.log[st.variable+"_"+v]=lab.rows[v];
+  MQ.sound("correct");
+  fb.className="feedback good"; fb.innerHTML="📋 Recorded: <b>"+v+" "+(v===1?st.variable.replace(/s$/,""):st.variable)+"</b> → light reading <b>"+lab.rows[v]+"</b>";
+  drawTable(st);
+}
+function drawTable(st){
+  var t=el("tbl"); if(!t) return;
+  var label = st.variable==="cells" ? "Number of cells" : "Number of bulbs";
+  var html='<table class="res"><tr><th>'+label+'</th><th>Light sensor reading</th><th>What I saw</th></tr>';
+  st.values.forEach(function(v){
+    var r=lab.rows[v];
+    var word = r==null ? "" : (r>=90?"very bright": r>=60?"bright": r>=30?"medium": r>=15?"dim":"very dim");
+    html+='<tr><td>'+v+'</td><td class="'+(r==null?"empty":"")+'">'+(r==null?"—":r)+'</td><td class="'+(r==null?"empty":"")+'">'+(r==null?"not tested":word)+'</td></tr>';
+  });
+  html+='</table>';
+  var all=st.values.every(function(v){ return lab.rows[v]!=null; });
+  if(all){
+    var max=Math.max.apply(null,st.values.map(function(v){return lab.rows[v];}))||1;
+    html+='<p class="center" style="font-weight:800;margin:14px 0 0;">📊 My results graph</p><div class="bars">'+
+      st.values.map(function(v){ return '<div><div class="bar" style="height:'+Math.max(6,Math.round(lab.rows[v]/max*120))+'px"><span>'+lab.rows[v]+'</span></div><div class="bl">'+v+' '+(st.variable==="cells"?"cell":"bulb")+(v>1?"s":"")+'</div></div>'; }).join("")+'</div>';
+  }
+  t.innerHTML=html;
+  if(all && !st._shown){ st._shown=true; MQ.sound("win"); MQ.confetti(90); showNextBtn("Results complete — conclude ▶"); }
+  else if(all) showNextBtn("Results complete — conclude ▶");
+}
+
+/* ---------- conductors & insulators ---------- */
+function askMaterial(id){
+  var m=matById(id), st=curStep(), ask=el("ask");
+  if(!st || st.t!=="materials") return;
+  ask.innerHTML='<div class="reveal-box" style="margin-top:12px;"><b>🤔 Predict:</b> will the bulb light with the <b>'+m.emoji+' '+m.name+'</b> in the test gap?'+
+    '<div class="predbox"><button class="btn green" id="pY">💡 Yes — it\'s a conductor</button><button class="btn ghost" id="pN">🚫 No — it\'s an insulator</button></div></div>';
+  el("pY").onclick=function(){ testMaterial(m,true); };
+  el("pN").onclick=function(){ testMaterial(m,false); };
+}
+function testMaterial(m, predictYes){
+  for(var i=0;i<slots.length;i++) if(slots[i].type==="material") slots[i].mat=m.id;
+  var a=renderLab();
+  var lit=a.flowing && a.bulbs>0;
+  var right=(predictYes===lit);
+  if(!lab.tested[m.id]){ lab.testOrder.push(m.id); lab.total++; if(right) lab.first++; }
+  lab.tested[m.id]={ pred:predictYes, result:lit };
+  lab.log[m.id]=lit?"conductor":"insulator";
+  el("ask").innerHTML="";
+  var fb=el("fb");
+  fb.className="feedback "+(right?"good":"bad");
+  fb.innerHTML=(lit?"💡 The bulb LIT! ":"🚫 The bulb stayed OFF. ")+(right?"Your prediction was right! 🎉 ":"Not what you predicted — interesting! 🔬 ")+'<div class="reveal-box" style="margin-top:8px;">'+m.why+'</div>';
+  MQ.sound(right?"correct":"wrong");
+  renderTray(); drawMatTable(curStep());
+}
+function drawMatTable(st){
+  var t=el("tbl"); if(!t) return;
+  var ids=lab.testOrder;
+  if(!ids.length){ t.innerHTML='<p class="muted center" style="font-weight:700;">Your results table will appear here. 📋</p>'; return; }
+  var html='<table class="res"><tr><th>Material</th><th>My prediction</th><th>Bulb</th><th>Conductor or insulator?</th></tr>';
+  ids.forEach(function(id){
+    var m=matById(id), r=lab.tested[id];
+    html+='<tr><td>'+m.emoji+' '+m.name+'</td><td>'+(r.pred?"lights":"stays off")+' '+(r.pred===r.result?"✅":"❌")+'</td><td>'+(r.result?"💡 on":"⚫ off")+'</td><td>'+(r.result?"<b style='color:#0c7a43'>Conductor</b>":"<b style='color:#b3203a'>Insulator</b>")+'</td></tr>';
+  });
+  t.innerHTML=html+'</table><p class="muted center" style="font-weight:800;">Tested '+ids.length+' / '+st.need+'</p>';
+  if(ids.length>=st.need) showNextBtn("Results complete — conclude ▶");
+}
+
+/* ---------- mission complete + log ---------- */
+function missionDone(){
+  stopBuzz();
+  var acc = lab.total ? Math.round(lab.first/lab.total*100) : 100;
+  var rt = MQ.rating(acc);
+  var p=loadProg(); p.done[M.id]=true; saveProg(p);
+  MQ.sound("win"); MQ.confetti(200);
+  var nextIdx = MISSIONS.indexOf(M)+1, nm = MISSIONS[nextIdx];
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot" style="font-size:76px;">🏅</div>'+
+      '<h1>Experiment complete!</h1>'+
+      '<h2 style="color:'+M.color+'">'+M.emoji+' '+M.title+'</h2>'+
+      '<div class="speech">Brilliant science, '+(student||"scientist")+'! You followed the steps like a real scientist: aim → predict → test → record → conclude.</div>'+
+      '<p style="font-size:22px;font-weight:800;margin-top:14px;">Score: '+lab.first+' / '+lab.total+' first try</p>'+
+      '<p style="font-size:30px;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+      '<p class="muted" id="saveState">💾 Saving to your lab book…</p>'+
+      '<div class="row" style="margin-top:8px;">'+
+        (nm?'<button class="btn big green" id="nextM">▶ Next: '+nm.emoji+' '+nm.title+'</button>':'')+
+        '<button class="btn blue" id="toMenu">⚡ All experiments</button></div>'+
+    '</div>';
+  if(nm) el("nextM").onclick=function(){ MQ.sound("click"); openMission(nm); };
+  el("toMenu").onclick=function(){ MQ.sound("click"); menu(); };
+  logLab("Electricity — "+M.title, acc, lab.first, lab.total, rt, lab.log);
+}
+
+function logLab(title, acc, correct, total, rt, observations){
+  MQ.logResult({
+    student:student||"Unknown", subject:"Science", week:"", weekTitle:title,
+    accuracy:acc, correct:correct, totalQuestions:total, stars:rt.stars, rating:rt.label,
+    stages:observations||{},
+    school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  }).then(function(res){
+    var s=el("saveState"); if(!s) return;
+    if(res&&res.ok) s.textContent="✅ Saved — your tutor can see your results!";
+    else if(res&&res.offline) s.textContent="📴 Saved on this device.";
+    else s.textContent="⚠️ Couldn't reach the server, but your result is saved on this device.";
+  });
+}
+
+/* =============================================================
+   QUESTION-ONLY ACTIVITIES (symbols / faults / quiz)
+   ============================================================= */
+function miniSym(type, o){
+  return '<svg viewBox="0 0 140 100" class="board view" style="min-width:0;width:220px;"><rect x="2" y="2" width="136" height="96" rx="14" fill="#fffdf8" stroke="#ece7fb"/>'+symSVG(type,70,62,o||{})+'</svg>';
+}
+function runQuestions(qs, opts){
+  var i=0;
+  lab.first=0; lab.total=0;
+  function show(){
+    if(i>=qs.length) return opts.done();
+    var q=qs[i], first=true;
+    screen.innerHTML=
+      '<div class="card nb" style="border-left-color:'+M.color+';">'+
+        '<div class="labhead"><span class="chip" style="background:'+M.color+';color:#fff;">'+M.emoji+' '+M.title+'</span>'+
+        '<span class="chip" style="background:#eee;color:#333;">'+(i+1)+' / '+qs.length+'</span></div>'+
+        (q.visual?'<div class="center" style="margin:14px 0 6px;">'+q.visual+'</div>':'')+
+        '<div class="lab-step center" style="margin:8px 0;">'+q.q+'</div>'+
+        '<div class="options" id="opts">'+q.options.map(function(o,k){ return '<button class="opt" data-i="'+k+'">'+o+'</button>'; }).join("")+'</div>'+
+        '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div>'+
+      '</div>';
+    Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+      b.onclick=function(){
+        var k=Number(b.getAttribute("data-i")), fb=el("fb");
+        if(k===q.answer){
+          b.classList.add("correct"); document.querySelectorAll("#opts .opt").forEach(function(x){x.disabled=true;});
+          lab.total++; if(first) lab.first++;
+          MQ.sound("correct"); MQ.confetti(50);
+          fb.className="feedback good"; fb.innerHTML="🎉 Correct!"+(q.why?'<div class="reveal-box" style="margin-top:8px;">'+q.why+'</div>':"");
+          el("ctl").innerHTML='<button class="btn big green" id="nxt" style="margin-top:12px;">'+(i+1>=qs.length?"Finish ▶":"Next ▶")+'</button>';
+          el("nxt").onclick=function(){ MQ.sound("click"); i++; show(); };
+        } else {
+          if(first && opts.strict){ lab.total++; }
+          first=false; b.classList.add("wrong"); b.disabled=true; MQ.sound("wrong");
+          fb.className="feedback bad"; fb.textContent="Not quite — try again. 💡";
+          if(opts.strict){ // quiz: one go only, reveal answer
+            document.querySelectorAll("#opts .opt").forEach(function(x,idx){ x.disabled=true; if(idx===q.answer) x.classList.add("correct"); });
+            fb.innerHTML="❌ The answer is shown in green."+(q.why?'<div class="reveal-box" style="margin-top:8px;">'+q.why+'</div>':"");
+            el("ctl").innerHTML='<button class="btn big green" id="nxt" style="margin-top:12px;">'+(i+1>=qs.length?"Finish ▶":"Next ▶")+'</button>';
+            el("nxt").onclick=function(){ MQ.sound("click"); i++; show(); };
+          }
+        }
+      };
+    });
+  }
+  show();
+}
+/* shuffle options but keep track of the right one */
+function mcq(q, correct, wrongs, extra){
+  var opts=shuffle([correct].concat(wrongs));
+  var o={ q:q, options:opts, answer:opts.indexOf(correct) };
+  if(extra) for(var k in extra) o[k]=extra[k];
+  return o;
+}
+
+function runSymbols(){
+  var names={ cell:"Cell", battery:"Battery (2 cells)", bulb:"Bulb (lamp)", buzzer:"Buzzer", motor:"Motor", sopen:"Open switch", sclosed:"Closed switch", wire:"Wire" };
+  var items=[
+    {t:"cell", key:"cell", why:"A <b>cell</b>: a long thin line (+) and a short thick line (−)."},
+    {t:"battery", key:"battery", why:"Two or more cells joined together make a <b>battery</b>."},
+    {t:"bulb", key:"bulb", why:"A <b>bulb (lamp)</b>: a circle with a cross inside."},
+    {t:"buzzer", key:"buzzer", why:"A <b>buzzer</b>: a dome shape with a flat bottom."},
+    {t:"motor", key:"motor", why:"A <b>motor</b>: a circle with the letter M."},
+    {t:"switch", key:"sopen", o:{closed:false}, why:"An <b>open switch</b>: the line is lifted, making a gap — OFF."},
+    {t:"switch", key:"sclosed", o:{closed:true}, why:"A <b>closed switch</b>: the line joins up — ON."},
+    {t:"wire", key:"wire", why:"A <b>wire</b> is drawn as a straight line."}
+  ];
+  var keys=Object.keys(names);
+  var qs=shuffle(items).map(function(it){
+    var wrong=shuffle(keys.filter(function(k){return k!==it.key;})).slice(0,3).map(function(k){return names[k];});
+    return mcq("Which component does this symbol show?", names[it.key], wrong, { visual:miniSym(it.t, it.o), why:it.why });
+  });
+  runQuestions(qs, { done:function(){ lab.log={symbols:lab.first+"/"+lab.total}; missionDone(); } });
+}
+
+function faultBoard(sl){ return '<div class="boardwrap">'+boardSVG(sl, analyse(sl), {view:true})+'</div>'; }
+function runFaults(){
+  var F=[
+    { sl:[S("cell"),S("bulb"),S("wire"),S("wire"),S("switch",{closed:false}),S("wire")],
+      q:"Why won't this bulb light?", c:"The switch is open", w:["There are too many wires","The bulb is too bright","The cell is upside down"],
+      why:"An <b>open switch</b> makes a gap — close it and the bulb lights." },
+    { sl:[S("wire"),S("bulb"),S("wire"),S("wire"),S("switch",{closed:true}),S("wire")],
+      q:"Why won't this bulb light?", c:"There is no cell (no power source)", w:["The switch is open","There is a gap in the wires","The bulb is blown"],
+      why:"With <b>no cell</b> there is nothing to push the electricity round." },
+    { sl:[S("cell"),S("bulb"),S(),S("wire"),S("switch",{closed:true}),S("wire")],
+      q:"Why won't this bulb light?", c:"There is a gap in the circuit", w:["There is no cell","The switch is open","There are too many cells"],
+      why:"A <b>gap</b> breaks the circuit — electricity needs a complete loop." },
+    { sl:[S("cell"),S("bulb",{blown:true}),S("wire"),S("wire"),S("switch",{closed:true}),S("wire")],
+      q:"Why won't this bulb light?", c:"The bulb has blown (its filament broke)", w:["The switch is open","There is no cell","The wires are too short"],
+      why:"When a bulb <b>blows</b>, its thin wire snaps — that breaks the circuit." },
+    { sl:[S("cell"),S("bulb"),S("material",{mat:"ruler"}),S("wire"),S("switch",{closed:true}),S("wire")],
+      q:"Why won't this bulb light?", c:"The plastic ruler is an insulator", w:["The plastic ruler is a conductor","The switch is open","There is no bulb"],
+      why:"Plastic is an <b>insulator</b> — it blocks the flow of electricity." },
+    { sl:[S("cell"),S("bulb"),S("bulb"),S("bulb"),S("switch",{closed:true}),S("wire")],
+      q:"These bulbs are lit but very dim. Why?", c:"Three bulbs are sharing the energy of one cell", w:["The switch is open","The bulbs are blown","There is a gap"],
+      why:"Three bulbs <b>share</b> one cell's energy, so each is dim. Add cells or remove bulbs to make them brighter." }
+  ];
+  var qs=shuffle(F).map(function(f){ return mcq(f.q, f.c, f.w, { visual:faultBoard(f.sl), why:f.why }); });
+  runQuestions(qs, { done:function(){ lab.log={faults:lab.first+"/"+lab.total}; missionDone(); } });
+}
+
+function runQuiz(){
+  var QZ=[
+    mcq("What happens to a bulb's brightness if you use <b>more cells</b>?", "It gets brighter", ["It gets dimmer","It stays the same","It changes colour"], {why:"More cells = more voltage = brighter bulb."}),
+    mcq("What happens to each bulb if you add <b>more bulbs</b> to a circuit with the same cells?", "Each bulb gets dimmer", ["Each bulb gets brighter","Nothing changes","The cell gets bigger"], {why:"The bulbs share the energy."}),
+    mcq("A buzzer is very quiet. How could you make it <b>louder</b>?", "Add another cell", ["Add another buzzer","Open the switch","Use a plastic wire"], {why:"More cells give more push, so the buzzer is louder."}),
+    mcq("Which material is an electrical <b>conductor</b>?", "A steel paper clip", ["A plastic spoon","A rubber band","A wooden peg"], {why:"Metals conduct electricity."}),
+    mcq("Which symbol is a <b>bulb (lamp)</b>?", "A circle with a cross inside", ["A circle with an M inside","A long line and a short line","A dome shape"], {why:"Lamp = circle with an X. (M = motor, long+short line = cell, dome = buzzer.)"}),
+    mcq("What does an <b>open</b> switch do?", "Breaks the circuit so nothing works", ["Makes the bulb brighter","Adds more voltage","Stores electricity"], {why:"An open switch makes a gap in the circuit."}),
+    mcq("What is the <b>voltage</b> of 2 cells of 1.5 V joined together?", "3 V", ["1.5 V","2 V","4.5 V"], {why:"1.5 V + 1.5 V = 3 V."}),
+    mcq("Why must you <b>never</b> play with plug sockets?", "Mains electricity is very dangerous and can kill", ["It wastes batteries","It makes bulbs dimmer","Sockets are insulators"], {why:"Mains electricity is far more powerful than a battery. Only use cells for experiments."}),
+    mcq("In a fair test about cells and brightness, what should you <b>keep the same</b>?", "The number of bulbs", ["The number of cells","Nothing at all","Whether the switch is closed or open"], {why:"Change only the cells; keep the bulbs (and everything else) the same."}),
+    mcq("A motor spins slowly. What would make it spin <b>faster</b>?", "Adding another cell", ["Adding a bulb in the circuit","Removing the cell","Opening the switch"], {why:"More cells give more push — the motor spins faster. Adding a bulb would make it share the energy."})
+  ];
+  runQuestions(shuffle(QZ), { strict:true, done:function(){
+    stopBuzz();
+    var acc=Math.round(lab.first/QZ.length*100), rt=MQ.rating(acc);
+    var p=loadProg(); p.done.quiz=true; p.quizBest=Math.max(p.quizBest||0, acc); saveProg(p);
+    MQ.sound("win"); MQ.confetti(220);
+    screen.innerHTML='<div class="card center"><div class="mascot" style="font-size:76px;">'+rt.emoji+'</div>'+
+      '<h1>Lab Quiz complete!</h1><div class="speech">'+(acc>=80?"You're an Electricity Expert, ":"Great effort, ")+(student||"scientist")+'! ⚡</div>'+
+      '<div class="row" style="margin:16px 0;gap:26px;"><div><div class="big-num" style="font-size:52px;">'+lab.first+'/'+QZ.length+'</div><div class="muted">Score</div></div>'+
+      '<div><div class="big-num" style="font-size:52px;">'+acc+'%</div><div class="muted">Marks</div></div></div>'+
+      '<p style="font-size:30px;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p><p class="muted" id="saveState">💾 Saving…</p>'+
+      '<div class="row"><button class="btn green" id="again">🔁 Try again</button><button class="btn blue" id="toMenu">⚡ All experiments</button></div></div>';
+    el("again").onclick=function(){ MQ.sound("click"); openMission(M); };
+    el("toMenu").onclick=function(){ MQ.sound("click"); menu(); };
+    logLab("Electricity — Lab Quiz", acc, lab.first, QZ.length, rt, { quiz:lab.first+"/"+QZ.length });
+  }});
+}
+
+window.addEventListener("pagehide", stopBuzz);
+boot();
+</script>
+</body>
+</html>
