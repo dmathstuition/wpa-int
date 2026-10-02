@@ -20,12 +20,31 @@ per area, so a learner (or you) can pick where to go:
 | 🔢 **Number Foundations** | `foundations/index.html` — counting 1–10 |
 | ➕ **Maths Missions** | `maths.html` — weekly maths, plus Factors & Multiples and Times Tables |
 | 🎯 **SATs Maths** | `sats.html` — SAT questions + 30-minute CBT test |
+| 🕵️ **Data Detectives** | `data.html` — Year 4 quantitative vs qualitative data |
 | 📚 **English — Grammar Quest** | `english/index.html` |
 | 🔬 **Science Lab** | `science/index.html` — practicals (Electricity) |
 | 🐝 **Spelling Games** | `games/index.html` |
 
 Send the learner the **site root** as the starting link. Every hub has a 🏠 Home
 chip back to it.
+
+## 🕵️ Data Detectives (Year 4 — quantitative vs qualitative data)
+
+`data.html` teaches the difference between the two kinds of data through two
+characters the learner meets first: 🤖 **Quanti** (QUANTity → numbers we count
+or measure) and 🦜 **Quali** (QUALity → describing words). Seven steps, each
+earning a badge:
+
+1. **Discover**: sort clues about Max the dog *before* the rule is given, then count vs measure, then "numbers that are really names" (shirt 10, bus 42)
+2. **Class Survey Lab** (practical): predict the data type, interview 12 children, tally their answers, watch the bar chart grow, then answer questions, including "can we add up apple + banana?"
+3. **Sort Rush**: 60-second speed-sorting game with streak bonuses, best score saved, and a list of missed cards to review
+4. **Odd One Out**
+5. **Question Factory**: choose the question that collects number data or word data
+6. **My Own Survey** (real-life practical): the learner writes a question, asks real people, and the app tallies and charts the answers. It only accepts numbers for a quantitative question.
+7. **Mastery Check**: 10 questions, one try each
+
+A 45-minute tutor session plan is built into the page (under the missions).
+Every activity logs to the **Maths** tab ("Data Detectives — …").
 
 ## 🔬 Science Lab (practicals)
 

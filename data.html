@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Data Detectives — Quantitative &amp; Qualitative</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>" />
+<style>
+  :root { --qn:#4b8bff; --ql:#ff5b9a; }
+  .card.still { animation:none; }   /* no re-pop when a screen updates in place */
+  .mgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-top:16px; }
+  .mcard { position:relative; cursor:pointer; text-align:center; padding:20px 16px; }
+  .mcard .me { font-size:44px; line-height:1; }
+  .mcard h3 { margin:8px 0 4px; }
+  .mcard .num { position:absolute; top:10px; left:12px; font-weight:800; font-size:12px; color:#fff; border-radius:999px; padding:2px 10px; }
+  .mcard .done { position:absolute; top:8px; right:12px; font-size:22px; }
+
+  .badges { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:10px; }
+  .badge { width:64px; text-align:center; font-size:11px; font-weight:800; color:#5b5390; }
+  .badge .bi { font-size:30px; width:56px; height:56px; margin:0 auto 2px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg,#fff3b0,#ffc93c); box-shadow:0 6px 14px rgba(255,180,0,.35); }
+  .badge.off .bi { background:#ece9f6; box-shadow:none; filter:grayscale(1); opacity:.45; }
+
+  .heroes { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:12px; }
+  .hero { flex:1 1 230px; max-width:330px; border-radius:20px; padding:16px; color:#fff; text-align:left; }
+  .hero.qn { background:linear-gradient(140deg,#4b8bff,#3a5bd9); }
+  .hero.ql { background:linear-gradient(140deg,#ff5b9a,#ff8a3d); }
+  .hero .hx { font-size:46px; line-height:1; }
+  .hero h3 { color:#fff; margin:6px 0 4px; }
+  .hero p { margin:0; font-weight:700; font-size:15px; opacity:.96; }
+
+  .dcard { background:#fff; border:4px solid var(--line); border-radius:22px; padding:16px 18px; text-align:center; max-width:360px; margin:12px auto;
+    box-shadow:0 12px 26px rgba(35,20,80,.14); animation:popIn .35s; }
+  .dcard .de { font-size:44px; line-height:1; }
+  .dcard .dl { font-weight:800; color:#6a62a0; font-size:16px; margin-top:4px; }
+  .dcard .dv { font-weight:800; color:var(--ink); font-size:clamp(28px,8vw,40px); line-height:1.15; }
+  .dcard.good { border-color:#22bd6b; background:#effcf4; }
+  .dcard.bad { border-color:var(--red); animation:shake .4s; }
+
+  .bins { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+  .bin { flex:1 1 150px; max-width:240px; border:0; border-radius:20px; padding:14px 10px; color:#fff; cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; gap:2px; box-shadow:0 10px 20px rgba(20,12,55,.22); transition:transform .08s; }
+  .bin:active { transform:scale(.95); }
+  .bin .be { font-size:38px; line-height:1; }
+  .bin b { font-size:19px; }
+  .bin small { font-weight:700; font-size:13px; opacity:.95; }
+  .bin.q { background:linear-gradient(160deg,#5b9bff,#3a5bd9); }
+  .bin.l { background:linear-gradient(160deg,#ff6aa8,#ff8a3d); }
+  .bin:disabled { opacity:.55; cursor:default; }
+
+  .pickgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:12px; }
+  .pick { border:3px solid var(--line); border-radius:16px; background:#fff; padding:10px; cursor:pointer; text-align:center; font-family:inherit; }
+  .pick .de { font-size:30px; }
+  .pick .dl { font-size:13px; font-weight:800; color:#6a62a0; }
+  .pick .dv { font-size:20px; font-weight:800; color:var(--ink); }
+  .pick.sel { border-color:#ffb020; background:#fff7d6; }
+  .pick.ok { border-color:#22bd6b; background:#effcf4; }
+  .pick.no { animation:shake .4s; border-color:var(--red); }
+
+  .interview { display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; margin:10px 0; }
+  .kid { font-size:56px; line-height:1; animation:popIn .3s; }
+  .bubble { background:#fff; border:3px solid var(--line); border-radius:20px; padding:12px 16px; font-weight:800; font-size:20px; color:var(--ink); position:relative; max-width:320px; }
+  .kids { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin:6px 0; font-size:22px; }
+  .kids span { opacity:.35; } .kids span.done { opacity:1; } .kids span.cur { opacity:1; transform:scale(1.25); }
+
+  .tcols { display:grid; gap:8px; margin-top:12px; }
+  .tcol { border:3px solid var(--line); border-radius:16px; background:#fff; padding:8px 6px; cursor:pointer; font-family:inherit; min-height:120px;
+    display:flex; flex-direction:column; align-items:center; gap:4px; transition:transform .08s; }
+  .tcol:active { transform:scale(.96); }
+  .tcol .th { font-weight:800; font-size:15px; color:var(--ink); }
+  .tcol .te { font-size:28px; line-height:1; }
+  .tcol .tal { display:flex; flex-wrap:wrap; gap:2px; justify-content:center; min-height:30px; }
+  .tcol .tn { font-weight:800; color:#6a62a0; font-size:14px; }
+  .tcol.no { animation:shake .4s; border-color:var(--red); }
+  .tcol.flash { border-color:#22bd6b; background:#effcf4; }
+  .tcol[disabled] { cursor:default; }
+
+  .bchart { display:flex; align-items:flex-end; gap:12px; justify-content:center; height:170px; margin:16px 0 4px; padding:0 6px; border-bottom:3px solid #2d2559; }
+  .bchart .bc { flex:0 1 60px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bchart .bb { width:100%; border-radius:10px 10px 0 0; transition:height .4s; position:relative; min-height:2px; }
+  .bchart .bb span { position:absolute; top:-22px; left:0; right:0; text-align:center; font-weight:800; font-size:14px; }
+  .blabels { display:flex; gap:12px; justify-content:center; padding:0 6px; }
+  .blabels div { flex:0 1 60px; text-align:center; font-weight:800; font-size:13px; color:#5b5390; word-break:break-word; }
+
+  .rushtop { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; font-weight:800; }
+  .tbar { height:14px; border-radius:999px; background:#eee; overflow:hidden; margin-top:8px; }
+  .tbar i { display:block; height:100%; background:linear-gradient(90deg,#2bd576,#ffd23f); transition:width .1s linear; }
+  .tbar.hot i { background:linear-gradient(90deg,#ff8a3d,#ff3b3b); }
+  .oddgrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  .oddgrid .pick .dv { font-size:22px; }
+  .solbox { margin-top:8px; background:#f4f1ff; border-radius:12px; padding:10px 12px; font-weight:700; color:#4a4470; text-align:left; font-size:17px; }
+  .chipsugg { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .chipsugg button { border:2px solid var(--line); background:#fff; border-radius:999px; padding:6px 12px; font-weight:800; font-family:inherit; cursor:pointer; color:var(--ink); }
+  details.plan summary { cursor:pointer; font-weight:800; font-size:18px; color:var(--ink); }
+  details.plan ol { font-weight:700; color:#4a4470; line-height:1.6; }
+  .rule { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+  .rule span { border-radius:999px; padding:6px 14px; font-weight:800; color:#fff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="maths.html" style="text-decoration:none;color:#fff;">➕ Maths</a>
+    <a class="chip" href="#" id="menuLink" style="text-decoration:none;color:#fff;">🕵️ Missions</a>
+    <span class="chip">👤 <b id="whoName">Detective</b></span>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>Data Detectives</small></span>
+  </div>
+  <div id="screen"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* =============================================================
+   DATA DETECTIVES — Year 4: Quantitative vs Qualitative data
+   Two characters carry the idea all the way through:
+     🤖 QUANTI  — Quantitative = QUANTity  = NUMBERS (counted or measured)
+     🦜 QUALI   — Qualitative  = QUALity   = DESCRIBING WORDS (what kind)
+   t:"N" = quantitative (numbers)   t:"W" = qualitative (words)
+   ============================================================= */
+var QN={ name:"Quantitative", who:"Quanti", e:"🤖", col:"#4b8bff", kind:"numbers" };
+var QL={ name:"Qualitative",  who:"Quali",  e:"🦜", col:"#ff5b9a", kind:"describing words" };
+function TY(t){ return t==="N"?QN:QL; }
+
+var BANK=[
+  {l:"Number of pets", v:"3", e:"🐶", t:"N", how:"count"},
+  {l:"Height", v:"132 cm", e:"📏", t:"N", how:"measure"},
+  {l:"Age", v:"9 years", e:"🎂", t:"N"},
+  {l:"Brothers and sisters", v:"2", e:"👫", t:"N", how:"count"},
+  {l:"Weight of a cat", v:"4 kg", e:"🐱", t:"N", how:"measure"},
+  {l:"Time to walk to school", v:"15 minutes", e:"⏱️", t:"N", how:"measure"},
+  {l:"Goals scored", v:"5", e:"🥅", t:"N", how:"count"},
+  {l:"Temperature today", v:"21 °C", e:"🌡️", t:"N", how:"measure"},
+  {l:"Books read this month", v:"6", e:"📚", t:"N", how:"count"},
+  {l:"Length of a pencil", v:"18 cm", e:"✏️", t:"N", how:"measure"},
+  {l:"Time to run 50 m", v:"12 seconds", e:"🏃", t:"N", how:"measure"},
+  {l:"Windows in the classroom", v:"8", e:"🪟", t:"N", how:"count"},
+  {l:"Hours of sleep", v:"10 hours", e:"😴", t:"N", how:"measure"},
+  {l:"Sweets in a jar", v:"47", e:"🍬", t:"N", how:"count"},
+  {l:"Cost of a comic", v:"£3", e:"💷", t:"N"},
+  {l:"Children in the class", v:"28", e:"🧒", t:"N", how:"count"},
+  {l:"Water in a bottle", v:"500 ml", e:"🥤", t:"N", how:"measure"},
+
+  {l:"Favourite colour", v:"blue", e:"🎨", t:"W"},
+  {l:"Type of pet", v:"hamster", e:"🐹", t:"W"},
+  {l:"Eye colour", v:"brown", e:"👀", t:"W"},
+  {l:"Favourite fruit", v:"mango", e:"🥭", t:"W"},
+  {l:"How you get to school", v:"by bus", e:"🚌", t:"W"},
+  {l:"Weather today", v:"sunny", e:"☀️", t:"W"},
+  {l:"Favourite sport", v:"football", e:"🏅", t:"W"},
+  {l:"Hair", v:"curly", e:"💇", t:"W"},
+  {l:"How you feel", v:"happy", e:"😊", t:"W"},
+  {l:"Favourite subject", v:"science", e:"🔬", t:"W"},
+  {l:"Taste of a lemon", v:"sour", e:"🍋", t:"W"},
+  {l:"Shape of the window", v:"rectangle", e:"⬜", t:"W"},
+  {l:"Colour of the car", v:"red", e:"🚗", t:"W"},
+  {l:"Favourite animal", v:"dolphin", e:"🐬", t:"W"},
+  {l:"Feel of a cushion", v:"soft", e:"🛋️", t:"W"},
+  {l:"Pet's name", v:"Max", e:"🐕", t:"W"},
+  {l:"Favourite food", v:"pizza", e:"🍕", t:"W"}
+];
+var TRICKY=[
+  {l:"Football shirt number", v:"10", e:"👕", t:"W", tricky:true, why:"Tricky! The 10 is a NAME for the shirt, not an amount. You can't add shirt numbers, so it's QUALITATIVE 🦜."},
+  {l:"Bus route number", v:"42", e:"🚍", t:"W", tricky:true, why:"Tricky! Bus 42 isn't '42 buses' — it's a name/label. That makes it QUALITATIVE 🦜."},
+  {l:"House number", v:"7", e:"🏠", t:"W", tricky:true, why:"Tricky! House number 7 is a label, not an amount — QUALITATIVE 🦜."}
+];
+function whyOf(it){
+  if(it.tricky) return it.why;
+  if(it.t==="N") return "“"+it.v+"” is a number we can "+(it.how==="measure"?"measure":"count")+" — <b>QUANTITATIVE</b> 🤖 (Quanti's numbers).";
+  return "“"+it.v+"” is a describing word — <b>QUALITATIVE</b> 🦜 (Quali's words).";
+}
+
+var TOPICS=[
+  {name:"pets", e:"🐾", N:["How many pets do you have?"], W:["What type of pet do you have?","What is your pet's name?"]},
+  {name:"sport", e:"⚽", N:["How many goals did you score?"], W:["What is your favourite sport?"]},
+  {name:"getting to school", e:"🚌", N:["How many minutes does it take you to get to school?"], W:["How do you travel to school?"]},
+  {name:"books", e:"📚", N:["How many books did you read this month?"], W:["What type of books do you like best?"]},
+  {name:"the weather", e:"🌦️", N:["What was the temperature today in °C?"], W:["What was the weather like today?"]},
+  {name:"fruit", e:"🍓", N:["How many pieces of fruit did you eat today?"], W:["What is your favourite fruit?"]},
+  {name:"sleep", e:"😴", N:["How many hours did you sleep last night?"], W:["How did you feel when you woke up?"]},
+  {name:"your home", e:"🏡", N:["How many people live in your house?"], W:["What colour is your front door?"]},
+  {name:"plants", e:"🌻", N:["How tall is your sunflower in cm?"], W:["What colour are the petals?"]}
+];
+
+var SURVEYS=[
+  { id:"fruit", t:"W", title:"Favourite Fruit", e:"🍓", q:"What is your favourite fruit?", thing:"fruit",
+    cats:[{k:"Apple",e:"🍎"},{k:"Banana",e:"🍌"},{k:"Mango",e:"🥭"},{k:"Grapes",e:"🍇"}],
+    say:function(c){ return "My favourite is "+c.k.toLowerCase()+"! "+c.e; } },
+  { id:"travel", t:"W", title:"Getting to School", e:"🚌", q:"How do you travel to school?", thing:"way of travelling",
+    cats:[{k:"Walk",e:"🚶"},{k:"Car",e:"🚗"},{k:"Bus",e:"🚌"},{k:"Bike",e:"🚲"}],
+    say:function(c){ return {Walk:"I walk to school 🚶",Car:"I come by car 🚗",Bus:"I take the bus 🚌",Bike:"I ride my bike 🚲"}[c.k]; } },
+  { id:"pets", t:"N", title:"How Many Pets?", e:"🐾", q:"How many pets do you have?", unit:"pets",
+    cats:[{k:"0",n:0},{k:"1",n:1},{k:"2",n:2},{k:"3",n:3},{k:"4",n:4}],
+    say:function(c){ return c.n===0?"I have 0 pets 🙈":"I have "+c.n+" pet"+(c.n===1?"":"s")+" 🐾"; },
+    totalQ:"How many pets do the 12 children have ALTOGETHER?" },
+  { id:"sleep", t:"N", title:"Hours of Sleep", e:"😴", q:"How many hours did you sleep last night?", unit:"hours",
+    cats:[{k:"8",n:8},{k:"9",n:9},{k:"10",n:10},{k:"11",n:11}],
+    say:function(c){ return "I slept "+c.n+" hours 😴"; },
+    totalQ:"How many hours did the 12 children sleep ALTOGETHER?" }
+];
+var NAMES=["Ada","Ben","Chen","Dami","Ella","Femi","Grace","Hari","Isla","Jay","Kemi","Leo","Mia","Noah","Ola","Priya","Rosa","Sam","Tobi","Uche","Vera","Wale","Zara","Kofi"];
+var FACES=["🧒","👦","👧","🧒🏽","👦🏾","👧🏻","🧒🏿","👦🏻","👧🏾","🧒🏻","👦🏽","👧🏿"];
+
+/* ---------- helpers ---------- */
+function el(id){ return document.getElementById(id); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function pickN(arr,n){ return shuffle(arr).slice(0,n); }
+var screen=el("screen");
+var cleanups=[];
+function cleanup(){ cleanups.forEach(function(f){ try{f();}catch(e){} }); cleanups=[]; }
+function toast(msg){
+  var t=document.createElement("div"); t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:16px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);max-width:92vw;text-align:center;";
+  document.body.appendChild(t); setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },1700);
+}
+function cardHTML(it, cls){ return '<div class="dcard '+(cls||"")+'" id="dcard"><div class="de">'+it.e+'</div><div class="dl">'+it.l+'</div><div class="dv">'+it.v+'</div></div>'; }
+function binsHTML(){
+  return '<div class="bins" id="bins">'+
+    '<button class="bin q" data-t="N"><span class="be">🤖</span><b>Quantitative</b><small>Quanti · numbers</small></button>'+
+    '<button class="bin l" data-t="W"><span class="be">🦜</span><b>Qualitative</b><small>Quali · describing words</small></button></div>';
+}
+function head(title, color, right){
+  return '<div class="row" style="justify-content:space-between;"><span class="chip" style="background:'+color+';color:#fff;">'+title+'</span>'+
+    (right?'<span class="chip" style="background:#eee;color:#333;">'+right+'</span>':'')+'</div>';
+}
+
+/* ---------- brand / sound / learner / progress ---------- */
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=nm+"<small>Data Detectives</small>";
+  document.title="Data Detectives | "+nm; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+el("menuLink").onclick=function(e){ e.preventDefault(); menu(); };
+var student=MQ.getStudent()||"";
+function progKey(){ return "datadet_"+(student||"").toLowerCase(); }
+function prog(){ var p=MQ.readLocal(progKey())||{}; p.badges=p.badges||{}; p.surveys=p.surveys||{}; return p; }
+function saveProg(p){ MQ.saveLocal(progKey(), p); }
+function award(key){ var p=prog(); var fresh=!p.badges[key]; p.badges[key]=true; saveProg(p); if(fresh){ toast("🏅 New detective badge!"); } }
+function logIt(title, acc, correct, total, extra){
+  var rt=MQ.rating(acc);
+  return MQ.logResult({
+    student:student||"Unknown", subject:"Maths", week:"", weekTitle:"Data Detectives — "+title,
+    accuracy:acc, correct:correct, totalQuestions:total, stars:rt.stars, rating:rt.label, stages:extra||{},
+    school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  });
+}
+function savedNote(promise){
+  promise.then(function(res){ var s=el("saveState"); if(!s) return;
+    s.textContent = res&&res.ok ? "✅ Saved — your tutor can see it!" : res&&res.offline ? "📴 Saved on this device." : "⚠️ Couldn't reach the server, but it's saved on this device."; });
+}
+function finishCard(emoji, title, msg, acc, correct, total, buttons){
+  var rt=MQ.rating(acc);
+  MQ.sound("win"); MQ.confetti(200);
+  return '<div class="card center"><div class="mascot" style="font-size:72px;">'+emoji+'</div><h1>'+title+'</h1>'+
+    '<div class="speech">'+msg+'</div>'+
+    (total?'<div class="row" style="margin:16px 0;gap:26px;"><div><div class="big-num" style="font-size:50px;">'+correct+'/'+total+'</div><div class="muted">First try</div></div>'+
+      '<div><div class="big-num" style="font-size:50px;">'+acc+'%</div><div class="muted">Score</div></div></div>'+
+      '<p style="font-size:30px;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>':'')+
+    '<p class="muted" id="saveState">💾 Saving…</p><div class="row">'+buttons+'</div></div>';
+}
+
+/* =============================================================
+   MENU
+   ============================================================= */
+var MODULES=[
+  { id:"discover", n:1, e:"🔍", title:"Discover", col:"#9b5cff", blurb:"Meet Quanti 🤖 and Quali 🦜 and crack the clues about the two kinds of data.", run:function(){ runDiscover(); } },
+  { id:"survey",   n:2, e:"📋", title:"Class Survey Lab", col:"#2bd576", blurb:"Interview a class, record answers in a tally chart and build a bar chart.", run:function(){ surveyMenu(); } },
+  { id:"rush",     n:3, e:"🏁", title:"Sort Rush", col:"#ff8a3d", blurb:"60 seconds! Sort data cards as fast as you can. Beat your best score!", run:function(){ rushIntro(); } },
+  { id:"odd",      n:4, e:"🧩", title:"Odd One Out", col:"#22c3d6", blurb:"Three cards match, one doesn't. Spot the odd one out!", run:function(){ runOdd(); } },
+  { id:"factory",  n:5, e:"🏭", title:"Question Factory", col:"#ffb020", blurb:"Choose the right survey question to collect numbers or words.", run:function(){ runFactory(); } },
+  { id:"own",      n:6, e:"🗣️", title:"My Own Survey", col:"#ff5b9a", blurb:"A real practical: write your own question and ask the people around you!", run:function(){ runOwn(); } },
+  { id:"mastery",  n:7, e:"🏆", title:"Mastery Check", col:"#c98a5e", blurb:"10 questions to prove you're a Data Detective. Saved for your tutor.", run:function(){ runMastery(); } }
+];
+var BADGES=[
+  {k:"discover",e:"🔍",n:"Clue Cracker"},{k:"survey",e:"📋",n:"Surveyor"},{k:"rush",e:"🏁",n:"Speed Sorter"},
+  {k:"odd",e:"🧩",n:"Odd Spotter"},{k:"factory",e:"🏭",n:"Question Maker"},{k:"own",e:"🗣️",n:"Field Researcher"},{k:"mastery",e:"🏆",n:"Data Detective"}
+];
+
+function boot(){
+  if(!student){
+    screen.innerHTML='<div class="card center" style="max-width:540px;"><div class="mascot">🕵️</div>'+
+      '<div class="speech">Hello! I\'m Detective Dot. Will you help me solve some data mysteries? What is your name?</div>'+
+      '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Let\'s investigate ▶</button></div></div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v) return; student=v; MQ.setStudent(v); el("whoName").textContent=v; MQ.sound("level"); menu(); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+  } else { el("whoName").textContent=student; menu(); }
+}
+
+function menu(){
+  cleanup();
+  var p=prog();
+  var got=BADGES.filter(function(b){return p.badges[b.k];}).length;
+  screen.innerHTML=
+    '<h1 class="title-pop">🕵️ DATA DETECTIVES 🔎</h1>'+
+    '<p class="subtitle">Quantitative or Qualitative? Numbers or words? Let\'s investigate! (Year 4)</p>'+
+    '<div class="heroes">'+
+      '<div class="hero qn"><div class="hx">🤖</div><h3>Quanti — QUANTitative</h3><p>QUANTity → <b>NUMBERS</b>. Things we <b>count</b> or <b>measure</b>: how many, how tall, how long?</p></div>'+
+      '<div class="hero ql"><div class="hx">🦜</div><h3>Quali — QUALitative</h3><p>QUALity → <b>DESCRIBING WORDS</b>. What kind, what colour, which favourite?</p></div>'+
+    '</div>'+
+    '<div class="card" style="margin-top:16px;"><b>🏅 '+(student||"Detective")+'\'s badges: '+got+' / '+BADGES.length+'</b>'+
+      '<div class="badges">'+BADGES.map(function(b){ return '<div class="badge'+(p.badges[b.k]?"":" off")+'"><div class="bi">'+b.e+'</div>'+b.n+'</div>'; }).join("")+'</div></div>'+
+    '<div class="mgrid">'+MODULES.map(function(m,i){
+      return '<div class="card mcard" data-i="'+i+'" style="border-top:8px solid '+m.col+';"><span class="num" style="background:'+m.col+'">Step '+m.n+'</span>'+
+        (p.badges[m.id]?'<span class="done">✅</span>':'')+'<div class="me">'+m.e+'</div><h3>'+m.title+'</h3>'+
+        '<p class="muted" style="font-size:14px;font-weight:700;min-height:58px;">'+m.blurb+'</p>'+
+        (m.id==="rush"&&p.rushBest?'<span class="tag live">Best: '+p.rushBest+'</span>':'<span class="tag live">▶ START</span>')+'</div>';
+    }).join("")+'</div>'+
+    '<div class="card" style="margin-top:18px;"><details class="plan"><summary>👩‍🏫 Tutor\'s 45-minute session plan</summary><ol>'+
+      '<li><b>Warm-up (5 min)</b> — play <b>Sort Rush</b> once, cold. Note the score as a baseline.</li>'+
+      '<li><b>Discover (8 min)</b> — let him sort Max the dog\'s clues <i>before</i> you explain. Ask: “What do the number clues have in common?” Then meet Quanti &amp; Quali.</li>'+
+      '<li><b>Class Survey Lab (10 min)</b> — do one Quali survey (fruit/travel) and one Quanti survey (pets/sleep). Stop on the “can we add it up?” question and discuss why.</li>'+
+      '<li><b>My Own Survey — real practical (8 min)</b> — he writes his own question and asks people in the room / family, then reads his chart.</li>'+
+      '<li><b>Games (7 min)</b> — Odd One Out, then Question Factory (turning a topic into a numbers question or a words question).</li>'+
+      '<li><b>Mastery Check + rematch (7 min)</b> — Mastery Check, then Sort Rush again to beat the baseline. 🎉</li>'+
+      '</ol><p class="muted" style="font-weight:700;">Key phrase to repeat: <b>“QUANTity → how many / how much → numbers. QUALity → what kind → words.”</b> Results from every activity are saved to your sheet (Maths tab).</p></details></div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".mcard"),function(c){
+    c.onclick=function(){ MQ.sound("click"); MODULES[Number(c.getAttribute("data-i"))].run(); };
+  });
+}
+
+/* =============================================================
+   1) DISCOVER — guided discovery lesson
+   ============================================================= */
+function runDiscover(){
+  cleanup();
+  var col="#9b5cff";
+  var maxClues=[
+    {l:"Age", v:"4 years", e:"🎂", t:"N"},{l:"Colour", v:"brown", e:"🎨", t:"W"},{l:"Number of legs", v:"4", e:"🦵", t:"N"},
+    {l:"Favourite toy", v:"ball", e:"🎾", t:"W"},{l:"Weight", v:"12 kg", e:"⚖️", t:"N"},{l:"Bark", v:"loud", e:"🔊", t:"W"}
+  ];
+  var counted=pickN(BANK.filter(function(b){return b.how==="count";}),1)[0];
+  var measured=pickN(BANK.filter(function(b){return b.how==="measure";}),1)[0];
+  var steps=[
+    {k:"slide", html:"Hi, I'm <b>Detective Dot</b> 🕵️! <b>DATA</b> is information we collect — like the answers people give to a question. Detectives collect data as <b>clues</b>.<br><br>There are <b>two kinds</b> of data. Let's discover them ourselves!"},
+    {k:"pick", items:shuffle(maxClues), instr:"🔎 Here are 6 clues about <b>Max the dog</b> 🐕. Tap ALL the clues whose answer is a <b>NUMBER</b>.",
+      reveal:"Brilliant detective work! The <b>number</b> clues are called <b>QUANTITATIVE</b> data 🤖. The <b>describing-word</b> clues (brown, ball, loud) are called <b>QUALITATIVE</b> data 🦜."},
+    {k:"heroes"},
+    {k:"sort", items:shuffle(pickN(BANK.filter(function(b){return b.t==="N";}),4).concat(pickN(BANK.filter(function(b){return b.t==="W";}),4)))},
+    {k:"slide", html:"Quanti 🤖 gets numbers in <b>two ways</b>:<br>🧮 <b>COUNT</b> them — how many pets, goals, books?<br>📏 <b>MEASURE</b> them — how tall, how heavy, how long it takes?<br><br>Quali 🦜 never counts or measures — Quali <b>describes</b>: colour, type, favourite, feelings."},
+    {k:"mc", card:counted, q:"Was this number <b>counted</b> or <b>measured</b>?", options:["🧮 Counted","📏 Measured"], answer:0, why:"We count “"+counted.v+"” — one, two, three…"},
+    {k:"mc", card:measured, q:"Was this number <b>counted</b> or <b>measured</b>?", options:["🧮 Counted","📏 Measured"], answer:1, why:"We need a measuring tool (ruler, scales, clock, thermometer…) for “"+measured.v+"”."},
+    {k:"slide", html:"🔎 <b>Super-sleuth clue!</b> Some numbers are really <b>NAMES</b>. A football shirt <b>10</b>, the number <b>42</b> bus, house number <b>7</b>… You can't add them up or say one is “more” — they are <b>labels</b>, so they are <b>QUALITATIVE</b> 🦜!"},
+    {k:"sort", items:[pickN(TRICKY,1)[0]]},
+    {k:"mc", q:"Detective test: which question collects <b>QUANTITATIVE</b> data? 🤖", options:shuffle(["How many pencils are in your pencil case?","What colour is your pencil case?"]), answerText:"How many pencils are in your pencil case?",
+      why:"“How many…?” gives a NUMBER answer — quantitative. “What colour…?” gives a word — qualitative."}
+  ];
+  var si=0, first=0, total=0;
+  function next(){ si++; if(si>=steps.length) return done(); show(); }
+  function show(){
+    var s=steps[si], right=(si+1)+" / "+steps.length;
+    if(s.k==="slide"){
+      screen.innerHTML='<div class="card">'+head("🔍 Discover",col,right)+'<div style="display:flex;gap:14px;align-items:flex-start;margin-top:14px;"><div style="font-size:50px;line-height:1;">🕵️</div>'+
+        '<div class="speech" style="text-align:left;margin:0;flex:1;">'+s.html+'</div></div><div class="center"><button class="btn big blue" id="nx" style="margin-top:16px;">Got it ▶</button></div></div>';
+      el("nx").onclick=function(){ MQ.sound("click"); next(); }; return;
+    }
+    if(s.k==="heroes"){
+      screen.innerHTML='<div class="card">'+head("🔍 Discover",col,right)+'<h2 class="center" style="margin-top:10px;">Meet the data detectives!</h2><div class="heroes">'+
+        '<div class="hero qn"><div class="hx">🤖</div><h3>Quanti</h3><p>“I love <b>NUMBERS</b>! QUANTitative sounds like <b>QUANTity</b> — how many? how much? Like 3 pets, 132 cm, 15 minutes.”</p></div>'+
+        '<div class="hero ql"><div class="hx">🦜</div><h3>Quali</h3><p>“I love <b>DESCRIBING WORDS</b>! QUALitative sounds like <b>QUALity</b> — what kind? what colour? Like blue, sunny, mango.”</p></div></div>'+
+        '<div class="rule"><span style="background:#4b8bff">QUANTity → numbers 🤖</span><span style="background:#ff5b9a">QUALity → words 🦜</span></div>'+
+        '<div class="center"><button class="btn big blue" id="nx" style="margin-top:16px;">Let\'s practise ▶</button></div></div>';
+      el("nx").onclick=function(){ MQ.sound("click"); next(); }; return;
+    }
+    if(s.k==="pick"){
+      screen.innerHTML='<div class="card">'+head("🔍 Discover",col,right)+'<div class="instr" style="margin-top:12px;">'+s.instr+'</div>'+
+        '<div class="pickgrid" id="pg">'+s.items.map(function(it,i){ return '<button class="pick" data-i="'+i+'"><div class="de">'+it.e+'</div><div class="dl">'+it.l+'</div><div class="dv">'+it.v+'</div></button>'; }).join("")+'</div>'+
+        '<div class="feedback" id="fb"></div><div class="center" id="ctl"><button class="btn green" id="ck">Check ✅</button></div></div>';
+      var sel={}, firstTry=true;
+      Array.prototype.forEach.call(document.querySelectorAll("#pg .pick"),function(b){
+        b.onclick=function(){ var i=b.getAttribute("data-i"); if(sel[i]){delete sel[i];b.classList.remove("sel");}else{sel[i]=true;b.classList.add("sel");} MQ.sound("click"); };
+      });
+      el("ck").onclick=function(){
+        var wrong=[], miss=[];
+        s.items.forEach(function(it,i){ if(it.t==="N" && !sel[i]) miss.push(i); if(it.t!=="N" && sel[i]) wrong.push(i); });
+        if(!wrong.length && !miss.length){
+          total++; if(firstTry) first++;
+          document.querySelectorAll("#pg .pick").forEach(function(b,i){ b.disabled=true; if(s.items[i].t==="N") b.classList.add("ok"); });
+          MQ.sound("correct"); MQ.confetti(70);
+          el("fb").className="feedback good"; el("fb").innerHTML='🎉 You found them!<div class="solbox">'+s.reveal+'</div>';
+          el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">Next ▶</button>'; el("nx").onclick=function(){ MQ.sound("click"); next(); };
+        } else {
+          firstTry=false; MQ.sound("wrong");
+          wrong.forEach(function(i){ var b=document.querySelector('#pg .pick[data-i="'+i+'"]'); b.classList.add("no"); setTimeout(function(){b.classList.remove("no");},450); });
+          el("fb").className="feedback bad"; el("fb").textContent = wrong.length ? "One of those answers is a word, not a number — un-tap it." : "You've missed "+miss.length+" number clue"+(miss.length>1?"s":"")+" — look again!";
+        }
+      };
+      return;
+    }
+    if(s.k==="sort"){ return sortSeq(s.items, function(f,t){ first+=f; total+=t; next(); }, "🔍 Discover", col, right); }
+    if(s.k==="mc"){
+      var ans = s.answerText ? s.options.indexOf(s.answerText) : s.answer;
+      screen.innerHTML='<div class="card">'+head("🔍 Discover",col,right)+(s.card?cardHTML(s.card):"")+
+        '<div class="center" style="margin:10px 0 4px;font-size:21px;font-weight:800;">'+s.q+'</div>'+
+        '<div class="options" id="opts">'+s.options.map(function(o,i){return '<button class="opt" data-i="'+i+'">'+o+'</button>';}).join("")+'</div>'+
+        '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+      var ft=true;
+      Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+        b.onclick=function(){
+          if(Number(b.getAttribute("data-i"))===ans){
+            b.classList.add("correct"); document.querySelectorAll("#opts .opt").forEach(function(x){x.disabled=true;});
+            total++; if(ft) first++; MQ.sound("correct"); MQ.confetti(50);
+            el("fb").className="feedback good"; el("fb").innerHTML='🎉 Correct!<div class="solbox">💡 '+s.why+'</div>';
+            el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">Next ▶</button>'; el("nx").onclick=function(){ MQ.sound("click"); next(); };
+          } else { ft=false; b.classList.add("wrong"); b.disabled=true; MQ.sound("wrong"); el("fb").className="feedback bad"; el("fb").textContent="Not quite — try the other one. 💡"; }
+        };
+      });
+    }
+  }
+  function done(){
+    award("discover");
+    var acc=total?Math.round(first/total*100):100;
+    screen.innerHTML=finishCard("🔍","Clues cracked!","You discovered the two kinds of data, "+(student||"detective")+"! 🤖 <b>Quantitative</b> = numbers (counted or measured). 🦜 <b>Qualitative</b> = describing words.",acc,first,total,
+      '<button class="btn big green" id="go">▶ Next: 📋 Class Survey Lab</button><button class="btn blue" id="mn">🕵️ Missions</button>');
+    el("go").onclick=function(){ MQ.sound("click"); surveyMenu(); }; el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+    savedNote(logIt("Discover", acc, first, total));
+  }
+  show();
+}
+
+/* Sort a sequence of cards into the two bins (one at a time). onDone(firstTryCorrect, total) */
+function sortSeq(items, onDone, title, col, right){
+  var i=0, first=0;
+  function show(){
+    if(i>=items.length) return onDone(first, items.length);
+    var it=items[i], ft=true;
+    screen.innerHTML='<div class="card">'+head(title,col,right||("Card "+(i+1)+" / "+items.length))+
+      '<div class="instr" style="margin-top:10px;">Is this data <b style="color:#4b8bff">Quantitative 🤖</b> or <b style="color:#ff5b9a">Qualitative 🦜</b>?</div>'+
+      cardHTML(it)+binsHTML()+'<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+    Array.prototype.forEach.call(document.querySelectorAll("#bins .bin"),function(b){
+      b.onclick=function(){
+        var c=el("dcard");
+        if(b.getAttribute("data-t")===it.t){
+          if(ft) first++;
+          document.querySelectorAll("#bins .bin").forEach(function(x){x.disabled=true;});
+          c.className="dcard good"; MQ.sound("correct"); MQ.confetti(40);
+          el("fb").className="feedback good"; el("fb").innerHTML='🎉 Yes!<div class="solbox">'+whyOf(it)+'</div>';
+          el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">Next ▶</button>';
+          el("nx").onclick=function(){ MQ.sound("click"); i++; show(); };
+        } else {
+          ft=false; MQ.sound("wrong"); c.className="dcard"; void c.offsetWidth; c.className="dcard bad";
+          el("fb").className="feedback bad"; el("fb").innerHTML = it.tricky ? "Hmm — is that number really an AMOUNT, or is it a name? 🤔" :
+            (it.t==="N" ? "Look again — is “"+it.v+"” a number or a describing word?" : "Look again — can you count or measure “"+it.v+"”?");
+        }
+      };
+    });
+  }
+  show();
+}
+
+/* =============================================================
+   2) CLASS SURVEY LAB — interview, tally, bar chart, interpret
+   ============================================================= */
+function surveyMenu(){
+  cleanup();
+  var p=prog();
+  screen.innerHTML='<div class="card">'+head("📋 Class Survey Lab","#2bd576")+
+    '<h2 style="margin:12px 0 4px;">Choose a survey to run 📋</h2>'+
+    '<p class="muted" style="font-weight:700;margin:0;">Do <b>one Quali survey 🦜</b> and <b>one Quanti survey 🤖</b> to earn the Surveyor badge. You will interview 12 children, record their answers in a <b>tally chart</b>, and watch your <b>bar chart</b> grow!</p>'+
+    '<div class="mgrid">'+SURVEYS.map(function(s,i){
+      return '<div class="card mcard" data-i="'+i+'" style="border-top:8px solid '+(s.t==="N"?"#4b8bff":"#ff5b9a")+';">'+(p.surveys[s.id]?'<span class="done">✅</span>':'')+
+        '<div class="me">'+s.e+'</div><h3>'+s.title+'</h3><p class="muted" style="font-weight:700;font-size:14px;">“'+s.q+'”</p><span class="tag live">▶ RUN SURVEY</span></div>';
+    }).join("")+'</div><div class="center" style="margin-top:12px;"><button class="btn ghost" id="mn">🕵️ Missions</button></div></div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".mcard"),function(c){ c.onclick=function(){ MQ.sound("click"); runSurvey(SURVEYS[Number(c.getAttribute("data-i"))]); }; });
+  el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+}
+
+function makeClass(sv){
+  for(var tries=0;tries<200;tries++){
+    var w=sv.cats.map(function(){ return 0.6+Math.random()*3; }), sum=w.reduce(function(a,b){return a+b;},0);
+    var names=pickN(NAMES,12), faces=shuffle(FACES);
+    var kids=names.map(function(n,i){
+      var r=Math.random()*sum, c=0; for(var k=0;k<w.length;k++){ r-=w[k]; if(r<=0){ c=k; break; } c=k; }
+      return { name:n, face:faces[i%faces.length], c:c };
+    });
+    var counts=sv.cats.map(function(){return 0;}); kids.forEach(function(k){ counts[k.c]++; });
+    var mx=Math.max.apply(null,counts), nMax=counts.filter(function(x){return x===mx;}).length, used=counts.filter(function(x){return x>0;}).length;
+    if(used>=3 && (sv.t==="N" || nMax===1)) return kids;
+  }
+  return kids;
+}
+function tallyHTML(n){
+  var h="", g=Math.floor(n/5), r=n%5, line=function(x){ return '<line x1="'+x+'" y1="3" x2="'+x+'" y2="25" stroke="#2d2559" stroke-width="3" stroke-linecap="round"/>'; };
+  for(var i=0;i<g;i++){ h+='<svg width="32" height="28" viewBox="0 0 32 28">'+line(5)+line(11)+line(17)+line(23)+'<line x1="1" y1="22" x2="28" y2="6" stroke="#e8455c" stroke-width="3" stroke-linecap="round"/></svg>'; }
+  if(r){ var s='<svg width="'+(r*7+4)+'" height="28" viewBox="0 0 '+(r*7+4)+' 28">'; for(var j=0;j<r;j++) s+=line(4+j*7); h+=s+'</svg>'; }
+  return h;
+}
+function barChartHTML(labels, counts, colour, yTitle){
+  var mx=Math.max(1,Math.max.apply(null,counts));
+  return '<p class="center" style="font-weight:800;margin:6px 0 0;">📊 '+yTitle+'</p><div class="bchart">'+counts.map(function(c){
+      return '<div class="bc"><div class="bb" style="height:'+Math.round(c/mx*140)+'px;background:'+colour+';"><span>'+c+'</span></div></div>'; }).join("")+'</div>'+
+    '<div class="blabels">'+labels.map(function(l){ return '<div>'+l+'</div>'; }).join("")+'</div>';
+}
+function numOpts(correct){
+  var set=[correct], d=[1,-1,2,-2,3,-3,4,5,-4,6];
+  for(var i=0;i<d.length && set.length<4;i++){ var v=correct+d[i]; if(v>=0 && set.indexOf(v)<0) set.push(v); }
+  return shuffle(set);
+}
+
+function runSurvey(sv){
+  cleanup();
+  var col = sv.t==="N" ? "#4b8bff" : "#ff5b9a";
+  var kids=makeClass(sv), counts=sv.cats.map(function(){return 0;}), ki=0, firstAll=0, totalAll=0, mistakes=0;
+  var labelOf=function(c){ return sv.t==="N" ? c.k : c.e+" "+c.k; };
+
+  // Step A: classify the survey question first
+  screen.innerHTML='<div class="card">'+head(sv.e+" "+sv.title,col,"Step 1 · Predict")+
+    '<div class="instr" style="margin-top:12px;">Our survey question is:</div><div class="dcard"><div class="de">'+sv.e+'</div><div class="dv" style="font-size:26px;">“'+sv.q+'”</div></div>'+
+    '<div class="center" style="font-weight:800;font-size:20px;">🤔 What kind of data will the answers be?</div>'+binsHTML()+'<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+  var ft=true;
+  Array.prototype.forEach.call(document.querySelectorAll("#bins .bin"),function(b){
+    b.onclick=function(){
+      if(b.getAttribute("data-t")===sv.t){
+        totalAll++; if(ft) firstAll++;
+        document.querySelectorAll("#bins .bin").forEach(function(x){x.disabled=true;});
+        MQ.sound("correct"); MQ.confetti(50);
+        el("fb").className="feedback good";
+        el("fb").innerHTML='🎉 Yes!<div class="solbox">'+(sv.t==="N" ? "The answers will be <b>numbers</b> (0, 1, 2…) — that's <b>QUANTITATIVE</b> data 🤖." : "The answers will be <b>words</b> (like "+sv.cats[0].k.toLowerCase()+" or "+sv.cats[1].k.toLowerCase()+") — that's <b>QUALITATIVE</b> data 🦜.")+'</div>';
+        el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">🎤 Start interviewing ▶</button>';
+        el("nx").onclick=function(){ MQ.sound("click"); interview(); };
+      } else { ft=false; MQ.sound("wrong"); el("fb").className="feedback bad"; el("fb").textContent="Think: will people answer with a number, or with a word?"; }
+    };
+  });
+
+  // Step B: interview each child and tally the answer
+  function interview(){
+    var k=kids[ki];
+    var gridCols = sv.cats.length, still = ki>0 ? " still" : "";
+    screen.innerHTML=
+      '<div class="card'+still+'">'+head(sv.e+" "+sv.title,col,"Step 2 · Collect & record")+
+        '<div class="kids">'+kids.map(function(x,i){ return '<span class="'+(i<ki?"done":i===ki?"cur":"")+'">'+x.face+'</span>'; }).join("")+'</div>'+
+        (k ? '<div class="interview"><div class="kid">'+k.face+'</div><div><div style="font-weight:800;color:#6a62a0;">'+k.name+' says:</div><div class="bubble">'+sv.say(sv.cats[k.c])+'</div></div></div>'+
+             '<div class="instr">👉 Tap the column that matches <b>'+k.name+'</b>\'s answer to add a <b>tally mark</b>. (Child '+(ki+1)+' of 12)</div>'
+           : '<div class="instr">✅ All 12 children interviewed! Here is your finished tally chart.</div>')+
+        '<div class="tcols" style="grid-template-columns:repeat('+gridCols+',1fr);">'+sv.cats.map(function(c,i){
+          return '<button class="tcol" data-c="'+i+'"'+(k?'':' disabled')+'>'+(sv.t==="N"?'<span class="te" style="font-weight:800;color:#3a5bd9;">'+c.k+'</span><span class="th">'+sv.unit+'</span>':'<span class="te">'+c.e+'</span><span class="th">'+c.k+'</span>')+
+            '<span class="tal">'+tallyHTML(counts[i])+'</span><span class="tn">'+counts[i]+'</span></button>'; }).join("")+'</div>'+
+        '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div>'+
+      '</div>'+
+      '<div class="card'+still+'" id="chartCard">'+barChartHTML(sv.cats.map(labelOf), counts, col, "Bar chart: "+sv.q+" (number of children)")+'</div>';
+    if(!k){ el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">🔎 Investigate the results ▶</button>'; el("nx").onclick=function(){ MQ.sound("click"); questions(); }; return; }
+    Array.prototype.forEach.call(document.querySelectorAll(".tcol"),function(b){
+      b.onclick=function(){
+        var c=Number(b.getAttribute("data-c"));
+        if(c===k.c){ counts[c]++; ki++; MQ.sound("click"); interview(); var nb=document.querySelector('.tcol[data-c="'+c+'"]'); if(nb){ nb.classList.add("flash"); setTimeout(function(){ nb.classList.remove("flash"); },350); } if(ki===12){ MQ.sound("win"); MQ.confetti(100); } }
+        else { mistakes++; MQ.sound("wrong"); b.classList.add("no"); setTimeout(function(){ b.classList.remove("no"); },450);
+          el("fb").className="feedback bad"; el("fb").textContent="Listen again: "+k.name+" said “"+sv.say(sv.cats[k.c])+"”"; }
+      };
+    });
+  }
+
+  // Step C: interpret — and discover that only number data can be added up
+  function questions(){
+    var qs=[], labs=sv.cats.map(labelOf);
+    if(sv.t==="W"){
+      var mx=Math.max.apply(null,counts), mode=counts.indexOf(mx);
+      qs.push({ q:"Which "+sv.thing+" is the <b>most popular</b>?", options:labs.slice(), answer:mode, why:labs[mode]+" has the tallest bar — "+mx+" children chose it." });
+      var pool=[]; counts.forEach(function(c,i){ if(c>0 && i!==mode) pool.push(i); }); var pi=pool[Math.floor(Math.random()*pool.length)];
+      var no=numOpts(counts[pi]);
+      qs.push({ q:"How many children chose <b>"+labs[pi]+"</b>?", options:no.map(String), answer:no.indexOf(counts[pi]), why:"Count the tally marks for "+labs[pi]+": "+counts[pi]+"." });
+      var a=sv.cats[0].k.toLowerCase(), b2=sv.cats[1].k.toLowerCase();
+      qs.push({ q:"🤔 Can we <b>ADD UP</b> the answers themselves, like “"+a+" + "+b2+"”?", options:["No — they are words, not numbers!","Yes — "+a+" + "+b2+" = 2"], answer:0,
+        why:"Qualitative data is <b>words</b>, so we can't add it up or find a total of it. We can only <b>count how many</b> people gave each answer — that's exactly how we made the tally chart and bar chart! 🦜" });
+    } else {
+      var maxV=-1; counts.forEach(function(c,i){ if(c>0) maxV=Math.max(maxV, sv.cats[i].n); });
+      qs.push({ q:"What is the <b>largest</b> number of "+sv.unit+" anyone said?", options:labs.slice(), answer:labs.indexOf(String(maxV)), why:"Look for the biggest number that has at least one tally mark: "+maxV+"." });
+      var tot=0, parts=[]; counts.forEach(function(c,i){ tot+=c*sv.cats[i].n; if(c>0 && sv.cats[i].n>0) parts.push(c+" × "+sv.cats[i].n); });
+      var to=numOpts(tot);
+      qs.push({ q:sv.totalQ, options:to.map(String), answer:to.indexOf(tot), why:"Because the data is <b>numbers</b>, we can add it: "+parts.join(" + ")+" = <b>"+tot+"</b> "+sv.unit+"." });
+      qs.push({ q:"🤔 Can we <b>ADD UP</b> this data and do maths with it?", options:["Yes — it's numbers, so we can add, compare and find totals!","No — it's only words"], answer:0,
+        why:"Quantitative data is <b>numbers</b>, so we can do maths with it: find the total, the biggest, the smallest and the difference. 🤖" });
+    }
+    var qi=0;
+    function showQ(){
+      if(qi>=qs.length) return finish();
+      var q=qs[qi], ft=true;
+      screen.innerHTML='<div class="card">'+head(sv.e+" "+sv.title,col,"Step 3 · Investigate "+(qi+1)+"/"+qs.length)+
+        '<div class="center" style="margin:12px 0 4px;font-size:21px;font-weight:800;">'+q.q+'</div>'+
+        '<div class="options" id="opts">'+q.options.map(function(o,i){return '<button class="opt" data-i="'+i+'">'+o+'</button>';}).join("")+'</div>'+
+        '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>'+
+        '<div class="card" id="chartCard">'+barChartHTML(labs, counts, col, "Our results — "+sv.q)+'</div>';
+      Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+        b.onclick=function(){
+          if(Number(b.getAttribute("data-i"))===q.answer){
+            b.classList.add("correct"); document.querySelectorAll("#opts .opt").forEach(function(x){x.disabled=true;});
+            totalAll++; if(ft) firstAll++; MQ.sound("correct"); MQ.confetti(50);
+            el("fb").className="feedback good"; el("fb").innerHTML='🎉 Correct!<div class="solbox">💡 '+q.why+'</div>';
+            el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">Next ▶</button>'; el("nx").onclick=function(){ MQ.sound("click"); qi++; showQ(); };
+          } else { ft=false; b.classList.add("wrong"); b.disabled=true; MQ.sound("wrong"); el("fb").className="feedback bad"; el("fb").textContent="Not quite — look at the chart and try again. 📊"; }
+        };
+      });
+    }
+    showQ();
+  }
+
+  function finish(){
+    var p=prog(); p.surveys[sv.id]=true; saveProg(p);
+    var hasN=SURVEYS.some(function(s){return s.t==="N"&&p.surveys[s.id];}), hasW=SURVEYS.some(function(s){return s.t==="W"&&p.surveys[s.id];});
+    if(hasN&&hasW) award("survey");
+    var acc=totalAll?Math.round(firstAll/totalAll*100):100;
+    var need = !(hasN&&hasW) ? '<p style="font-weight:800;color:#5b5390;">Now run a '+(hasN?"Quali 🦜":"Quanti 🤖")+' survey to earn the 📋 Surveyor badge!</p>' : '';
+    screen.innerHTML=finishCard(sv.e,"Survey complete!",
+      "Great research, "+(student||"detective")+"! Your “"+sv.title+"” survey collected <b>"+(sv.t==="N"?"QUANTITATIVE 🤖 (number)":"QUALITATIVE 🦜 (word)")+"</b> data from 12 children, and you recorded every answer with tally marks."+need,
+      acc,firstAll,totalAll,'<button class="btn big green" id="more">📋 Run another survey</button><button class="btn blue" id="mn">🕵️ Missions</button>');
+    el("more").onclick=function(){ MQ.sound("click"); surveyMenu(); }; el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+    var res={}; sv.cats.forEach(function(c,i){ res[c.k]=counts[i]; });
+    savedNote(logIt("Survey: "+sv.title, acc, firstAll, totalAll, { type:sv.t==="N"?"quantitative":"qualitative", results:res, tallyMistakes:mistakes }));
+  }
+}
+
+/* =============================================================
+   3) SORT RUSH — 60-second speed sorting game
+   ============================================================= */
+function rushIntro(){
+  cleanup();
+  var p=prog();
+  screen.innerHTML='<div class="card center" style="border-top:10px solid #ff8a3d;"><div class="mascot">🏁</div><h1>Sort Rush</h1>'+
+    '<div class="speech">Data cards will flash up. Sort each one: <b style="color:#4b8bff">🤖 Quantitative</b> (numbers) or <b style="color:#ff5b9a">🦜 Qualitative</b> (words). You have <b>60 seconds</b>!</div>'+
+    '<p style="font-weight:800;color:#5b5390;">+10 per card · 🔥 streak of 3 = +5 bonus · streak of 6 = +10 bonus<br>On a keyboard: ← Quantitative · Qualitative →</p>'+
+    (p.rushBest?'<p style="font-size:20px;font-weight:800;">🏆 Your best: '+p.rushBest+'</p>':'')+
+    '<div class="row"><button class="btn big green" id="go">▶ GO!</button><button class="btn ghost" id="mn">🕵️ Missions</button></div></div>';
+  el("go").onclick=function(){ MQ.sound("level"); runRush(); };
+  el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+}
+function runRush(){
+  cleanup();
+  var DUR=60000, end=Date.now()+DUR, score=0, streak=0, bestStreak=0, right=0, done=0, lock=false, over=false, misses=[];
+  var deck=shuffle(BANK), di=0;
+  function nextCard(){ if(di>=deck.length){ deck=shuffle(BANK); di=0; } return deck[di++]; }
+  var cur=nextCard();
+  screen.innerHTML='<div class="card">'+
+      '<div class="rushtop"><span>⏱ <b id="tl">60</b>s</span><span>⭐ Score <b id="sc">0</b></span><span>🔥 <b id="st">0</b></span></div>'+
+      '<div class="tbar" id="tb"><i id="tf" style="width:100%"></i></div>'+
+      '<div id="cardHost"></div>'+binsHTML()+'<div class="feedback" id="fb" style="min-height:56px;"></div></div>';
+  function paintCard(){ el("cardHost").innerHTML=cardHTML(cur); }
+  function answer(t){
+    if(lock||over) return;
+    done++;
+    var c=el("dcard");
+    if(t===cur.t){
+      right++; streak++; bestStreak=Math.max(bestStreak,streak);
+      var pts=10+(streak>=6?10:streak>=3?5:0); score+=pts;
+      MQ.sound("correct"); if(streak%5===0) MQ.confetti(40);
+      el("fb").className="feedback good"; el("fb").textContent="+"+pts+(streak>=3?"  🔥 x"+streak:"");
+      cur=nextCard(); paintCard();
+    } else {
+      streak=0; lock=true; misses.push(cur); MQ.sound("wrong");
+      c.className="dcard bad";
+      el("fb").className="feedback bad"; el("fb").innerHTML="It was "+TY(cur.t).e+" <b>"+TY(cur.t).name.toUpperCase()+"</b> — "+(cur.t==="N"?"“"+cur.v+"” is a number":"“"+cur.v+"” is a describing word");
+      setTimeout(function(){ if(over) return; lock=false; cur=nextCard(); paintCard(); },1100);
+    }
+    el("sc").textContent=score; el("st").textContent=streak;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("#bins .bin"),function(b){ b.onclick=function(){ answer(b.getAttribute("data-t")); }; });
+  var keyH=function(e){ if(e.key==="ArrowLeft"){ e.preventDefault(); answer("N"); } else if(e.key==="ArrowRight"){ e.preventDefault(); answer("W"); } };
+  document.addEventListener("keydown",keyH);
+  var iv=setInterval(function(){
+    var left=Math.max(0,end-Date.now());
+    var tl=el("tl"), tf=el("tf"), tb=el("tb"); if(!tl){ clearInterval(iv); return; }
+    tl.textContent=Math.ceil(left/1000); tf.style.width=(left/DUR*100)+"%"; tb.classList.toggle("hot", left<15000);
+    if(left<=0){ clearInterval(iv); finish(); }
+  },100);
+  cleanups.push(function(){ clearInterval(iv); document.removeEventListener("keydown",keyH); over=true; });
+  paintCard();
+
+  function finish(){
+    over=true; document.removeEventListener("keydown",keyH);
+    var p=prog(), newBest=score>(p.rushBest||0); if(newBest){ p.rushBest=score; saveProg(p); }
+    if(score>=100) award("rush");
+    var acc=done?Math.round(right/done*100):0;
+    var uniq=[]; misses.forEach(function(m){ if(uniq.indexOf(m)<0) uniq.push(m); });
+    var review = uniq.length ? '<div class="card"><h2>🔎 Cards to remember</h2>'+uniq.map(function(m){ return '<div class="solbox">'+m.e+' <b>'+m.l+': '+m.v+'</b> → '+TY(m.t).e+' '+TY(m.t).name+'<br><span style="font-size:15px;">'+whyOf(m)+'</span></div>'; }).join("")+'</div>' : '';
+    screen.innerHTML='<div class="card center"><div class="mascot" style="font-size:72px;">'+(newBest?"🏆":"🏁")+'</div><h1>'+(newBest?"NEW BEST SCORE!":"Time's up!")+'</h1>'+
+      '<div class="row" style="margin:14px 0;gap:24px;"><div><div class="big-num" style="font-size:52px;">'+score+'</div><div class="muted">Score</div></div>'+
+      '<div><div class="big-num" style="font-size:52px;">'+right+'/'+done+'</div><div class="muted">Sorted right</div></div>'+
+      '<div><div class="big-num" style="font-size:52px;">🔥'+bestStreak+'</div><div class="muted">Best streak</div></div></div>'+
+      '<p style="font-weight:800;color:#5b5390;">'+(score>=100?"🏅 Speed Sorter badge unlocked!":"Score 100 or more to unlock the 🏁 Speed Sorter badge!")+'</p>'+
+      '<p class="muted" id="saveState">💾 Saving…</p><div class="row"><button class="btn big green" id="again">🔁 Play again</button><button class="btn blue" id="mn">🕵️ Missions</button></div></div>'+review;
+    MQ.sound("win"); MQ.confetti(newBest?220:120);
+    el("again").onclick=function(){ MQ.sound("level"); runRush(); }; el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+    savedNote(logIt("Sort Rush", acc, right, done, { score:score, bestStreak:bestStreak, missed:uniq.map(function(m){return m.l+": "+m.v;}) }));
+  }
+}
+
+/* =============================================================
+   4) ODD ONE OUT
+   ============================================================= */
+function runOdd(){
+  cleanup();
+  var ROUNDS=8, r=0, first=0, col="#22c3d6";
+  var majors=shuffle(["N","N","N","N","W","W","W","W"]);
+  function show(){
+    if(r>=ROUNDS) return finish();
+    var maj=majors[r], min=maj==="N"?"W":"N";
+    var cards=shuffle(pickN(BANK.filter(function(b){return b.t===maj;}),3).concat(pickN(BANK.filter(function(b){return b.t===min;}),1)));
+    var ft=true;
+    screen.innerHTML='<div class="card">'+head("🧩 Odd One Out",col,"Round "+(r+1)+" / "+ROUNDS)+
+      '<div class="instr" style="margin-top:10px;">Three of these are the <b>same kind</b> of data. Tap the <b>odd one out</b>!</div>'+
+      '<div class="oddgrid" id="og">'+cards.map(function(it,i){ return '<button class="pick" data-i="'+i+'"><div class="de">'+it.e+'</div><div class="dl">'+it.l+'</div><div class="dv">'+it.v+'</div></button>'; }).join("")+'</div>'+
+      '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+    Array.prototype.forEach.call(document.querySelectorAll("#og .pick"),function(b){
+      b.onclick=function(){
+        var it=cards[Number(b.getAttribute("data-i"))];
+        if(it.t===min){
+          if(ft) first++;
+          document.querySelectorAll("#og .pick").forEach(function(x,i){ x.disabled=true; if(cards[i].t===min) x.classList.add("ok"); });
+          MQ.sound("correct"); MQ.confetti(50);
+          el("fb").className="feedback good";
+          el("fb").innerHTML='🎉 Spotted it!<div class="solbox">“'+it.v+'” is '+TY(min).e+' <b>'+TY(min).name.toUpperCase()+'</b> ('+TY(min).kind+'). The other three are '+TY(maj).e+' <b>'+TY(maj).name.toLowerCase()+'</b> — '+TY(maj).kind+'.</div>';
+          el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">'+(r+1>=ROUNDS?"Finish ▶":"Next round ▶")+'</button>';
+          el("nx").onclick=function(){ MQ.sound("click"); r++; show(); };
+        } else {
+          ft=false; MQ.sound("wrong"); b.classList.add("no"); setTimeout(function(){ b.classList.remove("no"); },450);
+          el("fb").className="feedback bad"; el("fb").textContent="“"+it.v+"” matches others. Which one is a different kind — a "+(min==="N"?"number":"describing word")+"?";
+        }
+      };
+    });
+  }
+  function finish(){
+    var acc=Math.round(first/ROUNDS*100); if(acc>=60) award("odd");
+    screen.innerHTML=finishCard("🧩","Odd ones found!","Sharp eyes, "+(student||"detective")+"! "+(acc>=60?"🏅 Odd Spotter badge earned!":"Get 5 or more first try to earn the 🧩 Odd Spotter badge."),acc,first,ROUNDS,
+      '<button class="btn big green" id="again">🔁 Play again</button><button class="btn blue" id="mn">🕵️ Missions</button>');
+    el("again").onclick=function(){ MQ.sound("click"); runOdd(); }; el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+    savedNote(logIt("Odd One Out", acc, first, ROUNDS));
+  }
+  show();
+}
+
+/* =============================================================
+   5) QUESTION FACTORY — choose the question that gives the right data
+   ============================================================= */
+function factoryRound(topic, target){
+  var other=target==="N"?"W":"N";
+  var correct=pickN(topic[target],1)[0];
+  var wrongs=pickN(topic[other],1);
+  var otherTopic=pickN(TOPICS.filter(function(t){return t!==topic;}),1)[0];
+  wrongs.push(pickN(otherTopic[other],1)[0]);
+  var opts=shuffle([correct].concat(wrongs));
+  return { topic:topic, target:target, options:opts, answer:opts.indexOf(correct), correct:correct };
+}
+function runFactory(){
+  cleanup();
+  var ROUNDS=8, r=0, first=0, col="#ffb020";
+  var topics=pickN(TOPICS,ROUNDS), targets=shuffle(["N","N","N","N","W","W","W","W"]);
+  function show(){
+    if(r>=ROUNDS) return finish();
+    var R=factoryRound(topics[r], targets[r]), T=TY(R.target), ft=true;
+    screen.innerHTML='<div class="card">'+head("🏭 Question Factory",col,"Order "+(r+1)+" / "+ROUNDS)+
+      '<div class="interview"><div class="kid">'+T.e+'</div><div class="bubble" style="border-color:'+T.col+'">“I want to collect <b>'+(R.target==="N"?"NUMBER":"DESCRIBING-WORD")+'</b> data about <b>'+R.topic.name+'</b> '+R.topic.e+'. Which question should I ask?”</div></div>'+
+      '<div class="center" style="font-weight:800;color:#6a62a0;">'+T.who+' wants '+T.e+' '+T.name.toUpperCase()+' data</div>'+
+      '<div class="options" id="opts" style="grid-template-columns:1fr;">'+R.options.map(function(o,i){return '<button class="opt" data-i="'+i+'" style="font-size:19px;">'+o+'</button>';}).join("")+'</div>'+
+      '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+    Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+      b.onclick=function(){
+        var i=Number(b.getAttribute("data-i"));
+        if(i===R.answer){
+          if(ft) first++;
+          b.classList.add("correct"); document.querySelectorAll("#opts .opt").forEach(function(x){x.disabled=true;});
+          MQ.sound("correct"); MQ.confetti(50);
+          el("fb").className="feedback good";
+          el("fb").innerHTML='🎉 Perfect question!<div class="solbox">'+(R.target==="N" ? "“"+R.correct+"” will get <b>number</b> answers — quantitative 🤖." : "“"+R.correct+"” will get <b>describing-word</b> answers — qualitative 🦜.")+'</div>';
+          el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">'+(r+1>=ROUNDS?"Finish ▶":"Next order ▶")+'</button>';
+          el("nx").onclick=function(){ MQ.sound("click"); r++; show(); };
+        } else {
+          ft=false; b.classList.add("wrong"); b.disabled=true; MQ.sound("wrong");
+          var o=R.options[i], offTopic=R.topic[R.target].indexOf(o)<0 && R.topic[R.target==="N"?"W":"N"].indexOf(o)<0;
+          el("fb").className="feedback bad";
+          el("fb").textContent = offTopic ? "That question isn't about "+R.topic.name+"! Try again." : "That question would get "+(R.target==="N"?"word":"number")+" answers. Try again!";
+        }
+      };
+    });
+  }
+  function finish(){
+    var acc=Math.round(first/ROUNDS*100); if(acc>=60) award("factory");
+    screen.innerHTML=finishCard("🏭","Factory shift complete!","You built great survey questions, "+(student||"detective")+"! Remember: <b>“How many / how much / how long…?”</b> → numbers 🤖. <b>“What kind / what colour / which…?”</b> → words 🦜."+(acc>=60?" 🏅 Question Maker badge earned!":""),acc,first,ROUNDS,
+      '<button class="btn big green" id="again">🔁 Play again</button><button class="btn blue" id="mn">🕵️ Missions</button>');
+    el("again").onclick=function(){ MQ.sound("click"); runFactory(); }; el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+    savedNote(logIt("Question Factory", acc, first, ROUNDS));
+  }
+  show();
+}
+
+/* =============================================================
+   6) MY OWN SURVEY — real-life practical (ask real people)
+   ============================================================= */
+function guessType(q){
+  q=(q||"").toLowerCase();
+  if(/how (many|much|long|tall|old|far|heavy|fast|often|big|high|wide)|what time|what is your (age|height|shoe size)/.test(q)) return "N";
+  if(/what (colou?r|kind|type|sort)|which|favou?rite|what is your name|how do you|how did you feel|what .* like/.test(q)) return "W";
+  return null;
+}
+function runOwn(){
+  cleanup();
+  var col="#ff5b9a", own={ q:"", t:null, answers:[] };
+  function step1(){
+    screen.innerHTML='<div class="card">'+head("🗣️ My Own Survey",col,"Step 1 · Write a question")+
+      '<div class="speech" style="margin-top:12px;">Real detectives collect REAL data! ✍️ Write a survey question you can ask the people around you — your tutor, family or friends.</div>'+
+      '<input class="pill-input" id="oq" placeholder="Type your survey question…" maxlength="80" style="width:100%;margin-top:12px;">'+
+      '<p style="font-weight:800;color:#6a62a0;margin:10px 0 0;">Need an idea? Tap one:</p><div class="chipsugg">'+
+      ["How many pets do you have?","What is your favourite colour?","How many letters are in your name?","What is your favourite snack?","How many hours did you sleep?","Which sport do you like best?"].map(function(s){ return '<button data-s="'+s+'">'+s+'</button>'; }).join("")+'</div>'+
+      '<div class="feedback" id="fb"></div><div class="center"><button class="btn big green" id="nx">Next ▶</button></div></div>';
+    Array.prototype.forEach.call(document.querySelectorAll(".chipsugg button"),function(b){ b.onclick=function(){ el("oq").value=b.getAttribute("data-s"); MQ.sound("click"); }; });
+    el("nx").onclick=function(){ var v=el("oq").value.trim(); if(v.length<6){ el("fb").className="feedback bad"; el("fb").textContent="Write your question first ✏️"; return; } own.q=v.slice(-1)==="?"?v:v+"?"; MQ.sound("click"); step2(); };
+  }
+  function step2(){
+    var guess=guessType(own.q);
+    screen.innerHTML='<div class="card">'+head("🗣️ My Own Survey",col,"Step 2 · What kind of data?")+
+      '<div class="dcard"><div class="de">🗣️</div><div class="dv" style="font-size:24px;">“'+own.q.replace(/</g,"&lt;")+'”</div></div>'+
+      '<div class="center" style="font-weight:800;font-size:20px;">Will the answers be numbers or describing words?</div>'+binsHTML()+'<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+    Array.prototype.forEach.call(document.querySelectorAll("#bins .bin"),function(b){
+      b.onclick=function(){
+        var t=b.getAttribute("data-t");
+        if(guess && guess!==t){
+          MQ.sound("wrong");
+          el("fb").className="feedback bad";
+          el("fb").innerHTML="🕵️ Detective Dot wonders… questions like yours usually get <b>"+(guess==="N"?"number":"word")+"</b> answers. Are you sure?";
+          el("ctl").innerHTML='<button class="btn ghost" id="sure">Yes, I\'m sure</button>';
+          el("sure").onclick=function(){ own.t=t; step3(); };
+          return;
+        }
+        own.t=t; MQ.sound("correct"); step3();
+      };
+    });
+  }
+  function groups(){
+    var g={}; own.answers.forEach(function(a){ g[a]=(g[a]||0)+1; });
+    var keys=Object.keys(g);
+    if(own.t==="N") keys.sort(function(a,b){return Number(a)-Number(b);}); else keys.sort(function(a,b){return g[b]-g[a]||a.localeCompare(b);});
+    return { keys:keys, counts:keys.map(function(k){return g[k];}) };
+  }
+  function step3(warnFor){
+    var T=TY(own.t), G=groups();
+    screen.innerHTML='<div class="card'+(own.answers.length?" still":"")+'">'+head("🗣️ My Own Survey",col,"Step 3 · Collect real data")+
+      '<div class="speech" style="margin-top:12px;">🎤 Go and ask <b>real people</b>: “'+own.q.replace(/</g,"&lt;")+'”<br>Type each answer and press <b>➕ Add</b>. You chose '+T.e+' <b>'+T.name+'</b>, so answers should be <b>'+(own.t==="N"?"numbers":"words")+'</b>. Collect at least <b>5</b>.</div>'+
+      '<div class="row" style="margin-top:12px;"><input class="pill-input" id="ans" placeholder="'+(own.t==="N"?"Type a number, e.g. 3":"Type the answer, e.g. blue")+'" maxlength="24" '+(own.t==="N"?'inputmode="decimal"':'')+' style="flex:1 1 200px;"><button class="btn green" id="add">➕ Add</button></div>'+
+      '<div class="feedback" id="fb"></div>'+
+      (own.answers.length ? '<table class="res" style="width:100%;border-collapse:collapse;margin-top:10px;font-weight:800;"><tr><th style="border:2px solid var(--line);padding:6px;">Answer</th><th style="border:2px solid var(--line);padding:6px;">Tally</th><th style="border:2px solid var(--line);padding:6px;">Total</th></tr>'+
+        G.keys.map(function(k,i){ return '<tr><td style="border:2px solid var(--line);padding:6px;text-align:center;">'+k.replace(/</g,"&lt;")+'</td><td style="border:2px solid var(--line);padding:6px;">'+tallyHTML(G.counts[i])+'</td><td style="border:2px solid var(--line);padding:6px;text-align:center;">'+G.counts[i]+'</td></tr>'; }).join("")+'</table>'+
+        barChartHTML(G.keys.map(function(k){return k.replace(/</g,"&lt;");}), G.counts, T.col, "Number of people") : '<p class="muted center" style="font-weight:700;">Your tally chart and bar chart will build here. 📊</p>')+
+      '<div class="center" style="margin-top:12px;"><button class="btn big blue" id="fin"'+(own.answers.length<5?' disabled':'')+'>✅ I\'ve finished collecting ('+own.answers.length+')</button></div></div>';
+    var inp=el("ans"); inp.focus();
+    function add(force){
+      var v=inp.value.trim(); if(!v) return;
+      var isNum=/^-?\d+(\.\d+)?$/.test(v);
+      if(own.t==="N" && !isNum){ MQ.sound("wrong"); el("fb").className="feedback bad"; el("fb").innerHTML="🤖 Quanti only collects <b>numbers</b>! Type just the number (e.g. <b>3</b>, not “three pets”)."; return; }
+      if(own.t==="W" && isNum && !force){ MQ.sound("wrong"); el("fb").className="feedback bad";
+        el("fb").innerHTML="🦜 That's a number! Qualitative answers are usually <b>words</b>. (Unless it's a name, like a shirt number.) <button class='btn ghost' id='anyway'>Add anyway</button>";
+        el("anyway").onclick=function(){ add(true); }; return; }
+      var norm = own.t==="N" ? String(Number(v)) : v.charAt(0).toUpperCase()+v.slice(1).toLowerCase();
+      own.answers.push(norm); MQ.sound("click"); step3();
+    }
+    el("add").onclick=function(){ add(false); };
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter") add(false); });
+    el("fin").onclick=function(){ if(own.answers.length>=5){ MQ.sound("click"); step4(); } };
+  }
+  function step4(){
+    var T=TY(own.t), G=groups(), facts="";
+    if(own.t==="N"){
+      var nums=own.answers.map(Number), tot=nums.reduce(function(a,b){return a+b;},0), mx=Math.max.apply(null,nums), mn=Math.min.apply(null,nums);
+      facts='<div class="solbox">🤖 Because your data is <b>numbers</b>, you can do maths with it!<br>➕ Total: <b>'+(Math.round(tot*100)/100)+'</b> &nbsp; ⬆️ Biggest: <b>'+mx+'</b> &nbsp; ⬇️ Smallest: <b>'+mn+'</b> &nbsp; ↔️ Difference: <b>'+(Math.round((mx-mn)*100)/100)+'</b></div>';
+    } else {
+      var top=G.counts[0], winners=G.keys.filter(function(k,i){return G.counts[i]===top;});
+      facts='<div class="solbox">🦜 Because your data is <b>words</b>, we can\'t add it up — but we can <b>count each group</b>.<br>🏆 Most popular: <b>'+winners.join(" and ").replace(/</g,"&lt;")+'</b> ('+top+' '+(top===1?"person":"people")+') &nbsp; 🔢 Different answers: <b>'+G.keys.length+'</b></div>';
+    }
+    award("own");
+    screen.innerHTML='<div class="card center"><div class="mascot" style="font-size:70px;">🗣️</div><h1>Real research done!</h1>'+
+      '<div class="speech">You asked <b>'+own.answers.length+' real people</b> “'+own.q.replace(/</g,"&lt;")+'” and collected '+T.e+' <b>'+T.name.toUpperCase()+'</b> data. 🏅 Field Researcher badge!</div>'+
+      barChartHTML(G.keys.map(function(k){return k.replace(/</g,"&lt;");}), G.counts, T.col, "My survey results (number of people)")+facts+
+      '<p class="muted" id="saveState">💾 Saving…</p><div class="row" style="margin-top:8px;"><button class="btn green" id="again">🗣️ New survey</button><button class="btn blue" id="mn">🕵️ Missions</button></div></div>';
+    MQ.sound("win"); MQ.confetti(180);
+    el("again").onclick=function(){ MQ.sound("click"); runOwn(); }; el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+    savedNote(logIt("My Own Survey", 100, own.answers.length, own.answers.length, { question:own.q, type:own.t==="N"?"quantitative":"qualitative", answers:own.answers }));
+  }
+  step1();
+}
+
+/* =============================================================
+   7) MASTERY CHECK — 10 questions, one try each
+   ============================================================= */
+function runMastery(){
+  cleanup();
+  var col="#c98a5e", Q=[];
+  var sortItems=shuffle(pickN(BANK.filter(function(b){return b.t==="N";}),3).concat(pickN(BANK.filter(function(b){return b.t==="W";}),2)).concat(pickN(TRICKY,1)));
+  sortItems.forEach(function(it){ Q.push({k:"sort", it:it}); });
+  ["N","W"].forEach(function(maj){
+    var min=maj==="N"?"W":"N";
+    var cards=shuffle(pickN(BANK.filter(function(b){return b.t===maj;}),3).concat(pickN(BANK.filter(function(b){return b.t===min;}),1)));
+    var opts=cards.map(function(c){return c.e+" "+c.l+": "+c.v;});
+    var odd=cards.filter(function(c){return c.t===min;})[0];
+    Q.push({k:"mc", q:"Which is the <b>odd one out</b>?", options:opts, answer:cards.indexOf(odd), why:"“"+odd.v+"” is "+TY(min).name.toLowerCase()+" — the others are "+TY(maj).name.toLowerCase()+"."});
+  });
+  var t1=pickN(TOPICS,2);
+  [["N",t1[0]],["W",t1[1]]].forEach(function(x){
+    var R=factoryRound(x[1], x[0]);
+    Q.push({k:"mc", q:"Which question collects <b>"+TY(x[0]).name.toUpperCase()+"</b> "+TY(x[0]).e+" data about "+x[1].name+"?", options:R.options, answer:R.answer, why:"“"+R.correct+"” gets "+(x[0]==="N"?"number":"word")+" answers."});
+  });
+  var addOpts=shuffle(["Goals scored: 5, 3, 2","Favourite colours: red, blue, green"]);
+  Q.push({k:"mc", q:"Which data can you <b>add up</b> to find a total?", options:addOpts, answer:addOpts.indexOf("Goals scored: 5, 3, 2"), why:"Goals are numbers (quantitative), so 5 + 3 + 2 = 10. Colours are words — you can't add them."});
+  Q=shuffle(Q).slice(0,10);
+  var qi=0, score=0, wrongs=[];
+  function show(){
+    if(qi>=Q.length) return finish();
+    var q=Q[qi], right="Question "+(qi+1)+" / "+Q.length;
+    if(q.k==="sort"){
+      screen.innerHTML='<div class="card">'+head("🏆 Mastery Check",col,right)+'<div class="instr" style="margin-top:10px;">Quantitative 🤖 or Qualitative 🦜? <b>One try!</b></div>'+cardHTML(q.it)+binsHTML()+
+        '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+      Array.prototype.forEach.call(document.querySelectorAll("#bins .bin"),function(b){
+        b.onclick=function(){
+          var ok=b.getAttribute("data-t")===q.it.t; document.querySelectorAll("#bins .bin").forEach(function(x){x.disabled=true;});
+          mark(ok, whyOf(q.it), q.it.l+": "+q.it.v); el("dcard").className="dcard "+(ok?"good":"bad");
+        };
+      });
+    } else {
+      screen.innerHTML='<div class="card">'+head("🏆 Mastery Check",col,right)+'<div class="center" style="margin:12px 0 4px;font-size:21px;font-weight:800;">'+q.q+'</div>'+
+        '<div class="options" id="opts" style="grid-template-columns:1fr;">'+q.options.map(function(o,i){return '<button class="opt" data-i="'+i+'" style="font-size:18px;">'+o+'</button>';}).join("")+'</div>'+
+        '<div class="feedback" id="fb"></div><div class="center" id="ctl"></div></div>';
+      Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+        b.onclick=function(){
+          var i=Number(b.getAttribute("data-i")), ok=i===q.answer;
+          document.querySelectorAll("#opts .opt").forEach(function(x,j){ x.disabled=true; if(j===q.answer) x.classList.add("correct"); });
+          if(!ok) b.classList.add("wrong");
+          mark(ok, q.why, q.q.replace(/<[^>]+>/g,""));
+        };
+      });
+    }
+  }
+  function mark(ok, why, label){
+    if(ok){ score++; MQ.sound("correct"); MQ.confetti(40); } else { MQ.sound("wrong"); wrongs.push(label); }
+    el("fb").className="feedback "+(ok?"good":"bad");
+    el("fb").innerHTML=(ok?"🎉 Correct!":"❌ Not this time.")+'<div class="solbox">💡 '+why+'</div>';
+    el("ctl").innerHTML='<button class="btn big green" id="nx" style="margin-top:12px;">'+(qi+1>=Q.length?"See my result ▶":"Next ▶")+'</button>';
+    el("nx").onclick=function(){ MQ.sound("click"); qi++; show(); };
+  }
+  function finish(){
+    var acc=Math.round(score/Q.length*100); if(acc>=80) award("mastery");
+    var p=prog(); p.masteryBest=Math.max(p.masteryBest||0,acc); saveProg(p);
+    screen.innerHTML=finishCard(acc>=80?"🏆":"🕵️", acc>=80?"You're a Data Detective!":"Good investigating!",
+      (acc>=80?"🏅 Mastery badge earned, "+(student||"detective")+"! You can tell quantitative and qualitative data apart like a pro.":"Score 8 or more to earn the 🏆 Data Detective badge. Try Sort Rush and Odd One Out, then come back!"),
+      acc,score,Q.length,'<button class="btn big green" id="again">🔁 Try again</button><button class="btn blue" id="mn">🕵️ Missions</button>');
+    el("again").onclick=function(){ MQ.sound("click"); runMastery(); }; el("mn").onclick=function(){ MQ.sound("click"); menu(); };
+    savedNote(logIt("Mastery Check", acc, score, Q.length, { missed:wrongs }));
+  }
+  show();
+}
+
+boot();
+</script>
+</body>
+</html>
