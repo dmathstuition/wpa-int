@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>11+ Punctuation Test | Grammar Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✒️</text></svg>" />
+<style>
+  .cbt-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between;
+    background:linear-gradient(90deg,#3a2f8f,#9b5cff); color:#fff; padding:12px 16px; border-radius:18px; margin-bottom:14px; }
+  .cbt-bar .t { font-size:26px; font-weight:800; letter-spacing:1px; }
+  .cbt-bar .t.warn { animation: pulseWarn 1s infinite; }
+  @keyframes pulseWarn { 0%,100%{ color:#fff; } 50%{ color:#ffe08a; } }
+  .cbt-bar .meta { font-weight:800; font-size:15px; }
+  .card.still { animation:none; }
+  .secband { border-radius:14px; padding:10px 14px; background:#f1eefc; color:#4a4470; font-weight:800; margin-bottom:12px; }
+  .secband small { display:block; font-weight:700; color:#6a62a0; }
+  .qno { display:inline-block; background:var(--purple); color:#fff; font-weight:800; border-radius:999px; padding:3px 12px; font-size:14px; }
+  .qtext { font-size:21px; font-weight:800; color:var(--ink); line-height:1.5; margin:12px 0 6px; }
+  .qtext .sent { display:block; margin-top:8px; padding:12px 14px; background:#fffdf3; border:2px dashed #e9dca4; border-radius:14px; font-weight:700; }
+  .parts { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 6px; }
+  .part { flex:1 1 140px; border:3px solid var(--line); border-radius:14px; background:#fff; padding:10px 10px 6px; text-align:center; }
+  .part .pt { font-size:19px; font-weight:700; color:var(--ink); min-height:28px; white-space:pre-wrap; }
+  .part .pl { font-weight:800; color:#fff; background:#6a62a0; border-radius:999px; display:inline-block; width:28px; height:28px; line-height:28px; margin-top:6px; }
+  .part.chosen { border-color:#ffb020; background:#fff7d6; }
+  .letters { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:10px; }
+  .letters .opt { min-width:76px; flex:0 1 auto; }
+  .opt.picked { background:linear-gradient(160deg,#ffd93b,#ffb020) !important; color:#4a3500 !important; border-color:#e6a100 !important; }
+  .options.col1 { grid-template-columns:1fr; }
+  .options.col1 .opt { font-size:18px; text-align:left; padding:14px 16px; }
+  .palette { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:6px; margin:16px 0 6px; }
+  .pal { height:38px; border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--ink); font-weight:800; font-size:14px; cursor:pointer; position:relative; font-family:inherit; }
+  .pal.done { background:linear-gradient(160deg,#34e089,#12b866); color:#fff; border-color:#0f9d58; }
+  .pal.cur { outline:3px solid rgba(120,90,220,.55); outline-offset:2px; }
+  .pal.flag::after { content:"🚩"; position:absolute; top:-9px; right:-7px; font-size:13px; }
+  .pal.sep { grid-column:1 / -1; height:auto; border:0; background:none; cursor:default; text-align:left; font-size:12px; color:#6a62a0; padding:2px 0 0; }
+  .flagbtn.on { background:#ffdf6b; border-color:#e6b800; color:#5a4600; }
+  .rev { border:2px solid var(--line); border-radius:16px; padding:12px 14px; margin:10px 0; text-align:left; }
+  .rev.ok { border-color:#22bd6b; background:#effaf3; } .rev.no { border-color:var(--red); background:#fdeef0; } .rev.blank { border-color:#c9c3e6; background:#f6f4fd; }
+  .rev .rb { float:right; font-size:20px; }
+  .rev .rq { font-weight:800; margin-bottom:6px; }
+  .rev .ra { font-weight:800; font-size:15px; }
+  .solbox { margin-top:8px; background:#f4f1ff; border-radius:12px; padding:10px 12px; font-weight:700; color:#4a4470; }
+  .brk { display:flex; align-items:center; gap:10px; margin:8px 0; font-weight:800; }
+  .brk .bn { flex:0 0 190px; text-align:left; }
+  .brk .bar { flex:1; height:14px; background:#eee; border-radius:999px; overflow:hidden; }
+  .brk .bar i { display:block; height:100%; border-radius:999px; }
+  .brk .bs { flex:0 0 60px; text-align:right; }
+  .filt { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:6px 0 4px; }
+  .filt button.on { background:var(--purple); color:#fff; border-color:var(--purple); }
+  @media (max-width:520px){ .brk .bn{ flex-basis:120px; font-size:13px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="index.html" id="engLink" style="text-decoration:none;color:#fff;">📚 English</a>
+    <span class="chip">👤 <b id="whoName">Candidate</b></span>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+  <div class="brand" id="brand">
+    <span class="pyr">🔺</span>
+    <span class="nm">Whyte Pyramid Academy<small>11+ English</small></span>
+  </div>
+  <div id="screen"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* =============================================================
+   11+ PUNCTUATION TEST — 50 questions · 50 minutes
+   Question formats (GL-style 11+):
+     spot    : a sentence in four parts (A–D). Pick the part with the
+               punctuation mistake, or N if there is no mistake.
+     mc      : multiple choice. The CORRECT answer is always written
+               FIRST in `o`; options are shuffled per attempt.
+   tag = skill area used for the results breakdown.
+   ============================================================= */
+var TEST_MINUTES = 50;
+var SECTIONS = [
+  { id:"spot",      n:"Section A", title:"Spot the mistake",       desc:"Each sentence is split into four parts. Choose the part that contains a punctuation mistake. If there is no mistake, choose N." },
+  { id:"correct",   n:"Section B", title:"Which is correct?",       desc:"Choose the ONE sentence that is punctuated correctly." },
+  { id:"gap",       n:"Section C", title:"Fill the gap",            desc:"Choose the punctuation that correctly completes the sentence." },
+  { id:"purpose",   n:"Section D", title:"Purpose and meaning",     desc:"Think about WHY the punctuation is used and how it changes meaning." },
+  { id:"detective", n:"Section E", title:"Punctuation detective",   desc:"Count, identify and correct." }
+];
+var TAGS = ["Apostrophes","Commas","Direct speech","Capitals & end marks","Colons & semicolons","Parenthesis, dashes, hyphens & ellipsis"];
+var TAGCOL = { "Apostrophes":"#ff5b9a", "Commas":"#4b8bff", "Direct speech":"#9b5cff", "Capitals & end marks":"#2bd576", "Colons & semicolons":"#ff8a3d", "Parenthesis, dashes, hyphens & ellipsis":"#22c3d6" };
+
+var BANK = [
+  /* ---------------- SECTION A · Spot the mistake (16) ---------------- */
+  { sec:"spot", tag:"Apostrophes", p:["The childrens coats","were hung neatly","on the pegs by","the classroom door."], a:0,
+    why:"<b>childrens</b> should be <b>children's</b>. ‘Children’ is already plural, so the apostrophe goes before the s: children's coats." },
+  { sec:"spot", tag:"Capitals & end marks", p:["Priya walked","to school with","her brother on","monday morning."], a:3,
+    why:"Days of the week are proper nouns: <b>Monday</b> needs a capital letter." },
+  { sec:"spot", tag:"Direct speech", p:["“Where are you going”","asked Mum,","looking up from","her newspaper."], a:0,
+    why:"The spoken words are a question, so a question mark is needed <b>inside</b> the inverted commas: “Where are you going?” asked Mum." },
+  { sec:"spot", tag:"Commas", p:["It was pouring with rain,","so we decided","to stay indoors","and play chess."], a:4,
+    why:"No mistake. A comma before ‘so’ correctly joins two main clauses." },
+  { sec:"spot", tag:"Apostrophes", p:["As soon as","its owner arrived,","the dog wagged","it's tail happily."], a:3,
+    why:"<b>it's</b> means ‘it is’. For belonging, use <b>its</b> (no apostrophe): the dog wagged its tail. Part B (its owner) is correct." },
+  { sec:"spot", tag:"Commas", p:["Although the film","was long we","enjoyed every","minute of it."], a:1,
+    why:"When a sentence starts with a subordinate clause, put a comma after it: Although the film was long<b>,</b> we enjoyed every minute of it." },
+  { sec:"spot", tag:"Commas", p:["My aunt, who lives","in Scotland visits","us every summer","with her dogs."], a:1,
+    why:"Extra information (parenthesis) needs a comma at <b>both</b> ends: My aunt, who lives in Scotland<b>,</b> visits us…" },
+  { sec:"spot", tag:"Capitals & end marks", p:["The teacher asked","if we had finished","our homework?","Nobody answered."], a:2,
+    why:"This is a <b>reported (indirect) question</b>, so it ends with a full stop, not a question mark: …our homework<b>.</b>" },
+  { sec:"spot", tag:"Direct speech", p:["“It's time to go,”","said Grandad,","picking up his","car keys."], a:4,
+    why:"No mistake. The comma sits inside the inverted commas, and ‘It's’ (it is) is correct." },
+  { sec:"spot", tag:"Apostrophes", p:["The ladies' changing","room is closed","for cleaning until","three oclock."], a:3,
+    why:"<b>o'clock</b> is short for ‘of the clock’, so it needs an apostrophe. (‘ladies'’ is correct: the room belongs to many ladies.)" },
+  { sec:"spot", tag:"Colons & semicolons", p:["I couldn't believe","my eyes: there,","in the garden, was","a baby deer!"], a:4,
+    why:"No mistake. The colon introduces what explains the surprise, and the commas around ‘in the garden’ are correct." },
+  { sec:"spot", tag:"Commas", p:["The match was","cancelled, the pitch","was completely","flooded."], a:1,
+    why:"This is a <b>comma splice</b>: two main clauses joined only by a comma. Use a semicolon or full stop, or add ‘because’: The match was cancelled<b>;</b> the pitch was completely flooded." },
+  { sec:"spot", tag:"Direct speech", p:["“Hurry up”","said Dad,","“or we'll miss","the train!”"], a:0,
+    why:"Spoken words need a comma <b>inside</b> the inverted commas before the reporting clause: “Hurry up<b>,</b>” said Dad." },
+  { sec:"spot", tag:"Parenthesis, dashes, hyphens & ellipsis", p:["Yesterday, we met","the author of","my favourite well known","adventure series."], a:2,
+    why:"Two words acting together as one adjective before a noun take a <b>hyphen</b>: a <b>well-known</b> adventure series." },
+  { sec:"spot", tag:"Commas", p:["We visited Paris,","Rome and Madrid","during our","summer holidays."], a:4,
+    why:"No mistake. Commas separate the list items, and none is needed before the final ‘and’." },
+  { sec:"spot", tag:"Apostrophes", p:["I lent him mine","because my","brothers bike had","a flat tyre."], a:2,
+    why:"The bike belongs to my brother: <b>brother's</b> bike needs a possessive apostrophe." },
+
+  /* ---------------- SECTION B · Which is correct? (10) ---------------- */
+  { sec:"correct", tag:"Direct speech", q:"Which sentence is punctuated correctly?",
+    o:["“Stop that at once!” shouted the teacher.","“Stop that at once”! shouted the teacher.","“Stop that at once! shouted the teacher.”","Stop that at once! “shouted the teacher.”"],
+    why:"Only the spoken words go inside the inverted commas, and the exclamation mark goes <b>inside</b> them too." },
+  { sec:"correct", tag:"Apostrophes", q:"Which sentence is punctuated correctly?",
+    o:["The two girls' bikes were leaning against the wall.","The two girl's bikes were leaning against the wall.","The two girls bike's were leaning against the wall.","The two girls's bikes were leaning against the wall."],
+    why:"Two girls is a plural ending in s, so the apostrophe goes <b>after</b> the s: girls' bikes." },
+  { sec:"correct", tag:"Colons & semicolons", q:"Which sentence is punctuated correctly?",
+    o:["You will need three things: a pencil, a ruler and a rubber.","You will need: three things a pencil, a ruler and a rubber.","You will need three things; a pencil, a ruler and a rubber.","You will need three things, a pencil: a ruler and a rubber."],
+    why:"A <b>colon</b> introduces a list after a complete main clause (‘You will need three things’)." },
+  { sec:"correct", tag:"Colons & semicolons", q:"Which sentence is punctuated correctly?",
+    o:["The sun was setting; the birds had stopped singing.","The sun was setting; and the birds had stopped singing.","The sun was setting, the birds had stopped singing.","The sun; was setting the birds had stopped singing."],
+    why:"A <b>semicolon</b> joins two closely related main clauses with no conjunction. Don't use one together with ‘and’, and a comma alone would be a comma splice." },
+  { sec:"correct", tag:"Parenthesis, dashes, hyphens & ellipsis", q:"Which sentence is punctuated correctly?",
+    o:["Mount Everest (the highest mountain in the world) is in the Himalayas.","Mount Everest (the highest mountain in the world is in the Himalayas).","Mount Everest the highest (mountain in the world) is in the Himalayas.","(Mount Everest) the highest mountain in the world is in the Himalayas."],
+    why:"Brackets go around the <b>extra information</b> only. The sentence must still make sense if you remove it." },
+  { sec:"correct", tag:"Commas", q:"Which sentence is punctuated correctly?",
+    o:["After the storm had passed, the villagers began to clear the roads.","After the storm, had passed the villagers began to clear the roads.","After the storm had passed the villagers, began to clear the roads.","After, the storm had passed the villagers began to clear the roads."],
+    why:"The comma goes at the <b>end</b> of the opening (fronted) clause, just before the main clause begins." },
+  { sec:"correct", tag:"Capitals & end marks", q:"Which sentence is punctuated correctly?",
+    o:["She wondered whether the train would be late.","She wondered whether the train would be late?","She wondered, whether the train would be late?","“She wondered whether the train would be late?”"],
+    why:"‘She wondered whether…’ is a statement that <b>reports</b> a question, so it ends with a full stop." },
+  { sec:"correct", tag:"Apostrophes", q:"Which sentence is punctuated correctly?",
+    o:["It's a shame that the school has lost its trophy.","Its a shame that the school has lost it's trophy.","It's a shame that the school has lost it's trophy.","Its a shame that the school has lost its trophy."],
+    why:"<b>It's</b> = it is (a shame). <b>its</b> = belonging to it (its trophy)." },
+  { sec:"correct", tag:"Capitals & end marks", q:"Which sentence is punctuated correctly?",
+    o:["Last July, Amara and I flew to Lagos to visit our grandparents.","Last july, Amara and I flew to Lagos to visit our grandparents.","Last July, amara and I flew to lagos to visit our grandparents.","last July, Amara and i flew to Lagos to visit our grandparents."],
+    why:"Capitals are needed to start the sentence and for months, names, places and the word ‘I’." },
+  { sec:"correct", tag:"Direct speech", q:"Which sentence is punctuated correctly?",
+    o:["“I think,” whispered Sam, “that someone is following us.”","“I think” whispered Sam, “that someone is following us.”","“I think,” whispered Sam. “That someone is following us.”","“I think, whispered Sam, that someone is following us.”"],
+    why:"When speech is <b>interrupted</b> mid-sentence, use a comma before and after the reporting words, and carry on with a lower-case letter." },
+
+  /* ---------------- SECTION C · Fill the gap (8) ---------------- */
+  { sec:"gap", tag:"Colons & semicolons", q:"Which punctuation mark fills the gap?<span class='sent'>There was only one thing left to do ___ run!</span>",
+    o:[": (colon)","; (semicolon)",", (comma)","? (question mark)"],
+    why:"A <b>colon</b> introduces what comes next (here, the answer to ‘one thing left to do’)." },
+  { sec:"gap", tag:"Colons & semicolons", q:"Which punctuation mark fills the gap?<span class='sent'>I love reading ___ my sister prefers drawing.</span>",
+    o:["; (semicolon)",": (colon)",", (comma)","' (apostrophe)"],
+    why:"Two related main clauses that contrast are joined with a <b>semicolon</b>. A comma alone would be a comma splice." },
+  { sec:"gap", tag:"Parenthesis, dashes, hyphens & ellipsis", q:"Which punctuation best builds suspense at the end of this sentence?<span class='sent'>The door creaked open slowly, and then ___</span>",
+    o:["… (ellipsis)","; (semicolon)",": (colon)",", (comma)"],
+    why:"An <b>ellipsis</b> (…) shows the sentence trailing off, which leaves the reader in suspense." },
+  { sec:"gap", tag:"Direct speech", q:"What should fill the gap?<span class='sent'>“Where did you put my keys ___ asked Dad.</span>",
+    o:["?”","”?",",”",".”"],
+    why:"The spoken words are a question, so the <b>question mark goes inside</b> the closing inverted comma: “Where did you put my keys?” asked Dad." },
+  { sec:"gap", tag:"Apostrophes", q:"Which word needs an apostrophe?<span class='sent'>The dogs bowl was empty, so the twins filled it.</span>",
+    o:["dogs","twins","filled","was"],
+    why:"The bowl belongs to the dog: <b>dog's</b> bowl. ‘twins’ is simply plural, so it has no apostrophe." },
+  { sec:"gap", tag:"Parenthesis, dashes, hyphens & ellipsis", q:"Which pair of marks correctly fills both gaps?<span class='sent'>My best friend ___ who is very funny ___ made the whole class laugh.</span>",
+    o:["– … – (a pair of dashes)","; … ; (semicolons)",": … : (colons)","? … ? (question marks)"],
+    why:"A <b>pair of dashes</b> marks off extra information (parenthesis). A pair of brackets or commas would also work." },
+  { sec:"gap", tag:"Apostrophes", q:"Which is the correct contraction of <b>should not</b>?",
+    o:["shouldn't","should'nt","shouldnt'","shoul'dnt"],
+    why:"The apostrophe goes <b>exactly where the letter is missed out</b>: should n(o)t → shouldn't." },
+  { sec:"gap", tag:"Apostrophes", q:"Fill the gap: the toys belong to many children.<span class='sent'>The ___ toys were scattered across the floor.</span>",
+    o:["children's","childrens'","childrens","childs'"],
+    why:"‘Children’ is an irregular plural that doesn't end in s, so add <b>'s</b>: children's." },
+
+  /* ---------------- SECTION D · Purpose and meaning (10) ---------------- */
+  { sec:"purpose", tag:"Colons & semicolons", q:"Why is a semicolon used here?<span class='sent'>I wanted to go out; it was raining heavily.</span>",
+    o:["To join two closely related main clauses","To introduce a list","To show possession","To mark direct speech"],
+    why:"Each side could stand alone as a sentence. The semicolon links them because they are closely related." },
+  { sec:"purpose", tag:"Apostrophes", q:"What does the apostrophe show in <b>the girls' changing room</b>?",
+    o:["The room belongs to more than one girl","The room belongs to one girl","Some letters have been missed out","That ‘girls’ is plural only"],
+    why:"An apostrophe <b>after</b> the s shows plural possession: the changing room of the girls." },
+  { sec:"purpose", tag:"Parenthesis, dashes, hyphens & ellipsis", q:"What is the purpose of the brackets?<span class='sent'>The Nile (about 6,650 km long) is Africa's longest river.</span>",
+    o:["To add extra information","To show what someone said","To show the most important fact","To separate items in a list"],
+    why:"Brackets hold <b>parenthesis</b>: extra information that the sentence still makes sense without." },
+  { sec:"purpose", tag:"Colons & semicolons", q:"Why is a colon used here?<span class='sent'>Pack the following: a torch, a map and a whistle.</span>",
+    o:["To introduce a list","To join two questions","To show a contraction","To end the sentence"],
+    why:"A colon after a complete clause can <b>introduce a list</b>." },
+  { sec:"purpose", tag:"Commas", q:"Why is there a comma in this sentence?<span class='sent'>Yes, I'd love to come to your party.</span>",
+    o:["To separate an introductory word from the rest of the sentence","To separate items in a list","To introduce direct speech","To show possession"],
+    why:"Words like <b>Yes, No, Well, However</b> at the start are followed by a comma." },
+  { sec:"purpose", tag:"Parenthesis, dashes, hyphens & ellipsis", q:"Which phrase describes a shark that <b>eats people</b>?",
+    o:["a man-eating shark","a man eating shark","a man, eating shark","a man's eating shark"],
+    why:"The <b>hyphen</b> joins ‘man-eating’ into one adjective. Without it, it reads as a man who is eating shark!" },
+  { sec:"purpose", tag:"Apostrophes", q:"What does the apostrophe in <b>won't</b> show?",
+    o:["That letters have been missed out (a contraction)","That something belongs to someone","That the word is plural","That the word is spoken"],
+    why:"won't = will not. The apostrophe marks the <b>missing letters</b>." },
+  { sec:"purpose", tag:"Parenthesis, dashes, hyphens & ellipsis", q:"What does the ellipsis show?<span class='sent'>I opened the box and inside was…</span>",
+    o:["The sentence trails off to build suspense","The start of a list","That this is a question","That someone is speaking"],
+    why:"An ellipsis can show words left out or a sentence <b>trailing off</b>, which creates suspense." },
+  { sec:"purpose", tag:"Capitals & end marks", q:"Which sentence should end with an <b>exclamation mark</b>?",
+    o:["What a fantastic goal that was","What time does the match start","The match starts at three","I wonder who will win"],
+    why:"Exclamative sentences starting with <b>What</b> or <b>How</b> (What a…! How…!) end with an exclamation mark. ‘What time…’ is a question." },
+  { sec:"purpose", tag:"Commas", q:"Which sentence is telling <b>Grandma</b> that it's time to eat?",
+    o:["Let's eat, Grandma!","Let's eat Grandma!","Lets eat Grandma!","Let's, eat Grandma!"],
+    why:"The comma before <b>Grandma</b> shows we are speaking to her. Without it, Grandma is on the menu! Commas save lives." },
+
+  /* ---------------- SECTION E · Punctuation detective (6) ---------------- */
+  { sec:"detective", tag:"Apostrophes", q:"How many apostrophes are missing?<span class='sent'>Im sure its Sams turn, but hes not here.</span>",
+    o:["4","3","2","5"],
+    why:"I'm, it's (it is), Sam's (belonging to Sam), he's = <b>4</b>." },
+  { sec:"detective", tag:"Commas", q:"How many commas are needed?<span class='sent'>On Saturday morning my cousin who is a nurse came to visit.</span>",
+    o:["3","1","2","4"],
+    why:"One after the fronted adverbial (On Saturday morning<b>,</b>) and two around the extra information (<b>,</b> who is a nurse<b>,</b>) = <b>3</b>." },
+  { sec:"detective", tag:"Capitals & end marks", q:"Which words should start with a capital letter?<span class='sent'>last tuesday we went to the science museum in london.</span>",
+    o:["last, tuesday, science, museum, london","last, tuesday, london","tuesday, london","last, science, london"],
+    why:"‘Last’ starts the sentence. Tuesday (a day), the Science Museum (the name of a place) and London are proper nouns." },
+  { sec:"detective", tag:"Apostrophes", q:"Which sentence uses an apostrophe <b>incorrectly</b>?",
+    o:["Fresh apple's for sale!","The cat's whiskers twitched.","We're nearly there.","The men's team won the final."],
+    why:"‘apples’ is just a plural, so it doesn't need an apostrophe. This mistake is called the ‘greengrocer's apostrophe’." },
+  { sec:"detective", tag:"Direct speech", q:"When writing a conversation, what should you do each time a <b>new person speaks</b>?",
+    o:["Start a new line (a new paragraph)","Use a semicolon","Put their words in brackets","Use capital letters for every word"],
+    why:"A <b>new speaker means a new line</b>. It helps the reader follow who is talking." },
+  { sec:"detective", tag:"Direct speech", q:"Which is <b>reported speech</b>, punctuated correctly?",
+    o:["Mia said that she was hungry.","Mia said, “that she was hungry.”","Mia said that “she was hungry.”","Mia said that she was hungry?"],
+    why:"Reported (indirect) speech tells us what someone said <b>without their exact words</b>, so there are no inverted commas." }
+];
+
+/* ---------- helpers ---------- */
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function stripTags(s){ return String(s).replace(/<span class='sent'>/g," — ").replace(/<[^>]+>/g,""); }
+function mulberry(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffleR(a,r){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(r()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+var LETTERS=["A","B","C","D","N"];
+var screen=el("screen");
+
+/* Build the paper from a seed: questions shuffled within each section,
+   multiple-choice options shuffled. The same seed rebuilds the same paper (for resuming). */
+function buildPaper(seed){
+  var r=mulberry(seed), paper=[];
+  SECTIONS.forEach(function(S){
+    shuffleR(BANK.filter(function(q){return q.sec===S.id;}),r).forEach(function(q){
+      var item={ src:q, sec:S.id, tag:q.tag, why:q.why };
+      if(q.sec==="spot"){ item.kind="spot"; item.parts=q.p; item.options=LETTERS.slice(); item.answer=q.a; }
+      else { item.kind="mc"; item.q=q.q; item.options=shuffleR(q.o,r); item.answer=item.options.indexOf(q.o[0]); }
+      paper.push(item);
+    });
+  });
+  return paper;
+}
+
+/* ---------- brand / sound / learner ---------- */
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=nm+"<small>11+ English</small>";
+  document.title="11+ Punctuation Test | "+nm; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+var student=MQ.getStudent()||"";
+function attemptKey(){ return "pt11_attempt_"+(student||"").toLowerCase(); }
+function bestKey(){ return "pt11_best_"+(student||"").toLowerCase(); }
+
+/* =============================================================
+   START
+   ============================================================= */
+function boot(){
+  if(!student){
+    screen.innerHTML='<div class="card center" style="max-width:540px;"><div class="mascot">✒️</div>'+
+      '<div class="speech">Welcome to the 11+ Punctuation Test. Please enter your name.</div>'+
+      '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Continue ▶</button></div></div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v) return; student=v; MQ.setStudent(v); el("whoName").textContent=v; intro(); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+  } else { el("whoName").textContent=student; intro(); }
+}
+
+function intro(){
+  var saved=MQ.readLocal(attemptKey()), best=MQ.readLocal(bestKey());
+  var resume = saved && !saved.done;
+  var secList=SECTIONS.map(function(S){ var n=BANK.filter(function(q){return q.sec===S.id;}).length;
+    return '<li><b>'+S.n+' · '+S.title+'</b> ('+n+' questions) — '+S.desc+'</li>'; }).join("");
+  screen.innerHTML=
+    '<h1 class="title-pop">✒️ 11+ PUNCTUATION TEST</h1>'+
+    '<p class="subtitle">50 questions · 50 minutes · computer-based test</p>'+
+    '<div class="card" style="margin-top:18px;border-top:10px solid #9b5cff;">'+
+      '<h2 style="margin-top:0;">📋 Instructions</h2>'+
+      '<ul style="font-weight:700;color:#4a4470;line-height:1.55;">'+
+        '<li>You have <b>50 minutes</b> to answer <b>50 questions</b>, about <b>1 minute per question</b>.</li>'+
+        '<li>Move with <b>Next</b> / <b>Back</b>, or tap a number to jump. Use <b>🚩 Flag</b> to come back to a question later.</li>'+
+        '<li>There is <b>no feedback during the test</b>. You can change any answer until you submit.</li>'+
+        '<li>The test <b>submits automatically</b> when the time runs out. Unanswered questions score zero, so <b>answer every question</b>.</li>'+
+        '<li>Your answers are saved as you go. If the page closes, you can resume (the clock keeps running).</li>'+
+      '</ul>'+
+      '<h3>The five sections</h3><ol style="font-weight:700;color:#4a4470;line-height:1.55;padding-left:20px;list-style:none;">'+secList+'</ol>'+
+      (best?'<p style="font-weight:800;color:#5b5390;">🏅 Your best so far: '+best.score+' / 50 ('+best.pct+'%)</p>':'')+
+      '<div class="row" style="margin-top:12px;">'+
+        (resume?'<button class="btn big green" id="resume">▶ Resume your test</button><button class="btn ghost" id="fresh">↺ Start a new test</button>'
+               :'<button class="btn big green" id="fresh">▶ Start the 50-minute test</button>')+
+      '</div>'+
+    '</div>';
+  if(resume) el("resume").onclick=function(){ MQ.sound("level"); runTest(saved); };
+  el("fresh").onclick=function(){
+    if(resume && !confirm("Start a new test? Your unfinished attempt will be lost.")) return;
+    MQ.sound("level");
+    var att={ seed:Math.floor(Math.random()*1e9)+1, start:Date.now(), endAt:Date.now()+TEST_MINUTES*60000, ans:{}, flag:{}, cur:0, done:false };
+    MQ.saveLocal(attemptKey(), att); runTest(att);
+  };
+}
+
+/* =============================================================
+   TEST RUNNER
+   ============================================================= */
+var timer=null, keyH=null;
+function runTest(att){
+  var P=buildPaper(att.seed), N=P.length, finished=false, firstPaint=true;
+  function save(){ MQ.saveLocal(attemptKey(), att); }
+  function answered(i){ return att.ans[i]!=null; }
+  function nAnswered(){ var c=0; for(var i=0;i<N;i++) if(answered(i)) c++; return c; }
+  function secOf(i){ for(var s=0;s<SECTIONS.length;s++) if(SECTIONS[s].id===P[i].sec) return SECTIONS[s]; }
+  var warned10=false, warned5=false;
+
+  function paintTimer(){
+    var left=Math.max(0,Math.round((att.endAt-Date.now())/1000)), m=Math.floor(left/60), s=left%60, t=el("tm");
+    if(t){ t.textContent="⏱ "+m+":"+String(s).padStart(2,"0"); t.classList.toggle("warn", left<=300); }
+    if(left<=600 && left>0 && !warned10){ warned10=true; toast("⏰ 10 minutes left"); }
+    if(left<=300 && left>0 && !warned5){ warned5=true; toast("⏰ 5 minutes left — answer any blank questions!"); }
+    return left;
+  }
+
+  function render(){
+    var i=att.cur, q=P[i], S=secOf(i), body="";
+    var nextLabel = i+1>=N ? '<button class="btn big green" id="sub">✅ Submit test</button>' : '<button class="btn big blue" id="nx">Next →</button>';
+    if(q.kind==="spot"){
+      body='<div class="qtext">Which part of the sentence contains a punctuation mistake? If there is no mistake, choose <b>N</b>.</div>'+
+        '<div class="parts">'+q.parts.map(function(t,k){ return '<div class="part'+(att.ans[i]===k?" chosen":"")+'"><div class="pt">'+esc(t)+'</div><span class="pl">'+LETTERS[k]+'</span></div>'; }).join("")+'</div>'+
+        '<div class="letters" id="opts">'+q.options.map(function(o,k){ return '<button class="opt'+(att.ans[i]===k?" picked":"")+'" data-k="'+k+'">'+(k===4?"N — no mistake":o)+'</button>'; }).join("")+'</div>';
+    } else {
+      body='<div class="qtext">'+q.q+'</div><div class="options col1" id="opts">'+q.options.map(function(o,k){
+        return '<button class="opt'+(att.ans[i]===k?" picked":"")+'" data-k="'+k+'"><b>'+"ABCD"[k]+'.</b> '+esc(o)+'</button>'; }).join("")+'</div>';
+    }
+    var pal="", lastSec=null;
+    for(var p=0;p<N;p++){
+      if(P[p].sec!==lastSec){ lastSec=P[p].sec; var SS=secOf(p); pal+='<span class="pal sep">'+SS.n+' · '+SS.title+'</span>'; }
+      pal+='<button class="pal'+(answered(p)?" done":"")+(p===i?" cur":"")+(att.flag[p]?" flag":"")+'" data-p="'+p+'">'+(p+1)+'</button>';
+    }
+    screen.innerHTML=
+      '<div class="cbt-bar"><span class="t" id="tm">⏱</span><span class="meta">Question '+(i+1)+' of '+N+'</span><span class="meta" id="cnt">Answered '+nAnswered()+' / '+N+'</span></div>'+
+      '<div class="card'+(firstPaint?"":" still")+'">'+
+        '<div class="secband">'+S.n+' · '+S.title+'<small>'+S.desc+'</small></div>'+
+        '<div class="row" style="justify-content:space-between;"><span class="qno">Q'+(i+1)+'</span>'+
+          '<button class="btn ghost flagbtn'+(att.flag[i]?" on":"")+'" id="fl">'+(att.flag[i]?"🚩 Flagged":"🚩 Flag for review")+'</button></div>'+
+        body+
+        '<div class="row" style="margin-top:16px;justify-content:space-between;">'+
+          '<button class="btn ghost" id="bk"'+(i===0?" disabled":"")+'>← Back</button>'+nextLabel+'</div>'+
+        '<div class="palette">'+pal+'</div>'+
+        '<div class="center"><button class="btn ghost" id="fin">🏁 Finish &amp; submit now</button></div>'+
+      '</div>';
+    firstPaint=false;
+    paintTimer();
+    Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+      b.onclick=function(){ att.ans[i]=Number(b.getAttribute("data-k")); save(); MQ.sound("click"); render(); };
+    });
+    el("fl").onclick=function(){ att.flag[i]=!att.flag[i]; if(!att.flag[i]) delete att.flag[i]; save(); MQ.sound("click"); render(); };
+    var bk=el("bk"); if(bk) bk.onclick=function(){ go(i-1); };
+    var nx=el("nx"); if(nx) nx.onclick=function(){ go(i+1); };
+    var sb=el("sub"); if(sb) sb.onclick=confirmSubmit;
+    el("fin").onclick=confirmSubmit;
+    Array.prototype.forEach.call(document.querySelectorAll(".pal[data-p]"),function(b){ b.onclick=function(){ go(Number(b.getAttribute("data-p"))); }; });
+  }
+  function go(p){ if(p<0||p>=N) return; att.cur=p; save(); MQ.sound("click"); render(); window.scrollTo({top:0,behavior:"smooth"}); }
+  function confirmSubmit(){
+    var blank=N-nAnswered(), fl=Object.keys(att.flag).length, extra=[];
+    if(blank) extra.push(blank+" unanswered"); if(fl) extra.push(fl+" flagged");
+    if(confirm("Submit your test now?"+(extra.length?"\n\nYou still have "+extra.join(" and ")+" question"+(blank+fl===1?"":"s")+".":""))) submit(false);
+  }
+  function submit(timedOut){
+    if(finished) return; finished=true;
+    clearInterval(timer); timer=null;
+    if(keyH){ document.removeEventListener("keydown",keyH); keyH=null; }
+    att.done=true; save();
+    showResults(P, att, timedOut);
+  }
+
+  keyH=function(e){ if(e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if(e.key==="ArrowRight"){ go(att.cur+1); } else if(e.key==="ArrowLeft"){ go(att.cur-1); } };
+  document.addEventListener("keydown",keyH);
+  if(timer) clearInterval(timer);
+  if(paintTimer()<=0){ submit(true); return; }      // resumed after time ran out
+  render();
+  timer=setInterval(function(){ if(paintTimer()<=0) submit(true); },1000);
+}
+
+function toast(msg){
+  var t=document.createElement("div"); t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1e1450;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:16px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);max-width:92vw;text-align:center;";
+  document.body.appendChild(t); setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },2600);
+}
+
+/* =============================================================
+   RESULTS — score, band, skill breakdown, full review
+   ============================================================= */
+function showResults(P, att, timedOut){
+  var N=P.length, score=0, byTag={}, rows=[];
+  TAGS.forEach(function(t){ byTag[t]={c:0,n:0}; });
+  P.forEach(function(q,i){
+    var given=att.ans[i], ok=(given===q.answer);
+    if(ok) score++;
+    byTag[q.tag].n++; if(ok) byTag[q.tag].c++;
+    rows.push({ i:i, q:q, given:given, ok:ok });
+  });
+  var pct=Math.round(score/N*100), rt=MQ.rating(pct);
+  var mins=Math.min(TEST_MINUTES, Math.max(1, Math.round((Math.min(Date.now(),att.endAt)-att.start)/60000)));
+  var band = pct>=85 ? {t:"Excellent — 11+ standard 🌟", c:"#12a55a"} : pct>=70 ? {t:"Good — nearly there 👍", c:"#4b8bff"} : pct>=50 ? {t:"Developing — keep practising 📚", c:"#ff8a3d"} : {t:"Needs more practice 💪", c:"#e23a4b"};
+  var best=MQ.readLocal(bestKey()); var isBest=!best || score>best.score;
+  if(isBest) MQ.saveLocal(bestKey(), { score:score, pct:pct, at:Date.now() });
+  MQ.sound("win"); MQ.confetti(pct>=70?220:90);
+
+  var weakest=TAGS.filter(function(t){return byTag[t].n;}).sort(function(a,b){ return byTag[a].c/byTag[a].n - byTag[b].c/byTag[b].n; })[0];
+  var brk=TAGS.map(function(t){ var b=byTag[t], p=b.n?Math.round(b.c/b.n*100):0;
+    return '<div class="brk"><span class="bn">'+t+'</span><span class="bar"><i style="width:'+p+'%;background:'+TAGCOL[t]+'"></i></span><span class="bs">'+b.c+'/'+b.n+'</span></div>'; }).join("");
+
+  function answerText(q,k){ if(k==null) return "— (blank)"; return q.kind==="spot" ? (k===4?"N — no mistake":LETTERS[k]+": “"+q.parts[k]+"”") : "ABCD"[k]+". "+q.options[k]; }
+  function questionText(q){ return q.kind==="spot" ? q.parts.map(function(t,k){return "["+LETTERS[k]+"] "+t;}).join("  ") : stripTags(q.q); }
+  function reviewHTML(filter){
+    return rows.filter(function(r){ return filter==="all" || (filter==="wrong" && !r.ok) || (filter==="right" && r.ok); }).map(function(r){
+      var cls = r.ok?"ok":(r.given==null?"blank":"no");
+      return '<div class="rev '+cls+'"><span class="rb">'+(r.ok?"✅":(r.given==null?"⬜":"❌"))+'</span>'+
+        '<div class="rq">Q'+(r.i+1)+' · <span style="color:'+TAGCOL[r.q.tag]+'">'+r.q.tag+'</span><br>'+esc(questionText(r.q))+'</div>'+
+        '<div class="ra">Your answer: '+esc(answerText(r.q,r.given))+'</div>'+
+        (r.ok?'':'<div class="ra" style="color:#0a8a3f;">Correct answer: '+esc(answerText(r.q,r.q.answer))+'</div>')+
+        '<div class="solbox">💡 '+r.q.why+'</div></div>';
+    }).join("") || '<p class="muted center" style="font-weight:700;">Nothing to show here — well done! 🎉</p>';
+  }
+
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot" style="font-size:72px;">'+rt.emoji+'</div>'+
+      '<h1>'+(timedOut?"⏰ Time's up — test submitted":"Test submitted!")+'</h1>'+
+      '<div class="row" style="margin:16px 0;gap:22px;">'+
+        '<div><div class="big-num" style="font-size:54px;">'+score+'/'+N+'</div><div class="muted">Score</div></div>'+
+        '<div><div class="big-num" style="font-size:54px;">'+pct+'%</div><div class="muted">Percentage</div></div>'+
+        '<div><div class="big-num" style="font-size:54px;">'+mins+'</div><div class="muted">Minutes used</div></div>'+
+      '</div>'+
+      '<p style="font-size:22px;font-weight:800;color:'+band.c+';margin:4px 0;">'+band.t+'</p>'+
+      '<p style="font-size:28px;margin:6px 0;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p>'+
+      (isBest?'<p style="font-weight:800;color:#5b5390;">🏅 New personal best!</p>':'<p style="font-weight:800;color:#5b5390;">Personal best: '+best.score+' / 50</p>')+
+      '<p class="muted" id="saveState">💾 Saving your result…</p>'+
+      '<div class="row"><button class="btn green" id="again">🔁 New attempt</button><a class="btn blue" href="index.html" style="text-decoration:none;">📚 English hub</a></div>'+
+    '</div>'+
+    '<div class="card"><h2>📊 Skills breakdown</h2>'+brk+
+      (weakest && byTag[weakest].c<byTag[weakest].n ? '<p class="solbox">🎯 Focus next on <b>'+weakest+'</b>. Read the explanations below for the questions you missed.</p>' : '<p class="solbox">🏆 Full marks in every area. Outstanding!</p>')+
+    '</div>'+
+    '<div class="card"><h2>📋 Question-by-question review</h2>'+
+      '<div class="filt"><button class="btn ghost on" data-f="wrong">❌ Mistakes &amp; blanks ('+(N-score)+')</button><button class="btn ghost" data-f="all">All 50</button><button class="btn ghost" data-f="right">✅ Correct ('+score+')</button></div>'+
+      '<div id="revList">'+reviewHTML("wrong")+'</div></div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".filt button"),function(b){
+    b.onclick=function(){ document.querySelectorAll(".filt button").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); el("revList").innerHTML=reviewHTML(b.getAttribute("data-f")); };
+  });
+  el("again").onclick=function(){ MQ.saveLocal(attemptKey(), null); intro(); };
+
+  var tagScores={}; TAGS.forEach(function(t){ tagScores[t]=byTag[t].c+"/"+byTag[t].n; });
+  MQ.logResult({
+    student:student||"Unknown", subject:"English", week:"", weekTitle:"11+ Punctuation Test (50 Q · 50 min)",
+    accuracy:pct, correct:score, totalQuestions:N, stars:rt.stars, rating:band.t.replace(/[^\w\s+—-]/g,"").trim(),
+    minutes:mins, timedOut:!!timedOut,
+    stages:{ skills:tagScores, missed:rows.filter(function(r){return !r.ok;}).map(function(r){return r.i+1;}) },
+    school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+    tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||""
+  }).then(function(res){
+    var s=el("saveState"); if(!s) return;
+    s.textContent = res&&res.ok ? "✅ Result saved — your tutor can see your report." : res&&res.offline ? "📴 Saved on this device." : "⚠️ Couldn't reach the server, but your result is saved on this device.";
+  });
+}
+
+boot();
+</script>
+</body>
+</html>

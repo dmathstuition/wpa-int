@@ -28,6 +28,21 @@ per area, so a learner (or you) can pick where to go:
 Send the learner the **site root** as the starting link. Every hub has a 🏠 Home
 chip back to it.
 
+## ✒️ 11+ Punctuation Test (`english/punctuation-test.html`)
+
+A 50-question, 50-minute computer-based test, linked from the English hub. It
+covers apostrophes, commas, direct and reported speech, capitals and end marks,
+colons and semicolons, and parenthesis, dashes, hyphens and ellipsis. There are
+five sections in GL-style formats: **A** spot the mistake (A–D or N), **B**
+which sentence is correct, **C** fill the gap, **D** purpose and meaning,
+**E** punctuation detective.
+
+- Question grid with flags, Back/Next, confirm on submit, warnings at 10 and 5 minutes, and auto-submit at 0
+- Answers save as the learner goes; an unfinished test can be **resumed** after a reload (the clock keeps running)
+- Questions are shuffled within each section and options are shuffled on every attempt
+- The report shows the score and grade band, a skills breakdown with a suggested focus, and a review of every question with explanations
+- Logs to the **English** tab, including per-skill scores and the numbers of the questions missed
+
 ## 🕵️ Data Detectives (Year 4 — quantitative vs qualitative data)
 
 `data.html` teaches the difference between the two kinds of data through two
