@@ -43,6 +43,26 @@ which sentence is correct, **C** fill the gap, **D** purpose and meaning,
 - The report shows the score and grade band, a skills breakdown with a suggested focus, and a review of every question with explanations
 - Logs to the **English** tab, including per-skill scores and the numbers of the questions missed
 
+## ⏪ The Undo Button (`inverse.html`): inverse of + and −, Year 3
+
+An animated lesson and practice game, linked from the Maths hub. **Every number
+is a 3-digit number (100–999).** The big idea: **+ plays forward ▶, − rewinds ⏪.**
+The main example, 243 + 125 = 368, runs through all nine steps:
+
+1. Everyday "undos" (open/close, shoes on/off…)
+2. Number line: Freddie the frog hops +100, +20, +5, then rewinds back
+3. Base-10 blocks: the orange 125 flies in, then flies out again
+4. The Undo Machine (try 🎲 New numbers)
+5. Bar model and the four facts in the fact family
+6. Fact family triangle: tap a number to hide it (top hidden → add, bottom hidden → subtract)
+7. Checking answers with the inverse (one right, one wrong)
+8. Missing-number boxes
+9. A summary poster
+
+Tutor notes are built into every step and into the menu. **Practice**: 10
+questions; Level 1 = no exchanging, Level 2 = with exchanging. Scores log to the
+**Maths** tab.
+
 ## 🕵️ Data Detectives (Year 4 — quantitative vs qualitative data)
 
 `data.html` teaches the difference between the two kinds of data through two

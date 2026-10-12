@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Undo Button — Inverse of + and −</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏪</text></svg>" />
+<style>
+  :root { --add:#16b364; --sub:#ff6a3d; --whole:#8b5cf6; --p1:#3b82f6; --p2:#f59e0b; }
+  .card.still { animation:none; }
+  .add { color:var(--add); } .sub { color:var(--sub); }
+  .nw { color:var(--whole); } .n1 { color:var(--p1); } .n2 { color:var(--p2); }
+  .big-eq { font-size:clamp(24px,6vw,34px); font-weight:800; text-align:center; color:var(--ink); margin:10px 0; min-height:46px; }
+  .big-eq span { display:inline-block; animation:popIn .35s both; }
+
+  /* lesson shell */
+  .lhead { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .dots { display:flex; gap:6px; flex-wrap:wrap; }
+  .dots i { width:12px; height:12px; border-radius:50%; background:#e3def7; display:inline-block; cursor:pointer; }
+  .dots i.on { background:var(--purple); } .dots i.done { background:#22bd6b; }
+  .robot { display:flex; gap:12px; align-items:flex-start; margin-top:12px; }
+  .robot .rb { font-size:48px; line-height:1; flex:0 0 auto; animation:bob 2.4s ease-in-out infinite; }
+  .robot .speech { text-align:left; margin:0; flex:1; font-size:18px; }
+  .tutor { margin-top:14px; background:#fff8e1; border:2px dashed #f2c94c; border-radius:14px; padding:10px 14px; font-weight:700; color:#6b4d00; font-size:15px; }
+  .stage { margin-top:14px; background:linear-gradient(180deg,#fdfbff,#f3efff); border-radius:18px; padding:14px; }
+  .ctrls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:12px; }
+  .btn.addb { background:linear-gradient(160deg,#34e089,#12b866); color:#fff; }
+  .btn.subb { background:linear-gradient(160deg,#ff9a6b,#ff5b3b); color:#fff; }
+  .btn:disabled { opacity:.45; cursor:default; }
+
+  /* hero loop */
+  .hero svg { width:100%; max-width:520px; display:block; margin:0 auto; }
+  .hero .spinA { animation:dash 3s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset:-60; } }
+
+  /* undo pairs */
+  .pairs { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+  .pair { background:#fff; border:3px solid var(--line); border-radius:18px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:6px; opacity:0; transform:translateY(16px); transition:all .5s; }
+  .pair.show { opacity:1; transform:none; }
+  .pair .pe { font-size:34px; text-align:center; width:84px; }
+  .pair .pe small { display:block; font-size:12px; font-weight:800; color:#6a62a0; }
+  .pair .arrows { font-size:13px; font-weight:800; text-align:center; color:#6a62a0; }
+  .pair .arrows b { display:block; font-size:22px; }
+
+  /* number line */
+  svg.nl { width:100%; display:block; }
+  svg.nl .ax { stroke:#2d2559; stroke-width:3; }
+  svg.nl .tk { stroke:#2d2559; stroke-width:1.5; }
+  svg.nl .tl { font:800 13px 'Baloo 2',system-ui,sans-serif; fill:#5b5390; text-anchor:middle; }
+  svg.nl .arcF { fill:none; stroke:var(--add); stroke-width:3; stroke-dasharray:6 5; }
+  svg.nl .arcB { fill:none; stroke:var(--sub); stroke-width:3; stroke-dasharray:6 5; }
+  svg.nl .al { font:800 15px 'Baloo 2',system-ui,sans-serif; text-anchor:middle; }
+
+  /* base-10 blocks */
+  .mat { display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:10px; }
+  .pcol { background:#fff; border:3px solid var(--line); border-radius:16px; padding:8px; min-height:190px; display:flex; flex-direction:column; }
+  .pcol h4 { margin:0 0 6px; text-align:center; font-size:15px; color:#4a4470; }
+  .blocks { flex:1; display:flex; flex-wrap:wrap; gap:5px; align-content:flex-start; justify-content:center; }
+  .pdig { text-align:center; font-size:30px; font-weight:800; color:var(--ink); border-top:2px dashed var(--line); margin-top:6px; padding-top:2px; }
+  .blk { transition:transform .65s cubic-bezier(.2,1.3,.4,1), opacity .5s; }
+  .blk.incoming { transform:translateY(-140px) scale(.5); opacity:0; }
+  .blk.outgoing { transform:translateY(-140px) rotate(-25deg) scale(.6); opacity:0; }
+  .flat { width:50px; height:50px; border:2px solid #2e6fd8; border-radius:4px;
+    background-color:#8cc0ff; background-image:linear-gradient(#2e6fd8 1px,transparent 1px),linear-gradient(90deg,#2e6fd8 1px,transparent 1px); background-size:4.8px 4.8px; }
+  .rod { width:10px; height:50px; border:2px solid #2e6fd8; border-radius:3px; background-color:#8cc0ff; background-image:linear-gradient(#2e6fd8 1px,transparent 1px); background-size:100% 4.8px; }
+  .cube { width:12px; height:12px; border:2px solid #2e6fd8; border-radius:3px; background:#8cc0ff; }
+  .blk.added.flat, .blk.added.rod { border-color:#d97706; background-color:#ffcf6b; background-image:linear-gradient(#d97706 1px,transparent 1px),linear-gradient(90deg,#d97706 1px,transparent 1px); }
+  .blk.added.rod { background-image:linear-gradient(#d97706 1px,transparent 1px); }
+  .blk.added.cube { border-color:#d97706; background:#ffcf6b; }
+  .key { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; font-weight:800; font-size:14px; color:#4a4470; margin-top:8px; }
+  .key span i { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:4px; }
+
+  /* undo machine */
+  .mstage { position:relative; height:190px; margin:10px 0; }
+  .mrail { position:absolute; left:2%; right:2%; top:118px; height:8px; border-radius:8px; background:repeating-linear-gradient(90deg,#c9c1ec 0 18px,#e3def7 18px 30px); }
+  .machine { position:absolute; left:50%; top:30px; width:150px; height:120px; margin-left:-75px; z-index:3; border-radius:22px;
+    background:linear-gradient(160deg,#5f6bff,#3a2f8f); box-shadow:0 14px 30px rgba(40,20,120,.35); color:#fff; text-align:center; transition:background .4s; }
+  .machine.rev { background:linear-gradient(160deg,#ff8a5c,#d9431f); }
+  .machine .mlab { font-size:30px; font-weight:800; margin-top:10px; letter-spacing:1px; }
+  .machine .gears { font-size:26px; display:flex; justify-content:center; gap:6px; }
+  .machine .gears span { display:inline-block; }
+  .machine.work { animation:shake .5s; }
+  .machine.work .gears span { animation:spin .8s linear infinite; }
+  .machine .eyes { position:absolute; top:-18px; left:50%; margin-left:-30px; width:60px; height:26px; background:#fff; border-radius:14px 14px 4px 4px; border:3px solid #3a2f8f; font-size:14px; line-height:20px; }
+  .mball { position:absolute; top:84px; width:78px; height:48px; margin-left:-39px; border-radius:24px; background:#fff; border:4px solid var(--p1);
+    font-size:24px; font-weight:800; color:var(--ink); display:flex; align-items:center; justify-content:center; z-index:2; transition:left .9s ease-in-out, opacity .25s; box-shadow:0 6px 12px rgba(0,0,0,.12); }
+  .mtag { position:absolute; top:150px; font-weight:800; color:#6a62a0; font-size:14px; transform:translateX(-50%); }
+  .hist { font-weight:800; text-align:center; font-size:20px; min-height:30px; }
+
+  /* bar model */
+  .bm { max-width:560px; margin:6px auto; }
+  .bm .bar { height:54px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:800; overflow:hidden; white-space:nowrap; transition:width 1s cubic-bezier(.2,1,.4,1); }
+  .bm .whole { background:linear-gradient(90deg,#a78bfa,#7c3aed); margin-bottom:8px; }
+  .bm .parts { display:flex; gap:0; }
+  .bm .p1 { background:linear-gradient(90deg,#60a5fa,#2563eb); border-radius:12px 0 0 12px; border-right:3px solid #fff; }
+  .bm .p2 { background:linear-gradient(90deg,#fbbf24,#d97706); border-radius:0 12px 12px 0; }
+  .bm .lbl { display:flex; justify-content:space-between; font-weight:800; color:#6a62a0; font-size:13px; margin-top:4px; }
+  .facts { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px; }
+  @media (max-width:560px){ .facts { grid-template-columns:1fr; } }
+  .fact { background:#fff; border:3px solid var(--line); border-radius:14px; padding:10px; text-align:center; font-size:24px; font-weight:800; opacity:0; transform:scale(.6); transition:all .45s cubic-bezier(.2,1.4,.4,1); }
+  .fact.show { opacity:1; transform:none; }
+  .fact small { display:block; font-size:12px; color:#6a62a0; }
+
+  /* triangle */
+  svg.tri { width:100%; max-width:340px; display:block; margin:0 auto; }
+  svg.tri .node { cursor:pointer; }
+  svg.tri .node circle { stroke:#fff; stroke-width:5; transition:fill .3s; }
+  svg.tri .node text { font:800 28px 'Baloo 2',system-ui,sans-serif; fill:#fff; text-anchor:middle; pointer-events:none; }
+  svg.tri .node.hid circle { fill:#c9c3e6 !important; }
+
+  /* worked checks */
+  .wcards { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+  .wcard { background:#fff; border:3px solid var(--line); border-radius:18px; padding:14px; position:relative; overflow:hidden; }
+  .wcard .who { font-weight:800; font-size:17px; color:#4a4470; }
+  .wline { font-size:22px; font-weight:800; margin:8px 0; opacity:0; transform:translateX(-14px); transition:all .45s; }
+  .wline.show { opacity:1; transform:none; }
+  .wline small { display:block; font-size:13px; color:#6a62a0; }
+  .stamp { position:absolute; right:10px; top:8px; font-size:44px; transform:scale(0) rotate(-30deg); transition:transform .45s cubic-bezier(.2,1.6,.4,1); }
+  .stamp.show { transform:scale(1) rotate(-12deg); }
+  .qbox { display:inline-block; min-width:62px; padding:0 8px; border:3px dashed var(--whole); border-radius:10px; color:var(--whole); background:#f5f0ff; text-align:center; }
+  .qbox.found { border-style:solid; background:#ede4ff; animation:pop .5s; }
+
+  /* poster */
+  .poster { display:grid; gap:12px; }
+  .rule { border-radius:18px; padding:14px 16px; color:#fff; font-weight:800; font-size:19px; }
+  .rule .ex { display:block; font-size:22px; margin-top:4px; background:rgba(255,255,255,.18); border-radius:10px; padding:4px 10px; }
+
+  /* practice */
+  .pq { font-size:clamp(24px,6vw,32px); font-weight:800; text-align:center; color:var(--ink); margin:10px 0; line-height:1.5; }
+  .ansin { width:140px; font-size:30px; font-weight:800; text-align:center; border:4px solid var(--purple); border-radius:14px; padding:4px; font-family:inherit; color:var(--ink); }
+  .work { margin-top:10px; background:#f4f1ff; border-radius:12px; padding:10px 12px; font-weight:800; color:#4a4470; font-size:18px; text-align:center; }
+  .lvlcards { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-top:12px; }
+  .modegrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-top:16px; }
+  .modecard { text-align:center; cursor:pointer; }
+  details.tnotes summary { cursor:pointer; font-weight:800; font-size:18px; color:var(--ink); }
+  details.tnotes li { font-weight:700; color:#4a4470; line-height:1.55; margin:4px 0; }
+  @media (max-width:520px){ .mat { grid-template-columns:1.3fr 1fr 1fr; gap:6px; } .flat{ width:40px;height:40px;background-size:3.8px 3.8px;} .rod{height:40px;background-size:100% 3.8px;} .machine{ width:124px; margin-left:-62px; } .mball{ width:66px; margin-left:-33px; font-size:20px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="maths.html" style="text-decoration:none;color:#fff;">➕ Maths</a>
+    <a class="chip" href="#" id="menuLink" style="text-decoration:none;color:#fff;">⏪ Undo Button</a>
+    <span class="chip">👤 <b id="whoName">Learner</b></span>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+  <div class="brand" id="brand"><span class="pyr">🔺</span><span class="nm">Whyte Pyramid Academy<small>Maths · Year 3</small></span></div>
+  <div id="screen"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* =============================================================
+   THE UNDO BUTTON — inverse of addition and subtraction (Year 3)
+   Every number used is a 3-digit number: 100 ≤ n ≤ 999.
+   Big idea:  + plays forward ▶   − rewinds ⏪
+   Main example used across the lesson:  243 + 125 = 368
+   ============================================================= */
+var A=243, B=125, C=368;
+var ROBOT="🤖";
+
+function el(id){ return document.getElementById(id); }
+function rnd(lo,hi){ return lo+Math.floor(Math.random()*(hi-lo+1)); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function is3(n){ return n>=100 && n<=999; }
+var screen=el("screen");
+
+/* --- animation housekeeping: every step change cancels pending timers --- */
+var token=0;
+function newRun(){ token++; return token; }
+function later(fn,ms){ var t=token; setTimeout(function(){ if(t===token) fn(); },ms); }
+function tween(ms, step, done){
+  var t=token, t0=null;
+  function f(ts){ if(t!==token) return; if(t0===null) t0=ts; var k=Math.min(1,(ts-t0)/ms); step(k); if(k<1) requestAnimationFrame(f); else if(done) done(); }
+  requestAnimationFrame(f);
+}
+
+/* --- brand / sound / learner --- */
+(function(){ var nm=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+  var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=nm+"<small>Maths · Year 3</small>";
+  document.title="The Undo Button | "+nm; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+var student=MQ.getStudent()||"";
+if(student) el("whoName").textContent=student;
+el("menuLink").onclick=function(e){ e.preventDefault(); menu(); };
+
+/* =============================================================
+   HERO picture: the forward / rewind loop
+   ============================================================= */
+function heroSVG(){
+  return '<svg viewBox="0 0 520 190" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs><marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#16b364"/></marker>'+
+    '<marker id="ahr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff6a3d"/></marker></defs>'+
+    '<path class="spinA" d="M120,80 C200,10 320,10 400,80" fill="none" stroke="#16b364" stroke-width="6" stroke-dasharray="14 10" marker-end="url(#ah)"/>'+
+    '<path class="spinA" d="M400,112 C320,182 200,182 120,112" fill="none" stroke="#ff6a3d" stroke-width="6" stroke-dasharray="14 10" marker-end="url(#ahr)"/>'+
+    '<rect x="260" y="8" width="0" height="0"/>'+
+    '<g><rect x="208" y="14" width="104" height="38" rx="19" fill="#16b364"/><text x="260" y="41" text-anchor="middle" font-size="24" font-weight="800" fill="#fff" font-family="Baloo 2,system-ui">▶ + '+B+'</text></g>'+
+    '<g><rect x="208" y="140" width="104" height="38" rx="19" fill="#ff6a3d"/><text x="260" y="167" text-anchor="middle" font-size="24" font-weight="800" fill="#fff" font-family="Baloo 2,system-ui">⏪ − '+B+'</text></g>'+
+    '<circle cx="80" cy="96" r="54" fill="#3b82f6"/><text x="80" y="107" text-anchor="middle" font-size="34" font-weight="800" fill="#fff" font-family="Baloo 2,system-ui">'+A+'</text>'+
+    '<circle cx="440" cy="96" r="54" fill="#8b5cf6"/><text x="440" y="107" text-anchor="middle" font-size="34" font-weight="800" fill="#fff" font-family="Baloo 2,system-ui">'+C+'</text>'+
+    '</svg>';
+}
+
+/* =============================================================
+   MENU
+   ============================================================= */
+function menu(){
+  newRun();
+  screen.innerHTML=
+    '<h1 class="title-pop">⏪ THE UNDO BUTTON ▶</h1>'+
+    '<p class="subtitle">Inverse of addition and subtraction · Year 3 · 3-digit numbers</p>'+
+    '<div class="card hero center" style="margin-top:16px;">'+heroSVG()+
+      '<div class="robot" style="max-width:620px;margin:10px auto 0;"><div class="rb">'+ROBOT+'</div><div class="speech">Hi, I\'m <b>Rewind</b>! Adding moves you <b class="add">forward ▶</b>. Subtracting the same amount presses <b class="sub">rewind ⏪</b> and takes you straight back. They <b>undo</b> each other. That is called the <b>INVERSE</b>!</div></div>'+
+    '</div>'+
+    '<div class="modegrid">'+
+      '<div class="card modecard" id="goLesson" style="border-top:10px solid var(--purple);"><div class="mascot">📖</div><h2>Animated Lesson</h2><p class="muted" style="font-weight:700;">9 short steps: number line, base-10 blocks, the Undo Machine, bar model, fact family triangle, checking answers and missing numbers.</p><span class="tag live">▶ START LESSON</span></div>'+
+      '<div class="card modecard" id="goPractice" style="border-top:10px solid #16b364;"><div class="mascot">🎮</div><h2>Practice Game</h2><p class="muted" style="font-weight:700;">10 questions using the inverse. Choose Level 1 (no exchanging) or Level 2 (with exchanging). Scores are saved for your tutor.</p><span class="tag live">▶ PRACTISE</span></div>'+
+    '</div>'+
+    '<div class="card" style="margin-top:16px;"><details class="tnotes"><summary>👩‍🏫 Tutor notes — how to teach this in about 30 minutes</summary><ol>'+
+      '<li><b>Hook (3 min):</b> do real “undo” actions together: open/close the door, stand up/sit down, take 3 steps forward / 3 steps back. Ask: “What undoes it?”</li>'+
+      '<li><b>Number line (5 min):</b> let the learner press the hop buttons. Say the hops aloud: “plus one hundred, plus twenty, plus five… now rewind!”</li>'+
+      '<li><b>Blocks (5 min):</b> point out the <b>orange</b> blocks are the 125 we added. Taking exactly those away must bring us back to 243.</li>'+
+      '<li><b>Undo Machine &amp; bar model (6 min):</b> press 🎲 New numbers a few times. Ask the learner to predict the rewind answer <i>before</i> pressing.</li>'+
+      '<li><b>Fact family triangle (4 min):</b> hide a number and ask “Do we add or subtract to find it?” Top hidden → <b>add</b>. Bottom hidden → <b>subtract</b>.</li>'+
+      '<li><b>Check &amp; missing numbers (4 min):</b> stress: “When you finish a sum, press rewind to check it!”</li>'+
+      '<li><b>Practice (5+ min):</b> Level 1 first. Move to Level 2 when they score 8 or more.</li>'+
+      '</ol><p class="muted" style="font-weight:700;">All numbers stay as 3-digit numbers (100 to 999). Key sentence to repeat: <b>“Adding and subtracting are inverses, so one undoes the other.”</b></p></details></div>';
+  el("goLesson").onclick=function(){ MQ.sound("click"); lesson(0); };
+  el("goPractice").onclick=function(){ MQ.sound("click"); practiceMenu(); };
+}
+
+/* =============================================================
+   LESSON
+   ============================================================= */
+var STEPS=[
+  { t:"What does ‘inverse’ mean?", e:"🔄", say:"An <b>inverse</b> is an <b>UNDO</b>. It takes you back to where you started. Watch these everyday undos!", tutor:"Act them out together. Then say: “Adding and subtracting are inverses. They undo each other.”", render:stepUndo },
+  { t:"Hop forward, hop back", e:"🐸", say:"Freddie the frog starts on <b class='n1'>"+A+"</b>. He hops <b class='add'>forward "+B+"</b>, then <b class='sub'>back "+B+"</b>. Where does he land?", tutor:"Count each hop aloud: +100, +20, +5. Then rewind: −5, −20, −100. He always lands back on 243!", render:stepLine },
+  { t:"Build it with blocks", e:"🧱", say:"Here is <b class='n1'>"+A+"</b> in base-10 blocks: 2 hundreds, 4 tens and 3 ones. Let's <b class='add'>add "+B+"</b>, then <b class='sub'>take away "+B+"</b>.", tutor:"The orange blocks are the 125 we added. Taking away exactly those blocks undoes the addition.", render:stepBlocks },
+  { t:"The Undo Machine", e:"🏭", say:"My machine adds a number. Its <b class='sub'>REWIND</b> setting subtracts the same number, so the output goes back to the input!", tutor:"Press 🎲 New numbers and ask: “What will come out when we rewind?” Let the learner predict first.", render:stepMachine },
+  { t:"Part + part = whole", e:"📊", say:"<b class='n1'>"+A+"</b> and <b class='n2'>"+B+"</b> are the <b>parts</b>. Together they make the <b class='nw'>whole</b>, "+C+". Watch the four facts appear!", tutor:"Point to the bar: two parts make the whole. Whole take away a part leaves the other part.", render:stepBar },
+  { t:"The fact family triangle", e:"🔺", say:"The <b class='nw'>whole</b> sits at the top, and the <b>parts</b> sit at the bottom. <b>Tap any number to hide it</b>, and I'll show you how to find it!", tutor:"Rule: top hidden → ADD the bottom two. A bottom one hidden → SUBTRACT (top − the other).", render:stepTriangle },
+  { t:"Check your answer!", e:"🔍", say:"After you add, press <b class='sub'>rewind</b> to <b>check</b>. If you land back on your starting number, your answer is right!", tutor:"Ola is right. Mia made a mistake, and the inverse check catches it!", render:stepCheck },
+  { t:"Find the missing number", e:"❓", say:"A number is hiding behind the box! Use the <b>inverse</b> to find it.", tutor:"Ask: “Is the box a part or the whole?” A missing part → subtract. A missing whole (the start of a subtraction) → add.", render:stepMissing },
+  { t:"Remember!", e:"⭐", say:"You've learned the Undo Button! Here are the three things to remember.", tutor:"Ask the learner to explain each rule back to you in their own words.", render:stepPoster }
+];
+
+function lesson(i){
+  newRun();
+  var s=STEPS[i];
+  screen.innerHTML=
+    '<div class="card">'+
+      '<div class="lhead"><span class="chip" style="background:var(--purple);color:#fff;">'+s.e+' Step '+(i+1)+' of '+STEPS.length+'</span>'+
+        '<span class="dots">'+STEPS.map(function(x,k){ return '<i class="'+(k<i?"done":k===i?"on":"")+'" data-k="'+k+'" title="'+x.t+'"></i>'; }).join("")+'</span></div>'+
+      '<h2 style="margin:10px 0 0;">'+s.t+'</h2>'+
+      '<div class="robot"><div class="rb">'+ROBOT+'</div><div class="speech">'+s.say+'</div></div>'+
+      '<div class="stage" id="stage"></div>'+
+      '<div class="tutor">👩‍🏫 <b>Tutor:</b> '+s.tutor+'</div>'+
+      '<div class="row" style="margin-top:14px;justify-content:space-between;">'+
+        '<button class="btn ghost" id="prev"'+(i===0?" disabled":"")+'>← Back</button>'+
+        (i+1<STEPS.length ? '<button class="btn big blue" id="next">Next ▶</button>' : '<button class="btn big green" id="next">🎮 Start practising ▶</button>')+
+      '</div>'+
+    '</div>';
+  s.render(el("stage"));
+  el("prev").onclick=function(){ MQ.sound("click"); if(i>0) lesson(i-1); };
+  el("next").onclick=function(){ MQ.sound("click"); if(i+1<STEPS.length) lesson(i+1); else practiceMenu(); };
+  Array.prototype.forEach.call(document.querySelectorAll(".dots i"),function(d){ d.onclick=function(){ lesson(Number(d.getAttribute("data-k"))); }; });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- Step 1: everyday undos ---------- */
+function stepUndo(st){
+  var P=[["🚪","open","🚪","close"],["👟","shoes on","🦶","shoes off"],["💡","light on","🌑","light off"],["⬆️","3 steps up","⬇️","3 steps down"],["🎒","pack bag","📚","unpack bag"],["➕","add 125","➖","subtract 125"]];
+  st.innerHTML='<div class="pairs">'+P.map(function(p,k){
+    var last=k===P.length-1;
+    return '<div class="pair" id="pr'+k+'" style="'+(last?"border-color:var(--purple);background:#f5f0ff;":"")+'"><div class="pe">'+p[0]+'<small>'+p[1]+'</small></div>'+
+      '<div class="arrows"><b class="add">→</b><b class="sub">←</b>'+(last?"inverse!":"undo")+'</div><div class="pe">'+p[2]+'<small>'+p[3]+'</small></div></div>'; }).join("")+'</div>'+
+    '<div class="big-eq" id="beq"></div><div class="ctrls"><button class="btn ghost" id="rp">🔁 Replay</button></div>';
+  function play(){
+    P.forEach(function(p,k){ el("pr"+k).classList.remove("show"); });
+    el("beq").innerHTML="";
+    P.forEach(function(p,k){ later(function(){ el("pr"+k).classList.add("show"); MQ.sound("click"); }, 400+k*650); });
+    later(function(){ el("beq").innerHTML='<span><span class="add">+</span> and <span class="sub">−</span> undo each other!</span>'; MQ.sound("level"); }, 400+P.length*650+200);
+  }
+  el("rp").onclick=play; play();
+}
+
+/* ---------- Step 2: number line with hops ---------- */
+function stepLine(st){
+  var a=A, b=B;
+  function draw(){
+    var c=a+b, lo=Math.floor(a/100)*100, hi=Math.ceil(c/100)*100; if(hi-lo<200) hi=lo+200;
+    var X=function(n){ return 40+(n-lo)/(hi-lo)*680; };
+    var g='<svg class="nl" viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg"><line class="ax" x1="30" y1="130" x2="730" y2="130"/>';
+    for(var n=lo;n<=hi;n+=10){ var big=(n%50===0); g+='<line class="tk" x1="'+X(n)+'" y1="'+(130-(big?10:5))+'" x2="'+X(n)+'" y2="'+(130+(big?10:5))+'"/>'; if(big) g+='<text class="tl" x="'+X(n)+'" y="'+(n%100===0?160:156)+'">'+n+'</text>'; }
+    g+='<circle cx="'+X(a)+'" cy="130" r="7" fill="#3b82f6"/><text class="tl" x="'+X(a)+'" y="205" style="font-size:18px;fill:#3b82f6">start '+a+'</text>';
+    g+='<g id="arcs"></g><text id="frog" x="'+X(a)+'" y="122" font-size="30" text-anchor="middle">🐸</text></svg>';
+    st.innerHTML='<div style="overflow-x:auto;">'+g+'</div><div class="big-eq" id="beq"></div>'+
+      '<div class="ctrls"><button class="btn addb" id="fw">▶ Hop forward + '+b+'</button><button class="btn subb" id="bk" disabled>⏪ Rewind − '+b+'</button>'+
+      '<button class="btn ghost" id="rs">🔁 Reset</button><button class="btn ghost" id="nn">🎲 New numbers</button></div>';
+    var parts=[Math.floor(b/100)*100, Math.floor(b/10)%10*10, b%10].filter(function(x){return x>0;});
+    var frog=el("frog"), arcs=el("arcs"), pos=a, busy=false;
+    function hop(from,to,up,label,col,done){
+      var x1=X(from), x2=X(to), xm=(x1+x2)/2, H=Math.max(26,Math.min(120,Math.abs(x2-x1)*0.8));   // arc height grows with hop width
+      var cy= up ? 130-H : 130+H;
+      arcs.insertAdjacentHTML("beforeend",'<path class="'+(up?"arcF":"arcB")+'" d="M'+x1+',130 Q'+xm+','+cy+' '+x2+',130"/><text class="al" x="'+xm+'" y="'+(up?130-H/2-8:130+H/2+20)+'" fill="'+col+'">'+label+'</text>');
+      MQ.sound("click");
+      tween(650,function(k){ var x=(1-k)*(1-k)*x1+2*(1-k)*k*xm+k*k*x2, y=(1-k)*(1-k)*130+2*(1-k)*k*cy+k*k*130; frog.setAttribute("x",x); frog.setAttribute("y",(up?y-8:y+24)); }, done);
+    }
+    function seq(list, up, sign, done){
+      var i=0;
+      (function go(){ if(i>=list.length) return done();
+        var p=list[i++], to=pos+(up?p:-p);
+        hop(pos,to,up,(up?"+":"−")+p, up?"#16b364":"#ff6a3d", function(){ pos=to; later(go,180); }); })();
+    }
+    el("fw").onclick=function(){ if(busy) return; busy=true; el("fw").disabled=true; el("beq").innerHTML="";
+      seq(parts,true,"+",function(){ busy=false; el("bk").disabled=false; frog.setAttribute("y",122);
+        if(!el("landDot")) arcs.insertAdjacentHTML("beforeend",'<circle id="landDot" cx="'+X(a+b)+'" cy="130" r="7" fill="#8b5cf6"/><text class="tl" x="'+X(a+b)+'" y="205" style="font-size:18px;fill:#8b5cf6">'+(a+b)+'</text>');
+        el("beq").innerHTML='<span class="n1">'+a+'</span> <span class="add">+ '+b+'</span> = <span class="nw">'+(a+b)+'</span>'; MQ.sound("correct"); }); };
+    el("bk").onclick=function(){ if(busy) return; busy=true; el("bk").disabled=true;
+      seq(parts.slice().reverse(),false,"−",function(){ busy=false; frog.setAttribute("y",122);
+        el("beq").innerHTML='<span class="nw">'+(a+b)+'</span> <span class="sub">− '+b+'</span> = <span class="n1">'+a+'</span> &nbsp;⏪ back to the start!'; MQ.sound("win"); MQ.confetti(60); }); };
+    el("rs").onclick=function(){ newRun(); draw(); };
+    el("nn").onclick=function(){ newRun(); a=rnd(100,600); b=rnd(100,Math.min(300,999-a)); draw(); };
+  }
+  draw();
+}
+
+/* ---------- Step 3: base-10 blocks ---------- */
+function stepBlocks(st){
+  var base=[2,4,3], add=[1,2,5];   // 243 and 125: no exchanging, so the blocks stay simple
+  var kinds=["flat","rod","cube"], names=["Hundreds","Tens","Ones"];
+  st.innerHTML='<div class="mat">'+names.map(function(n,i){ return '<div class="pcol"><h4>'+n+'</h4><div class="blocks" id="bl'+i+'"></div><div class="pdig" id="dg'+i+'">'+base[i]+'</div></div>'; }).join("")+'</div>'+
+    '<div class="key"><span><i style="background:#8cc0ff;border:2px solid #2e6fd8"></i>start: 243</span><span><i style="background:#ffcf6b;border:2px solid #d97706"></i>added: 125</span></div>'+
+    '<div class="big-eq" id="beq"><span class="n1">243</span></div>'+
+    '<div class="ctrls"><button class="btn addb" id="ad">➕ Add 125</button><button class="btn subb" id="ub" disabled>⏪ Undo: subtract 125</button><button class="btn ghost" id="rs">🔁 Reset</button></div>';
+  for(var i=0;i<3;i++){ for(var k=0;k<base[i];k++) el("bl"+i).insertAdjacentHTML("beforeend",'<div class="blk '+kinds[i]+'"></div>'); }
+  var cnt=base.slice();
+  el("ad").onclick=function(){
+    el("ad").disabled=true;
+    [0,1,2].forEach(function(c){
+      for(var k=0;k<add[c];k++){ (function(c,k){ later(function(){
+        var d=document.createElement("div"); d.className="blk added incoming "+kinds[c]; el("bl"+c).appendChild(d);
+        void d.offsetWidth; d.classList.remove("incoming"); cnt[c]++; el("dg"+c).textContent=cnt[c]; MQ.sound("click");
+      }, c*900+k*170); })(c,k); }
+    });
+    later(function(){ el("beq").innerHTML='<span class="n1">243</span> <span class="add">+ 125</span> = <span class="nw">368</span>'; el("ub").disabled=false; MQ.sound("correct"); }, 2*900+5*170+500);
+  };
+  el("ub").onclick=function(){
+    el("ub").disabled=true;
+    [0,1,2].forEach(function(c){
+      var bl=Array.prototype.slice.call(el("bl"+c).querySelectorAll(".added"));
+      bl.forEach(function(d,k){ later(function(){ d.classList.add("outgoing"); cnt[c]--; el("dg"+c).textContent=cnt[c]; MQ.sound("click"); later(function(){ d.remove(); },600); }, (2-c)*900+k*170); });
+    });
+    later(function(){ el("beq").innerHTML='<span class="nw">368</span> <span class="sub">− 125</span> = <span class="n1">243</span> &nbsp;⏪ back to the start!'; MQ.sound("win"); MQ.confetti(70); }, 2*900+5*170+700);
+  };
+  el("rs").onclick=function(){ newRun(); stepBlocks(st); };
+}
+
+/* ---------- Step 4: the Undo Machine ---------- */
+function stepMachine(st){
+  var a=A, b=B, busy=false, state="in";
+  st.innerHTML='<div class="mstage"><div class="mrail"></div>'+
+      '<div class="machine" id="mach"><div class="eyes">👀</div><div class="mlab" id="mlab"></div><div class="gears"><span>⚙️</span><span>⚙️</span></div></div>'+
+      '<div class="mball" id="ball"></div>'+
+      '<span class="mtag" style="left:10%">IN</span><span class="mtag" style="left:90%">OUT</span></div>'+
+    '<div class="hist" id="hist"></div>'+
+    '<div class="ctrls"><button class="btn addb" id="run"></button><button class="btn subb" id="rew"></button><button class="btn ghost" id="nn">🎲 New numbers</button></div>';
+  var ball=el("ball"), mach=el("mach");
+  function reset(){
+    state="in"; busy=false; mach.classList.remove("rev"); el("mlab").textContent="+ "+b;
+    ball.style.transition="none"; ball.style.left="10%"; ball.textContent=a; ball.style.opacity="1"; ball.style.borderColor="var(--p1)";
+    void ball.offsetWidth; ball.style.transition="";
+    el("run").textContent="▶ Run (+ "+b+")"; el("rew").textContent="⏪ Rewind (− "+b+")";
+    el("run").disabled=false; el("rew").disabled=true;
+    el("hist").innerHTML='Press <span class="add">▶ Run</span> to send <b>'+a+'</b> through the machine. What will come out? 🤔';
+  }
+  function through(toPct,newVal,done){
+    busy=true; ball.style.left="50%";
+    later(function(){ ball.style.opacity="0"; mach.classList.add("work"); MQ.sound("click"); }, 820);
+    later(function(){ ball.textContent=newVal; ball.style.opacity="1"; mach.classList.remove("work"); ball.style.left=toPct+"%"; }, 1500);
+    later(function(){ busy=false; done(); }, 2450);
+  }
+  el("run").onclick=function(){ if(busy||state!=="in") return; mach.classList.remove("rev"); el("mlab").textContent="+ "+b; el("run").disabled=true;
+    through(90,a+b,function(){ state="out"; el("rew").disabled=false; ball.style.borderColor="var(--whole)";
+      el("hist").innerHTML='<span class="n1">'+a+'</span> <span class="add">+ '+b+'</span> = <span class="nw">'+(a+b)+'</span> · now press <span class="sub">⏪ Rewind</span>!'; MQ.sound("correct"); }); };
+  el("rew").onclick=function(){ if(busy||state!=="out") return; mach.classList.add("rev"); el("mlab").textContent="− "+b; el("rew").disabled=true;
+    through(10,a,function(){ state="in"; el("run").disabled=false; ball.style.borderColor="var(--p1)";
+      el("hist").innerHTML='<span class="nw">'+(a+b)+'</span> <span class="sub">− '+b+'</span> = <span class="n1">'+a+'</span> · ⏪ back to where we started!'; MQ.sound("win"); MQ.confetti(60); }); };
+  el("nn").onclick=function(){ newRun(); a=rnd(100,600); b=rnd(100,Math.min(399,999-a)); MQ.sound("click"); reset(); };
+  reset();
+}
+
+/* ---------- Step 5: bar model + four facts ---------- */
+function stepBar(st){
+  var w1=Math.round(A/C*100), w2=100-w1;
+  st.innerHTML='<div class="bm"><div class="bar whole" id="bw" style="width:0">'+C+'</div>'+
+      '<div class="parts"><div class="bar p1" id="b1" style="width:0">'+A+'</div><div class="bar p2" id="b2" style="width:0">'+B+'</div></div>'+
+      '<div class="lbl"><span>part</span><span>part</span></div></div>'+
+    '<div class="facts">'+
+      '<div class="fact" id="f0"><span class="n1">'+A+'</span> <span class="add">+</span> <span class="n2">'+B+'</span> = <span class="nw">'+C+'</span><small>part + part = whole</small></div>'+
+      '<div class="fact" id="f1"><span class="n2">'+B+'</span> <span class="add">+</span> <span class="n1">'+A+'</span> = <span class="nw">'+C+'</span><small>add in any order</small></div>'+
+      '<div class="fact" id="f2"><span class="nw">'+C+'</span> <span class="sub">−</span> <span class="n2">'+B+'</span> = <span class="n1">'+A+'</span><small>whole − part = other part</small></div>'+
+      '<div class="fact" id="f3"><span class="nw">'+C+'</span> <span class="sub">−</span> <span class="n1">'+A+'</span> = <span class="n2">'+B+'</span><small>whole − part = other part</small></div>'+
+    '</div><div class="big-eq" id="beq"></div><div class="ctrls"><button class="btn ghost" id="rp">🔁 Replay</button></div>';
+  function play(){
+    ["bw","b1","b2"].forEach(function(id){ el(id).style.width="0"; });
+    [0,1,2,3].forEach(function(k){ el("f"+k).classList.remove("show"); }); el("beq").innerHTML="";
+    later(function(){ el("b1").style.width=w1+"%"; MQ.sound("click"); },300);
+    later(function(){ el("b2").style.width=w2+"%"; MQ.sound("click"); },1000);
+    later(function(){ el("bw").style.width="100%"; MQ.sound("level"); },1800);
+    [0,1,2,3].forEach(function(k){ later(function(){ el("f"+k).classList.add("show"); MQ.sound("click"); }, 3000+k*900); });
+    later(function(){ el("beq").innerHTML='<span>One family, <span class="add">2 adds</span> and <span class="sub">2 subtracts</span>! 👨‍👩‍👧‍👦</span>'; MQ.confetti(50); }, 3000+4*900+200);
+  }
+  el("rp").onclick=function(){ newRun(); play(); }; play();
+}
+
+/* ---------- Step 6: fact family triangle (tap to hide) ---------- */
+function stepTriangle(st){
+  var N={ top:{x:170,y:58,v:C,c:"#8b5cf6",role:"whole"}, bl:{x:64,y:236,v:A,c:"#3b82f6",role:"part"}, br:{x:276,y:236,v:B,c:"#f59e0b",role:"part"} };
+  st.innerHTML='<svg class="tri" viewBox="0 0 340 290" xmlns="http://www.w3.org/2000/svg">'+
+      '<polygon points="170,58 64,236 276,236" fill="#f5f0ff" stroke="#b9aee6" stroke-width="6" stroke-linejoin="round"/>'+
+      '<text x="170" y="175" text-anchor="middle" font-size="40" font-weight="800" fill="#b9aee6" font-family="Baloo 2,system-ui">+ −</text>'+
+      Object.keys(N).map(function(k){ var n=N[k]; return '<g class="node" data-k="'+k+'"><circle cx="'+n.x+'" cy="'+n.y+'" r="46" fill="'+n.c+'"/><text x="'+n.x+'" y="'+(n.y+10)+'">'+n.v+'</text></g>'; }).join("")+
+      '<text x="170" y="14" text-anchor="middle" font-size="14" font-weight="800" fill="#8b5cf6" font-family="Baloo 2,system-ui">WHOLE</text>'+
+      '<text x="64" y="287" text-anchor="middle" font-size="14" font-weight="800" fill="#3b82f6" font-family="Baloo 2,system-ui">PART</text>'+
+      '<text x="276" y="287" text-anchor="middle" font-size="14" font-weight="800" fill="#d97706" font-family="Baloo 2,system-ui">PART</text>'+
+    '</svg><div class="big-eq" id="beq">👆 Tap a number to hide it</div><div class="ctrls"><button class="btn ghost" id="rs">🔁 Show all</button></div>';
+  function showAll(){ Array.prototype.forEach.call(st.querySelectorAll(".node"),function(g){ g.classList.remove("hid"); g.querySelector("text").textContent=N[g.getAttribute("data-k")].v; }); }
+  Array.prototype.forEach.call(st.querySelectorAll(".node"),function(g){
+    g.addEventListener("click",function(){
+      newRun(); showAll();
+      var k=g.getAttribute("data-k"); g.classList.add("hid"); g.querySelector("text").textContent="?"; MQ.sound("click");
+      var eq = k==="top" ? '<span class="n1">'+A+'</span> <span class="add">+</span> <span class="n2">'+B+'</span> = <span class="qbox" id="qb">?</span>'
+             : k==="bl"  ? '<span class="nw">'+C+'</span> <span class="sub">−</span> <span class="n2">'+B+'</span> = <span class="qbox" id="qb">?</span>'
+                         : '<span class="nw">'+C+'</span> <span class="sub">−</span> <span class="n1">'+A+'</span> = <span class="qbox" id="qb">?</span>';
+      var tip = k==="top" ? "The <b class='nw'>whole</b> is hiding, so we <b class='add'>ADD</b> the two parts." : "A <b>part</b> is hiding, so we <b class='sub'>SUBTRACT</b>: whole − the other part.";
+      el("beq").innerHTML='<div style="font-size:17px;color:#4a4470;margin-bottom:6px;">'+tip+'</div><span>'+eq+'</span>';
+      later(function(){ var q=el("qb"); if(q){ q.textContent=N[k].v; q.classList.add("found"); } g.classList.remove("hid"); g.querySelector("text").textContent=N[k].v; MQ.sound("correct"); }, 1800);
+    });
+  });
+  el("rs").onclick=function(){ newRun(); showAll(); el("beq").innerHTML="👆 Tap a number to hide it"; };
+}
+
+/* ---------- Step 7: checking answers with the inverse ---------- */
+function stepCheck(st){
+  var cards=[
+    { who:"🧒🏾 Ola worked out:", lines:['<span class="n1">356</span> <span class="add">+ 231</span> = <span class="nw">587</span>','<small>🔍 Check with the inverse (rewind):</small><span class="nw">587</span> <span class="sub">− 231</span> = <span class="n1">356</span>','<small>Did we get back to the start?</small>✅ Yes! 356 is where we started.'], stamp:"✅", ok:true },
+    { who:"👧🏼 Mia worked out:", lines:['<span class="n1">452</span> <span class="add">+ 135</span> = <span class="nw">577</span>','<small>🔍 Check with the inverse (rewind):</small><span class="nw">577</span> <span class="sub">− 135</span> = <span class="sub">442</span>','<small>Did we get back to the start?</small>❌ No! 442 is not 452. The correct answer is <b class="nw">587</b>.'], stamp:"❌", ok:false }
+  ];
+  st.innerHTML='<div class="wcards">'+cards.map(function(c,i){
+      return '<div class="wcard"><span class="stamp" id="sp'+i+'">'+c.stamp+'</span><div class="who">'+c.who+'</div>'+
+        c.lines.map(function(l,k){ return '<div class="wline" id="w'+i+'_'+k+'">'+l+'</div>'; }).join("")+
+        '<div class="ctrls"><button class="btn blue" data-i="'+i+'">🔍 Check it</button></div></div>'; }).join("")+'</div>';
+  Array.prototype.forEach.call(st.querySelectorAll("[data-i]"),function(b){
+    b.onclick=function(){
+      var i=Number(b.getAttribute("data-i")), c=cards[i];
+      c.lines.forEach(function(l,k){ el("w"+i+"_"+k).classList.remove("show"); }); el("sp"+i).classList.remove("show");
+      c.lines.forEach(function(l,k){ later(function(){ el("w"+i+"_"+k).classList.add("show"); MQ.sound("click"); }, 200+k*1100); });
+      later(function(){ el("sp"+i).classList.add("show"); MQ.sound(c.ok?"correct":"wrong"); if(c.ok) MQ.confetti(50); }, 200+c.lines.length*1100);
+    };
+  });
+  later(function(){ el("w0_0").classList.add("show"); el("w1_0").classList.add("show"); },300);
+}
+
+/* ---------- Step 8: missing numbers ---------- */
+function stepMissing(st){
+  var puz=[
+    { eq:'<span class="qbox" id="q0">?</span> <span class="add">+ 214</span> = <span class="nw">538</span>',
+      steps:['<small>The ? is a <b>part</b>. Whole − part = missing part.</small><span class="nw">538</span> <span class="sub">− 214</span> = <b class="n1">324</b>',
+             '<small>Check by putting it back:</small><span class="n1">324</span> <span class="add">+ 214</span> = <span class="nw">538</span> ✅'], ans:"324" },
+    { eq:'<span class="qbox" id="q1">?</span> <span class="sub">− 132</span> = <span class="n1">415</span>',
+      steps:['<small>The ? is the <b>start</b> (the whole). Undo the subtraction by <b class="add">adding</b>!</small><span class="n1">415</span> <span class="add">+ 132</span> = <b class="nw">547</b>',
+             '<small>Check by putting it back:</small><span class="nw">547</span> <span class="sub">− 132</span> = <span class="n1">415</span> ✅'], ans:"547" }
+  ];
+  st.innerHTML='<div class="wcards">'+puz.map(function(p,i){
+      return '<div class="wcard"><div class="who">Puzzle '+(i+1)+'</div><div class="wline show" style="font-size:28px;">'+p.eq+'</div>'+
+        p.steps.map(function(s,k){ return '<div class="wline" id="m'+i+'_'+k+'">'+s+'</div>'; }).join("")+
+        '<div class="ctrls"><button class="btn blue" data-i="'+i+'">🔎 Find it</button></div></div>'; }).join("")+'</div>';
+  Array.prototype.forEach.call(st.querySelectorAll("[data-i]"),function(b){
+    b.onclick=function(){
+      var i=Number(b.getAttribute("data-i")), p=puz[i], q=el("q"+i);
+      q.textContent="?"; q.classList.remove("found"); p.steps.forEach(function(s,k){ el("m"+i+"_"+k).classList.remove("show"); });
+      later(function(){ el("m"+i+"_0").classList.add("show"); MQ.sound("click"); }, 300);
+      later(function(){ q.textContent=p.ans; q.classList.add("found"); MQ.sound("correct"); }, 1500);
+      later(function(){ el("m"+i+"_1").classList.add("show"); MQ.confetti(40); }, 2500);
+    };
+  });
+}
+
+/* ---------- Step 9: poster ---------- */
+function stepPoster(st){
+  st.innerHTML='<div class="poster">'+
+    '<div class="rule" style="background:linear-gradient(120deg,#ff8a5c,#e1462a);">⏪ Subtraction UNDOES addition<span class="ex">243 + 125 = 368 &nbsp;→&nbsp; 368 − 125 = 243</span></div>'+
+    '<div class="rule" style="background:linear-gradient(120deg,#34e089,#0e9f57);">▶ Addition UNDOES subtraction<span class="ex">368 − 125 = 243 &nbsp;→&nbsp; 243 + 125 = 368</span></div>'+
+    '<div class="rule" style="background:linear-gradient(120deg,#a78bfa,#6d28d9);">🔍 Use the inverse to CHECK answers and FIND missing numbers<span class="ex">? + 214 = 538 &nbsp;→&nbsp; 538 − 214 = 324</span></div>'+
+    '</div><div class="big-eq" style="margin-top:14px;"><span>Adding and subtracting are <span class="nw">inverses</span>! 🎉</span></div>';
+  later(function(){ MQ.sound("win"); MQ.confetti(160); },300);
+}
+
+/* =============================================================
+   PRACTICE GAME — 10 questions, every number 3-digit (100–999)
+   ============================================================= */
+function makeTrio(level){
+  var a,b,tries=0;
+  if(level===1){                       // no exchanging: each column sums to 9 or less
+    var ah=rnd(1,8), at=rnd(0,9), ao=rnd(0,9);
+    var bh=rnd(1,9-ah), bt=rnd(0,9-at), bo=rnd(0,9-ao);
+    a=ah*100+at*10+ao; b=bh*100+bt*10+bo;
+  } else {                             // with exchanging in at least one column
+    do { a=rnd(100,899); b=rnd(100,999-a); tries++; }
+    while(tries<500 && !((a%10+b%10)>=10 || (Math.floor(a/10)%10+Math.floor(b/10)%10)>=10));
+  }
+  return { a:a, b:b, c:a+b };
+}
+function makeQuestion(kind, level){
+  var t=makeTrio(level), a=t.a, b=t.b, c=t.c, v;
+  if(kind==="fact"){
+    v=rnd(1,3);
+    if(v===1) return { type:"in", show:a+" + "+b+" = "+c, ask:c+" − "+b+" = ", ans:a, work:c+" − "+b+" = "+a+" (subtraction undoes the addition)" };
+    if(v===2) return { type:"in", show:a+" + "+b+" = "+c, ask:c+" − "+a+" = ", ans:b, work:c+" − "+a+" = "+b+" (whole − one part = the other part)" };
+    return { type:"in", show:c+" − "+b+" = "+a, ask:a+" + "+b+" = ", ans:c, work:a+" + "+b+" = "+c+" (addition undoes the subtraction)" };
+  }
+  if(kind==="missing"){
+    v=rnd(1,4);
+    if(v===1) return { type:"in", ask:"? + "+b+" = "+c, ans:a, work:"? is a part: "+c+" − "+b+" = "+a };
+    if(v===2) return { type:"in", ask:a+" + ? = "+c, ans:b, work:"? is a part: "+c+" − "+a+" = "+b };
+    if(v===3) return { type:"in", ask:"? − "+b+" = "+a, ans:c, work:"? is the start, so undo by adding: "+a+" + "+b+" = "+c };
+    return { type:"in", ask:c+" − ? = "+a, ans:b, work:"? is a part: "+c+" − "+a+" = "+b };
+  }
+  if(kind==="check"){
+    var right=Math.random()<0.5, x=c;
+    if(!right){ var ds=shuffle([10,-10,1,-1,100,-100]); for(var i=0;i<ds.length;i++){ if(is3(c+ds[i]) && is3(a+ds[i])){ x=c+ds[i]; break; } } }   // keep the check working 3-digit too
+    if(x===c) right=true;
+    var name=shuffle(["Zara","Ben","Kemi","Leo","Ada","Sam"])[0];
+    return { type:"yn", ask:name+" says: "+a+" + "+b+" = "+x+". Use the inverse to check. Is "+name+" right?", ans:right?0:1,
+      work: x+" − "+b+" = "+(x-b)+(right?" ✅ back to "+a+", so it's right!":" ❌ that's not "+a+", so it's wrong. The answer is "+c+".") };
+  }
+  // fact-family multiple choice
+  var opts=shuffle([c+" − "+b+" = "+a, c+" + "+b+" = "+a, a+" − "+b+" = "+c, b+" + "+c+" = "+a]);
+  return { type:"mc", ask:"Which calculation CHECKS "+a+" + "+b+" = "+c+"?", options:opts, ans:opts.indexOf(c+" − "+b+" = "+a), work:c+" − "+b+" = "+a+" rewinds the addition back to the start." };
+}
+
+function practiceMenu(){
+  newRun();
+  screen.innerHTML='<div class="card center"><div class="mascot">🎮</div><h1>Undo Practice</h1>'+
+    '<div class="speech">10 questions. Use the <b>inverse</b> every time! All numbers are 3-digit numbers.</div>'+
+    '<div class="lvlcards">'+
+      '<div class="card modecard" id="l1" style="border-top:8px solid #16b364;"><div style="font-size:40px;">⭐</div><h2>Level 1</h2><p class="muted" style="font-weight:700;">No exchanging, e.g. 243 + 125 = 368</p><span class="tag live">▶ PLAY</span></div>'+
+      '<div class="card modecard" id="l2" style="border-top:8px solid #ff6a3d;"><div style="font-size:40px;">⭐⭐</div><h2>Level 2</h2><p class="muted" style="font-weight:700;">With exchanging, e.g. 278 + 145 = 423</p><span class="tag live">▶ PLAY</span></div>'+
+    '</div><div class="row" style="margin-top:12px;"><button class="btn ghost" id="toLesson">📖 Back to the lesson</button></div></div>';
+  el("l1").onclick=function(){ MQ.sound("level"); practice(1); };
+  el("l2").onclick=function(){ MQ.sound("level"); practice(2); };
+  el("toLesson").onclick=function(){ MQ.sound("click"); lesson(0); };
+}
+
+function practice(level){
+  newRun();
+  if(!student){
+    screen.innerHTML='<div class="card center" style="max-width:520px;"><div class="mascot">'+ROBOT+'</div><div class="speech">What is your name, so your tutor can see your score?</div>'+
+      '<div class="row" style="margin-top:14px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Start ▶</button></div></div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v) return; student=v; MQ.setStudent(v); el("whoName").textContent=v; practice(level); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+    return;
+  }
+  var kinds=shuffle(["fact","fact","fact","missing","missing","missing","check","check","mc","mc"]);
+  var Q=kinds.map(function(k){ return makeQuestion(k,level); });
+  var i=0, first=0;
+  function show(){
+    if(i>=Q.length) return finish();
+    var q=Q[i], tries=0, settled=false;
+    var body='';
+    if(q.type==="in"){
+      body=(q.show?'<div class="pq" style="color:#6a62a0;font-size:22px;">We know: <b style="color:var(--ink)">'+q.show+'</b></div>':'')+
+        '<div class="pq">'+(q.ask.indexOf("?")>=0 ? q.ask.replace("?",'<input class="ansin" id="ans" inputmode="numeric" maxlength="3" autocomplete="off">') : q.ask+'<input class="ansin" id="ans" inputmode="numeric" maxlength="3" autocomplete="off">')+'</div>'+
+        '<div class="ctrls"><button class="btn green" id="ck">Check ✅</button></div>';
+    } else if(q.type==="yn"){
+      body='<div class="pq" style="font-size:22px;">'+q.ask+'</div><div class="ctrls"><button class="btn addb" data-o="0">✅ Yes, right</button><button class="btn subb" data-o="1">❌ No, wrong</button></div>';
+    } else {
+      body='<div class="pq" style="font-size:22px;">'+q.ask+'</div><div class="options" id="opts">'+q.options.map(function(o,k){ return '<button class="opt" data-o="'+k+'">'+o+'</button>'; }).join("")+'</div>';
+    }
+    screen.innerHTML='<div class="card'+(i?" still":"")+'"><div class="lhead"><span class="chip" style="background:'+(level===1?"#16b364":"#ff6a3d")+';color:#fff;">🎮 Level '+level+'</span><span class="chip" style="background:#eee;color:#333;">Question '+(i+1)+' / '+Q.length+'</span></div>'+
+      '<div class="xpbar" style="background:#eee;margin:12px 0 4px;"><i style="width:'+Math.round(i/Q.length*100)+'%;"></i></div>'+
+      body+'<div class="feedback" id="fb"></div><div id="wk"></div><div class="center" id="nx"></div></div>';
+    function done(ok){
+      if(settled) return; settled=true;
+      if(ok && tries===0) first++;
+      el("wk").innerHTML='<div class="work">🔁 '+q.work+'</div>';
+      el("nx").innerHTML='<button class="btn big green" id="go" style="margin-top:12px;">'+(i+1>=Q.length?"See my score ▶":"Next ▶")+'</button>';
+      el("go").onclick=function(){ MQ.sound("click"); i++; show(); }; el("go").focus();
+    }
+    if(q.type==="in"){
+      var inp=el("ans"); inp.focus();
+      el("ck").onclick=function(){
+        if(settled) return;
+        var v=parseInt(inp.value,10), fb=el("fb");
+        if(isNaN(v)){ fb.className="feedback"; fb.textContent="Type your answer first ✏️"; return; }
+        if(v===q.ans){ fb.className="feedback good"; fb.textContent=tries===0?"🎉 Correct!":"✅ Got it!"; MQ.sound("correct"); MQ.confetti(50); inp.disabled=true; done(true); }
+        else { tries++; MQ.sound("wrong");
+          if(tries>=2){ fb.className="feedback bad"; fb.innerHTML="The answer is <b>"+q.ans+"</b>."; inp.value=q.ans; inp.disabled=true; done(false); }
+          else { fb.className="feedback bad"; fb.textContent="Not quite. Use the inverse and try once more! 🔁"; inp.value=""; inp.focus(); } }
+      };
+      inp.addEventListener("keydown",function(e){ if(e.key==="Enter") el("ck").click(); });
+    } else {
+      Array.prototype.forEach.call(document.querySelectorAll("[data-o]"),function(b){
+        b.onclick=function(){
+          if(settled) return;
+          var o=Number(b.getAttribute("data-o")), fb=el("fb");
+          document.querySelectorAll("[data-o]").forEach(function(x){ x.disabled=true; });
+          if(o===q.ans){ b.classList.add("correct"); fb.className="feedback good"; fb.textContent="🎉 Correct!"; MQ.sound("correct"); MQ.confetti(50); done(true); }
+          else { b.classList.add("wrong"); fb.className="feedback bad"; fb.textContent="Not this time. See how the inverse checks it below."; MQ.sound("wrong");
+            var r=document.querySelector('[data-o="'+q.ans+'"]'); if(r) r.classList.add("correct"); done(false); }
+        };
+      });
+    }
+  }
+  function finish(){
+    var acc=Math.round(first/Q.length*100), rt=MQ.rating(acc);
+    MQ.sound("win"); MQ.confetti(200);
+    screen.innerHTML='<div class="card center"><div class="mascot" style="font-size:72px;">'+rt.emoji+'</div><h1>Practice complete!</h1>'+
+      '<div class="speech">'+(acc>=80?"Brilliant undoing, ":"Good effort, ")+student+'! '+(level===1&&acc>=80?"You're ready for <b>Level 2</b> ⭐⭐":"Keep using the inverse to check every answer! 🔁")+'</div>'+
+      '<div class="row" style="margin:16px 0;gap:26px;"><div><div class="big-num" style="font-size:52px;">'+first+'/'+Q.length+'</div><div class="muted">First try</div></div>'+
+      '<div><div class="big-num" style="font-size:52px;">'+acc+'%</div><div class="muted">Score</div></div></div>'+
+      '<p style="font-size:30px;">'+"⭐".repeat(rt.stars)+"▫️".repeat(5-rt.stars)+'</p><p class="muted" id="saveState">💾 Saving…</p>'+
+      '<div class="row">'+(level===1?'<button class="btn big green" id="up">⭐⭐ Try Level 2</button>':'')+'<button class="btn green" id="again">🔁 Play again</button><button class="btn blue" id="menu">⏪ Undo Button home</button></div></div>';
+    var up=el("up"); if(up) up.onclick=function(){ MQ.sound("level"); practice(2); };
+    el("again").onclick=function(){ MQ.sound("click"); practice(level); };
+    el("menu").onclick=function(){ MQ.sound("click"); menu(); };
+    MQ.logResult({ student:student||"Unknown", subject:"Maths", week:"", weekTitle:"Inverse of + and − (Year 3) — Practice Level "+level,
+      accuracy:acc, correct:first, totalQuestions:Q.length, stars:rt.stars, rating:rt.label,
+      school:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy",
+      tutor:(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||"" })
+    .then(function(res){ var s=el("saveState"); if(!s) return;
+      s.textContent = res&&res.ok ? "✅ Saved — your tutor can see your score!" : res&&res.offline ? "📴 Saved on this device." : "⚠️ Couldn't reach the server, but it's saved on this device."; });
+  }
+  show();
+}
+
+menu();
+</script>
+</body>
+</html>
