@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Year 6 English Test | Grammar Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📘</text></svg>" />
+<style>
+  .cbt-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between;
+    background:linear-gradient(90deg,#0f766e,#2563eb); color:#fff; padding:12px 16px; border-radius:18px; margin-bottom:14px; }
+  .cbt-bar .t { font-size:26px; font-weight:800; letter-spacing:1px; }
+  .cbt-bar .t.warn { animation: pulseWarn 1s infinite; }
+  @keyframes pulseWarn { 0%,100%{ color:#fff; } 50%{ color:#ffe08a; } }
+  .cbt-bar .meta { font-weight:800; font-size:15px; }
+  .card.still { animation:none; }
+  .secband { border-radius:14px; padding:10px 14px; background:#e8f4ff; color:#1e3a5f; font-weight:800; margin-bottom:12px; }
+  .secband small { display:block; font-weight:700; color:#3b5b7e; }
+  .qno { display:inline-block; background:#2563eb; color:#fff; font-weight:800; border-radius:999px; padding:3px 12px; font-size:14px; }
+  .qtext { font-size:21px; font-weight:800; color:var(--ink); line-height:1.5; margin:12px 0 6px; }
+  .qtext .sent { display:block; margin-top:8px; padding:12px 14px; background:#fffdf3; border:2px dashed #e9dca4; border-radius:14px; font-weight:700; }
+  .options.col1 { grid-template-columns:1fr; }
+  .options.col1 .opt { font-size:18px; text-align:left; padding:14px 16px; }
+  .opt.picked { background:linear-gradient(160deg,#ffd93b,#ffb020) !important; color:#4a3500 !important; border-color:#e6a100 !important; }
+  .typein { width:100%; max-width:360px; font-size:26px; font-weight:800; text-align:center; border:4px solid #2563eb; border-radius:14px; padding:8px; font-family:inherit; color:var(--ink); }
+  .passage { max-height:330px; overflow-y:auto; background:#fffef7; border:3px solid #eadfb4; border-radius:16px; padding:14px 18px; font-size:17px; line-height:1.65; color:#2b2547; }
+  .passage h3 { margin:0 0 6px; } .passage p { margin:0 0 10px; }
+  .spellbox { text-align:center; }
+  .spellbox .hint { font-weight:700; color:#3b5b7e; margin-top:8px; }
+  .palette { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:6px; margin:16px 0 6px; }
+  .pal { height:38px; border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--ink); font-weight:800; font-size:14px; cursor:pointer; position:relative; font-family:inherit; }
+  .pal.done { background:linear-gradient(160deg,#34e089,#12b866); color:#fff; border-color:#0f9d58; }
+  .pal.cur { outline:3px solid rgba(37,99,235,.55); outline-offset:2px; }
+  .pal.flag::after { content:"🚩"; position:absolute; top:-9px; right:-7px; font-size:13px; }
+  .pal.sep { grid-column:1 / -1; height:auto; border:0; background:none; cursor:default; text-align:left; font-size:12px; color:#3b5b7e; padding:2px 0 0; }
+  .flagbtn.on { background:#ffdf6b; border-color:#e6b800; color:#5a4600; }
+  /* results */
+  .brk { display:flex; align-items:center; gap:10px; margin:8px 0; font-weight:800; }
+  .brk .bn { flex:0 0 210px; text-align:left; }
+  .brk .bar { flex:1; height:14px; background:#eee; border-radius:999px; overflow:hidden; }
+  .brk .bar i { display:block; height:100%; border-radius:999px; }
+  .brk .bs { flex:0 0 64px; text-align:right; }
+  .rev { border:2px solid var(--line); border-radius:16px; padding:12px 14px; margin:10px 0; text-align:left; }
+  .rev.ok { border-color:#22bd6b; background:#effaf3; } .rev.no { border-color:var(--red); background:#fdeef0; } .rev.blank { border-color:#c9c3e6; background:#f6f4fd; }
+  .rev .rb { float:right; font-size:20px; } .rev .rq { font-weight:800; margin-bottom:6px; } .rev .ra { font-weight:800; font-size:15px; }
+  .solbox { margin-top:8px; background:#eef5ff; border-radius:12px; padding:10px 12px; font-weight:700; color:#1e3a5f; }
+  .tgt { border-left:6px solid #f59e0b; background:#fff8e8; border-radius:10px; padding:10px 12px; margin:8px 0; font-weight:700; color:#5a3e00; }
+  .str { border-left:6px solid #16a34a; background:#effaf3; border-radius:10px; padding:10px 12px; margin:8px 0; font-weight:700; color:#14532d; }
+  .filt { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:6px 0 4px; }
+  .filt button.on { background:#2563eb; color:#fff; border-color:#2563eb; }
+  .mailbox { border-radius:14px; padding:10px 14px; font-weight:800; margin:10px auto 0; max-width:560px; }
+  .mailbox.ok { background:#e9fbf1; color:#0c7a43; } .mailbox.wait { background:#eef5ff; color:#1e3a5f; } .mailbox.bad { background:#fff1e6; color:#9a3b0b; }
+  @media (max-width:520px){ .brk .bn{ flex-basis:130px; font-size:13px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="../index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">📚 English</a>
+    <span class="chip">👤 <b id="whoName">Candidate</b></span>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+  <div class="brand" id="brand"><span class="pyr">🔺</span><span class="nm">Whyte Pyramid Academy<small>Year 6 English</small></span></div>
+  <div id="screen"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* =============================================================
+   YEAR 6 ENGLISH PRACTICE TEST — 45 questions · 50 minutes
+   A: Grammar (25)  B: Spelling (10)  C: Reading comprehension (10)
+   Question kinds:
+     mc    : multiple choice; the CORRECT option is written FIRST in `o`
+             (options are shuffled per attempt)
+     input : typed answer; `a` lists the accepted answers
+     spell : dictated spelling (read aloud); `a` = the word
+   `skill` drives the performance analysis.
+   ============================================================= */
+var TEST_TITLE = "Year 6 English Practice Test";
+var TEST_MINUTES = 50;
+var SECTIONS = [
+  { id:"grammar",  n:"Section A", title:"Grammar",               desc:"Verb tenses, nouns and other grammar. Read each question carefully." },
+  { id:"spelling", n:"Section B", title:"Spelling",              desc:"Press 🔊 to hear the word in a sentence, then type the missing word. Some questions ask you to choose the correct spelling." },
+  { id:"reading",  n:"Section C", title:"Reading comprehension", desc:"Read “The Rooftop Garden”, then answer the questions. You can scroll the story at any time." }
+];
+var SKILLS = ["Verb tenses","Nouns","Adjectives & adverbs","Pronouns & determiners","Conjunctions & prepositions","Sentences & Standard English","Spelling","Retrieval","Vocabulary","Inference"];
+var SKILL_SECTION = { "Verb tenses":"grammar","Nouns":"grammar","Adjectives & adverbs":"grammar","Pronouns & determiners":"grammar","Conjunctions & prepositions":"grammar","Sentences & Standard English":"grammar","Spelling":"spelling","Retrieval":"reading","Vocabulary":"reading","Inference":"reading" };
+var ADVICE = {
+  "Verb tenses":"Practise changing sentences between past, present and future. Learn irregular verbs (swim → swam, bring → brought) and spot the helper verbs: is/are + -ing (progressive), has/have + past participle (present perfect), had + past participle (past perfect).",
+  "Nouns":"Revise the noun types: proper nouns (capital letters), collective nouns (groups), abstract nouns (feelings and ideas). Practise plural rules (baby → babies) and building expanded noun phrases.",
+  "Adjectives & adverbs":"Adjectives describe nouns; adverbs describe verbs (many end in -ly). Practise starting sentences with a fronted adverbial followed by a comma.",
+  "Pronouns & determiners":"Practise their / there / they're, relative pronouns (who, which, that) and using ‘an’ before a vowel sound.",
+  "Conjunctions & prepositions":"Learn the common subordinating conjunctions (because, when, if, although) and prepositions of place and time (under, after, during).",
+  "Sentences & Standard English":"Revise the four sentence types (statement, question, command, exclamation) and Standard English verb forms (we were, not we was).",
+  "Spelling":"Use Look–Say–Cover–Write–Check on the words missed here and on the Year 5/6 word list. Hear-the-word practice in the Spelling Zone helps too.",
+  "Retrieval":"Underline the key words in each question, then scan the text for them to find the exact fact.",
+  "Vocabulary":"When a word is new, read the sentences around it for clues, then try a replacement word that keeps the same meaning.",
+  "Inference":"Look for clues about feelings and reasons in what characters do and say, and always ask: “How do I know?”"
+};
+
+var PASSAGE_TITLE = "The Rooftop Garden";
+var PASSAGE = [
+  "When Amara's school announced a competition to make the town greener, she knew exactly where to start: the flat, empty roof above her grandmother's bakery.",
+  "For years, the roof had been nothing but grey concrete, cracked tiles and the occasional pigeon. “It's a wasteland,” Grandma sighed whenever she hung out the washing. But Amara saw something different. She saw tomatoes climbing up canes, sunflowers nodding in the breeze and bees drifting lazily from flower to flower.",
+  "The first problem was soil. Carrying heavy sacks up three flights of stairs was exhausting, so Amara persuaded her friends, Tunde and Grace, to help. Together they made a chain, passing the sacks from hand to hand. By the end of the first weekend, their arms ached, but twelve wooden planters stood in neat rows along the roof.",
+  "Next came the planting. Grandma, who had grown vegetables as a girl, showed them how to push seeds gently into the soil and water them without drowning them. “Patience,” she reminded them, “is the gardener's most important tool.”",
+  "For two weeks, nothing happened. Tunde grumbled that the seeds must be broken. Then, one misty Monday morning, Amara spotted tiny green shoots poking through the soil. She was so delighted that she ran downstairs still wearing her slippers.",
+  "By July, the roof was unrecognisable. Customers queued at the bakery to buy Grandma's new “Rooftop Tomato Bread”, and the town council awarded the friends first prize. Yet for Amara, the best reward was simpler: watching Grandma sit among the flowers each evening, smiling at the garden she had once called a wasteland."
+];
+
+var BANK = [
+  /* ================= SECTION A · GRAMMAR (25) ================= */
+  /* --- Verb tenses (9) --- */
+  { sec:"grammar", skill:"Verb tenses", k:"mc", q:"Which sentence is written in the <b>simple past</b> tense?",
+    o:["Maya walked to the park.","Maya walks to the park.","Maya is walking to the park.","Maya will walk to the park."],
+    why:"‘walked’ is the simple past: it happened and finished. (walks = present, is walking = present progressive, will walk = future)" },
+  { sec:"grammar", skill:"Verb tenses", k:"input", q:"Write the <b>past tense</b> of the verb in brackets.<span class='sent'>Yesterday, we ______ (swim) in the sea.</span>", a:["swam"],
+    why:"‘swim’ is an irregular verb: swim → swam (not ‘swimmed’)." },
+  { sec:"grammar", skill:"Verb tenses", k:"mc", q:"Which sentence is in the <b>present progressive</b> tense?",
+    o:["The dog is barking at the postman.","The dog barked at the postman.","The dog barks at the postman.","The dog had barked at the postman."],
+    why:"The present progressive uses is/am/are + a verb ending in -ing: is barking." },
+  { sec:"grammar", skill:"Verb tenses", k:"mc", q:"Which verb completes the sentence in the <b>present perfect</b>?<span class='sent'>Sam ______ his homework already.</span>",
+    o:["has finished","finishing","finish","have finished"],
+    why:"The present perfect is has/have + past participle. Sam is one person, so we use ‘has finished’." },
+  { sec:"grammar", skill:"Verb tenses", k:"mc", q:"Which verb form completes the sentence?<span class='sent'>While I ______ my bike, it started to rain.</span>",
+    o:["was riding","am riding","ride","will ride"],
+    why:"The past progressive (was/were + -ing) shows an action that was going on in the past when something else happened." },
+  { sec:"grammar", skill:"Verb tenses", k:"input", q:"Write the <b>past tense</b> of the verb in brackets.<span class='sent'>Last week, Dad ______ (bring) a cake to the party.</span>", a:["brought"],
+    why:"‘bring’ is irregular: bring → brought (not ‘bringed’ or ‘brang’)." },
+  { sec:"grammar", skill:"Verb tenses", k:"mc", q:"Which sentence is in the <b>future</b> tense?",
+    o:["Next summer, we will visit Lagos.","Last summer, we visited Lagos.","We are visiting Lagos.","We visit Lagos every summer."],
+    why:"‘will’ + verb shows the future: will visit." },
+  { sec:"grammar", skill:"Verb tenses", k:"mc", q:"Which sentence uses the <b>past perfect</b> tense?",
+    o:["By the time we arrived, the film had started.","The film starts at six o'clock.","The film is starting now.","The film will start soon."],
+    why:"The past perfect is had + past participle. It shows something that happened BEFORE another past event: the film had started before we arrived." },
+  { sec:"grammar", skill:"Verb tenses", k:"mc", q:"Which sentence keeps to the <b>same tense</b> all the way through?",
+    o:["She opened the door and stepped outside.","She opens the door and stepped outside.","She opened the door and steps outside.","She will open the door and stepped outside."],
+    why:"Both verbs, opened and stepped, are in the past tense. Don't switch tenses in the middle of a sentence." },
+  /* --- Nouns (6) --- */
+  { sec:"grammar", skill:"Nouns", k:"mc", q:"Which word is a <b>proper noun</b>?<span class='sent'>On Saturday, my cousin visited the zoo.</span>",
+    o:["Saturday","cousin","visited","zoo"],
+    why:"Proper nouns name a particular person, place, day or month and start with a capital letter: Saturday." },
+  { sec:"grammar", skill:"Nouns", k:"mc", q:"Which word is a <b>collective noun</b>?",
+    o:["flock","sheep","fluffy","run"],
+    why:"A collective noun names a group: a flock of sheep." },
+  { sec:"grammar", skill:"Nouns", k:"mc", q:"Which word is an <b>abstract noun</b>?",
+    o:["happiness","table","teacher","river"],
+    why:"Abstract nouns name feelings, ideas or qualities you cannot touch: happiness." },
+  { sec:"grammar", skill:"Nouns", k:"mc", q:"Choose the correct <b>plural</b>.<span class='sent'>one baby, two ______</span>",
+    o:["babies","babys","babyes","babies'"],
+    why:"When a word ends in a consonant + y, change y to i and add -es: baby → babies." },
+  { sec:"grammar", skill:"Nouns", k:"mc", q:"Which word is used as a <b>noun</b> in this sentence?<span class='sent'>The climb to the top was very steep.</span>",
+    o:["climb","steep","very","was"],
+    why:"‘climb’ is often a verb, but in ‘The climb’ it names a thing, so here it is a noun." },
+  { sec:"grammar", skill:"Nouns", k:"mc", q:"Which of these is an <b>expanded noun phrase</b>?",
+    o:["the tall, old oak tree near the river","ran very quickly","under the bridge","and then"],
+    why:"An expanded noun phrase adds detail to a noun (tree) with adjectives (tall, old, oak) and a prepositional phrase (near the river)." },
+  /* --- Other grammar (10) --- */
+  { sec:"grammar", skill:"Adjectives & adverbs", k:"mc", q:"Which word is an <b>adjective</b>?<span class='sent'>The hungry fox crept towards the hens.</span>",
+    o:["hungry","crept","towards","hens"],
+    why:"An adjective describes a noun: hungry describes the fox." },
+  { sec:"grammar", skill:"Adjectives & adverbs", k:"mc", q:"Which word is an <b>adverb</b>?<span class='sent'>The children sang loudly in the hall.</span>",
+    o:["loudly","children","sang","hall"],
+    why:"An adverb tells us more about a verb: loudly tells us HOW they sang." },
+  { sec:"grammar", skill:"Adjectives & adverbs", k:"mc", q:"Which sentence begins with a <b>fronted adverbial</b>?",
+    o:["After lunch, we played football.","We played football after lunch.","We played football.","Football is fun after lunch."],
+    why:"A fronted adverbial is moved to the START of the sentence and followed by a comma: After lunch, …" },
+  { sec:"grammar", skill:"Pronouns & determiners", k:"mc", q:"Which word completes the sentence correctly?<span class='sent'>Ola and Tobi lost ______ way in the forest.</span>",
+    o:["their","there","they're","them"],
+    why:"‘their’ shows belonging (the way belongs to them). there = a place; they're = they are." },
+  { sec:"grammar", skill:"Pronouns & determiners", k:"mc", q:"Which word is a <b>relative pronoun</b>?<span class='sent'>The boy who won the race was very fast.</span>",
+    o:["who","boy","race","fast"],
+    why:"‘who’ starts a relative clause that tells us more about the boy." },
+  { sec:"grammar", skill:"Pronouns & determiners", k:"mc", q:"Which word completes the sentence correctly?<span class='sent'>She ate ______ apple.</span>",
+    o:["an","a","these","many"],
+    why:"Use ‘an’ before a word that starts with a vowel sound: an apple." },
+  { sec:"grammar", skill:"Conjunctions & prepositions", k:"mc", q:"Which word is a <b>subordinating conjunction</b>?<span class='sent'>We stayed inside because it was raining.</span>",
+    o:["because","inside","stayed","raining"],
+    why:"‘because’ joins a main clause to a subordinate clause that gives a reason." },
+  { sec:"grammar", skill:"Conjunctions & prepositions", k:"mc", q:"Which word is a <b>preposition</b>?<span class='sent'>The cat hid under the table.</span>",
+    o:["under","hid","cat","table"],
+    why:"Prepositions show where or when something is: under the table." },
+  { sec:"grammar", skill:"Sentences & Standard English", k:"mc", q:"What type of sentence is this?<span class='sent'>Close the window, please.</span>",
+    o:["a command","a question","a statement","an exclamation"],
+    why:"It tells someone to do something, and starts with a bossy (imperative) verb, ‘Close’, so it is a command." },
+  { sec:"grammar", skill:"Sentences & Standard English", k:"mc", q:"Which sentence is written in <b>Standard English</b>?",
+    o:["We were going to the shop.","We was going to the shop.","We is going to the shop.","We be going to the shop."],
+    why:"In Standard English we say ‘we were’, not ‘we was’." },
+
+  /* ================= SECTION B · SPELLING (10) ================= */
+  { sec:"spelling", skill:"Spelling", k:"spell", a:["believe"], sentence:"I ______ that you can win the race.", say:"I believe that you can win the race.", hint:"Meaning: to think something is true.",
+    why:"believe: remember ‘i before e except after c’ — bel-IE-ve." },
+  { sec:"spelling", skill:"Spelling", k:"spell", a:["different"], sentence:"Every snowflake is ______.", say:"Every snowflake is different.", hint:"Meaning: not the same.",
+    why:"different: dif-FER-ent. There's a double f and an ‘er’ in the middle." },
+  { sec:"spelling", skill:"Spelling", k:"spell", a:["separate"], sentence:"Please keep the red and blue pens ______.", say:"Please keep the red and blue pens separate.", hint:"Meaning: apart, not together.",
+    why:"separate: there's ‘a rat’ in sep-A-RAT-e." },
+  { sec:"spelling", skill:"Spelling", k:"spell", a:["neighbour"], sentence:"Our ______ waters our plants when we are on holiday.", say:"Our neighbour waters our plants when we are on holiday.", hint:"Meaning: a person who lives next door.",
+    why:"neighbour: n-EIGH-b-OUR. It has the ‘eigh’ sound as in eight, and ends in -our." },
+  { sec:"spelling", skill:"Spelling", k:"spell", a:["temperature"], sentence:"The ______ dropped below zero last night.", say:"The temperature dropped below zero last night.", hint:"Meaning: how hot or cold something is.",
+    why:"temperature: tem-PER-a-ture. Say every syllable so you don't miss the ‘a’." },
+  { sec:"spelling", skill:"Spelling", k:"spell", a:["especially"], sentence:"I love fruit, ______ mangoes.", say:"I love fruit, especially mangoes.", hint:"Meaning: above all; more than usual.",
+    why:"especially: e-SPECIAL-ly. It's ‘special’ inside, plus -ly (double l)." },
+  { sec:"spelling", skill:"Spelling", k:"spell", a:["vegetable"], sentence:"A carrot is a healthy ______.", say:"A carrot is a healthy vegetable.", hint:"Meaning: a plant we eat, like a carrot or a pea.",
+    why:"vegetable: VEG-E-TABLE. Think of a veg on a table." },
+  { sec:"spelling", skill:"Spelling", k:"mc", q:"Which word is spelt <b>correctly</b>?", o:["necessary","neccessary","necessery","nesessary"],
+    why:"necessary: one Collar and two Sleeves, so 1 c and 2 s." },
+  { sec:"spelling", skill:"Spelling", k:"mc", q:"Which word is spelt <b>correctly</b>?", o:["environment","enviroment","enviornment","envirnment"],
+    why:"environment: there's an ‘n’ before -ment: enviro-N-ment." },
+  { sec:"spelling", skill:"Spelling", k:"mc", q:"Which word completes the sentence correctly?<span class='sent'>Could I have a ______ of cake, please?</span>", o:["piece","peace","peice","peese"],
+    why:"piece = a part of something. Remember ‘a PIEce of PIE’. (peace = calm, no fighting)" },
+
+  /* ================= SECTION C · READING COMPREHENSION (10) ================= */
+  { sec:"reading", skill:"Retrieval", k:"mc", q:"Where did Amara decide to make her garden?",
+    o:["On the roof above her grandmother's bakery","In the school playground","In the town park","Behind her house"],
+    why:"Paragraph 1: “the flat, empty roof above her grandmother's bakery.”" },
+  { sec:"reading", skill:"Retrieval", k:"mc", q:"How many wooden planters were on the roof by the end of the first weekend?",
+    o:["twelve","three","two","ten"],
+    why:"Paragraph 3: “twelve wooden planters stood in neat rows along the roof.” (Three is the number of flights of stairs.)" },
+  { sec:"reading", skill:"Vocabulary", k:"mc", q:"“It's a wasteland,” Grandma sighed. What does <b>wasteland</b> mean here?",
+    o:["an empty, unused place","a place full of rubbish bins","a busy market","a beautiful field"],
+    why:"The roof was ‘nothing but grey concrete, cracked tiles’, an empty place that nobody used." },
+  { sec:"reading", skill:"Inference", k:"mc", q:"Why did the children make a chain to pass the sacks?",
+    o:["To make carrying the heavy soil easier","Because they wanted to play a game","Because Grandma told them to","To count how many sacks there were"],
+    why:"The sacks were heavy and carrying them up the stairs was ‘exhausting’, so passing them along a chain shared the work." },
+  { sec:"reading", skill:"Vocabulary", k:"mc", q:"Grandma says patience is “the gardener's most important tool”. What does she mean?",
+    o:["Gardeners must be willing to wait for plants to grow","Gardeners need lots of tools","Patience is a type of spade","Gardening is very quick"],
+    why:"Plants take time to grow, so a gardener needs to wait calmly. Patience is not a real tool; it's a way of saying it is very useful." },
+  { sec:"reading", skill:"Inference", k:"mc", q:"Tunde “grumbled that the seeds must be broken”. How was Tunde feeling?",
+    o:["impatient and disappointed","excited and proud","scared and nervous","calm and relaxed"],
+    why:"Nothing had grown for two weeks and he ‘grumbled’ (complained), so he was impatient and disappointed." },
+  { sec:"reading", skill:"Inference", k:"mc", q:"Why did Amara run downstairs still wearing her slippers?",
+    o:["She was so excited that she didn't stop to change","She had lost her shoes","It was raining outside","Grandma asked her to hurry"],
+    why:"The text says she was “so delighted”. She rushed to share the news without changing her shoes." },
+  { sec:"reading", skill:"Retrieval", k:"mc", q:"Which of these happened <b>first</b> in the story?",
+    o:["The friends carried soil up the stairs","Green shoots appeared in the soil","Grandma sold Rooftop Tomato Bread","The council awarded first prize"],
+    why:"The order is: carry the soil, plant the seeds, shoots appear, sell the bread, win the prize." },
+  { sec:"reading", skill:"Vocabulary", k:"mc", q:"“By July, the roof was <b>unrecognisable</b>.” This means the roof…",
+    o:["had changed so much that it looked completely different","had been knocked down","was hidden by clouds","was still grey and empty"],
+    why:"un- (not) + recognisable: it could not be recognised because it had changed so much." },
+  { sec:"reading", skill:"Retrieval", k:"mc", q:"According to the story, what was the <b>best reward</b> for Amara?",
+    o:["Watching Grandma enjoy the garden she once called a wasteland","Winning first prize","Selling lots of bread","Being in the newspaper"],
+    why:"Last paragraph: “the best reward was simpler: watching Grandma sit among the flowers each evening…”" }
+];
+
+/* ---------- helpers ---------- */
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function plain(s){ return String(s||"").replace(/<span class='sent'>/g," ").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim(); }
+function norm(s){ return String(s==null?"":s).toLowerCase().replace(/[’']/g,"'").trim().replace(/[.!?,;:"]+$/,"").replace(/\s+/g," "); }
+function mulberry(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffleR(a,r){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(r()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+var screen=el("screen");
+
+/* Build the paper from a seed: grammar and spelling questions are shuffled,
+   comprehension stays in story order; MC options are shuffled. Same seed → same paper (resume). */
+function buildPaper(seed){
+  var r=mulberry(seed), paper=[];
+  SECTIONS.forEach(function(S){
+    var qs=BANK.filter(function(q){return q.sec===S.id;});
+    if(S.id!=="reading") qs=shuffleR(qs,r);
+    qs.forEach(function(q){
+      var it={ src:q, sec:q.sec, skill:q.skill, kind:q.k, why:q.why };
+      if(q.k==="mc"){ it.q=q.q; it.options=shuffleR(q.o,r); it.answer=it.options.indexOf(q.o[0]); }
+      else if(q.k==="input"){ it.q=q.q; it.accept=q.a; }
+      else { it.sentence=q.sentence; it.say=q.say; it.hint=q.hint; it.accept=q.a; }
+      paper.push(it);
+    });
+  });
+  return paper;
+}
+function isRight(it, given){
+  if(given==null || given==="") return false;
+  if(it.kind==="mc") return given===it.answer;
+  var g=norm(given); return it.accept.some(function(a){ return norm(a)===g; });
+}
+function answerText(it, given){
+  if(given==null || given==="") return "(blank)";
+  return it.kind==="mc" ? it.options[given] : String(given);
+}
+function correctText(it){ return it.kind==="mc" ? it.options[it.answer] : it.accept[0]; }
+function questionText(it){
+  if(it.kind==="spell") return "Spelling: "+it.sentence+" ("+it.hint+")";
+  return plain(it.q);
+}
+function secTitle(id){ for(var i=0;i<SECTIONS.length;i++) if(SECTIONS[i].id===id) return SECTIONS[i].title; return id; }
+
+/* ---------- speech for the spelling section ---------- */
+var canSpeak = ("speechSynthesis" in window);
+function say(text, rate){
+  try{
+    if(!canSpeak) return;
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(text); u.rate=rate||0.85; u.lang="en-GB";
+    var vs=window.speechSynthesis.getVoices()||[];
+    var v=vs.find(function(x){return /en[-_]GB/i.test(x.lang);})||vs.find(function(x){return /^en/i.test(x.lang);});
+    if(v) u.voice=v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+try{ if(canSpeak){ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=function(){ window.speechSynthesis.getVoices(); }; } }catch(e){}
+function dictate(it, slow){ var w=it.accept[0]; say(w+". "+it.say+" "+w+".", slow?0.6:0.85); }
+
+/* ---------- brand / sound / learner ---------- */
+var ACADEMY=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+var TUTOR=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||"";
+(function(){ var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=ACADEMY+"<small>Year 6 English</small>"; document.title="Year 6 English Test | "+ACADEMY; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+var student=MQ.getStudent()||"";
+function attemptKey(){ return "y6eng_attempt_"+(student||"").toLowerCase(); }
+function bestKey(){ return "y6eng_best_"+(student||"").toLowerCase(); }
+
+/* =============================================================
+   START
+   ============================================================= */
+function boot(){
+  if(!student){
+    screen.innerHTML='<div class="card center" style="max-width:540px;"><div class="mascot">📘</div>'+
+      '<div class="speech">Welcome to the Year 6 English Test. Please type your name.</div>'+
+      '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Continue ▶</button></div></div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v) return; student=v; MQ.setStudent(v); el("whoName").textContent=v; intro(); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+  } else { el("whoName").textContent=student; intro(); }
+}
+
+function intro(){
+  var saved=MQ.readLocal(attemptKey()), best=MQ.readLocal(bestKey());
+  var resume=saved && !saved.done;
+  var secList=SECTIONS.map(function(S){ var n=BANK.filter(function(q){return q.sec===S.id;}).length;
+    return '<li style="margin:4px 0;"><b>'+S.n+' · '+S.title+'</b> ('+n+' questions). '+S.desc+'</li>'; }).join("");
+  screen.innerHTML=
+    '<h1 class="title-pop">📘 YEAR 6 ENGLISH TEST</h1>'+
+    '<p class="subtitle">'+BANK.length+' questions · '+TEST_MINUTES+' minutes · Grammar, Spelling &amp; Reading</p>'+
+    '<div class="card" style="margin-top:18px;border-top:10px solid #2563eb;">'+
+      '<h2 style="margin-top:0;">📋 Instructions</h2>'+
+      '<ul style="font-weight:700;color:#4a4470;line-height:1.55;">'+
+        '<li>You have <b>'+TEST_MINUTES+' minutes</b> to answer <b>'+BANK.length+' questions</b>. Take your time and read carefully.</li>'+
+        '<li>Use <b>Next</b> / <b>Back</b>, or tap a number to jump. <b>🚩 Flag</b> any question you want to check again.</li>'+
+        '<li>For the spelling words, press <b>🔊 Hear it</b>. You can listen as many times as you like. 🎧</li>'+
+        '<li>You can change your answers until you press <b>Submit</b>. The test submits by itself when the time runs out.</li>'+
+        '<li>At the end you will see a <b>full report</b> with your corrections. It is also <b>sent to your tutor</b>, and you can <b>download</b> it.</li>'+
+      '</ul>'+
+      '<h3>The three sections</h3><ol style="font-weight:700;color:#4a4470;line-height:1.5;padding-left:20px;list-style:none;">'+secList+'</ol>'+
+      (canSpeak?'':'<p class="mailbox bad">🔇 This device cannot read words aloud. For the spelling section, ask your tutor to read each word.</p>')+
+      (best?'<p style="font-weight:800;color:#3b5b7e;">🏅 Your best so far: '+best.score+' / '+BANK.length+' ('+best.pct+'%)</p>':'')+
+      '<div class="row" style="margin-top:12px;">'+
+        (resume?'<button class="btn big green" id="resume">▶ Resume your test</button><button class="btn ghost" id="fresh">↺ Start a new test</button>'
+               :'<button class="btn big green" id="fresh">▶ Start the '+TEST_MINUTES+'-minute test</button>')+
+      '</div>'+
+    '</div>';
+  if(resume) el("resume").onclick=function(){ MQ.sound("level"); runTest(saved); };
+  el("fresh").onclick=function(){
+    if(resume && !confirm("Start a new test? Your unfinished test will be lost.")) return;
+    MQ.sound("level");
+    var att={ seed:Math.floor(Math.random()*1e9)+1, start:Date.now(), endAt:Date.now()+TEST_MINUTES*60000, ans:{}, flag:{}, cur:0, done:false };
+    MQ.saveLocal(attemptKey(), att); runTest(att);
+  };
+}
+
+/* =============================================================
+   TEST RUNNER
+   ============================================================= */
+var timer=null, keyH=null;
+function runTest(att){
+  var P=buildPaper(att.seed), N=P.length, finished=false, firstPaint=true, warned10=false, warned5=false;
+  function save(){ MQ.saveLocal(attemptKey(), att); }
+  function answered(i){ return att.ans[i]!=null && att.ans[i]!==""; }
+  function nAnswered(){ var c=0; for(var i=0;i<N;i++) if(answered(i)) c++; return c; }
+  function secOf(i){ for(var s=0;s<SECTIONS.length;s++) if(SECTIONS[s].id===P[i].sec) return SECTIONS[s]; }
+
+  function paintTimer(){
+    var left=Math.max(0,Math.round((att.endAt-Date.now())/1000)), m=Math.floor(left/60), s=left%60, t=el("tm");
+    if(t){ t.textContent="⏱ "+m+":"+String(s).padStart(2,"0"); t.classList.toggle("warn", left<=300); }
+    if(left<=600 && left>0 && !warned10){ warned10=true; toast("⏰ 10 minutes left"); }
+    if(left<=300 && left>0 && !warned5){ warned5=true; toast("⏰ 5 minutes left. Check for any blank questions!"); }
+    return left;
+  }
+  function syncCounts(){
+    var c=el("cnt"); if(c) c.textContent="Answered "+nAnswered()+" / "+N;
+    var tile=document.querySelector('.pal[data-p="'+att.cur+'"]'); if(tile) tile.classList.toggle("done", answered(att.cur));
+  }
+
+  function render(arrived){
+    var i=att.cur, q=P[i], S=secOf(i), body="";
+    if(q.sec==="reading"){
+      body+='<details open class="passwrap"><summary style="font-weight:800;cursor:pointer;color:#1e3a5f;margin-bottom:6px;">📖 '+PASSAGE_TITLE+' (tap to hide or show)</summary>'+
+        '<div class="passage"><h3>'+PASSAGE_TITLE+'</h3>'+PASSAGE.map(function(p){ return '<p>'+esc(p)+'</p>'; }).join("")+'</div></details>';
+    }
+    if(q.kind==="mc"){
+      body+='<div class="qtext">'+q.q+'</div><div class="options col1" id="opts">'+q.options.map(function(o,k){
+        return '<button class="opt'+(att.ans[i]===k?" picked":"")+'" data-k="'+k+'"><b>'+"ABCD"[k]+'.</b> '+esc(o)+'</button>'; }).join("")+'</div>';
+    } else if(q.kind==="input"){
+      body+='<div class="qtext">'+q.q+'</div><div class="center"><input class="typein" id="tin" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="30" placeholder="Type your answer" value="'+esc(att.ans[i]||"")+'"></div>';
+    } else {
+      body+='<div class="spellbox"><div class="qtext">Listen, then type the missing word.<span class="sent" style="font-size:22px;">'+esc(q.sentence)+'</span></div>'+
+        '<div class="row" style="justify-content:center;gap:10px;"><button class="btn blue" id="hear">🔊 Hear it</button><button class="btn ghost" id="slow">🐢 Slower</button></div>'+
+        '<div class="hint">💡 '+esc(q.hint)+'</div>'+
+        '<div style="margin-top:12px;"><input class="typein" id="tin" autocomplete="off" autocapitalize="off" spellcheck="false" autocorrect="off" maxlength="30" placeholder="Type the word" value="'+esc(att.ans[i]||"")+'"></div>'+
+        (canSpeak?'':'<p class="mailbox bad" style="margin-top:10px;">🔇 Ask your tutor to read the word aloud.</p>')+'</div>';
+    }
+    var pal="", last=null;
+    for(var p=0;p<N;p++){
+      if(P[p].sec!==last){ last=P[p].sec; var SS=secOf(p); pal+='<span class="pal sep">'+SS.n+' · '+SS.title+'</span>'; }
+      pal+='<button class="pal'+(answered(p)?" done":"")+(p===i?" cur":"")+(att.flag[p]?" flag":"")+'" data-p="'+p+'">'+(p+1)+'</button>';
+    }
+    screen.innerHTML=
+      '<div class="cbt-bar"><span class="t" id="tm">⏱</span><span class="meta">Question '+(i+1)+' of '+N+'</span><span class="meta" id="cnt">Answered '+nAnswered()+' / '+N+'</span></div>'+
+      '<div class="card'+(firstPaint?"":" still")+'">'+
+        '<div class="secband">'+S.n+' · '+S.title+'<small>'+S.desc+'</small></div>'+
+        '<div class="row" style="justify-content:space-between;"><span class="qno">Q'+(i+1)+'</span>'+
+          '<button class="btn ghost flagbtn'+(att.flag[i]?" on":"")+'" id="fl">'+(att.flag[i]?"🚩 Flagged":"🚩 Flag for review")+'</button></div>'+
+        body+
+        '<div class="row" style="margin-top:16px;justify-content:space-between;">'+
+          '<button class="btn ghost" id="bk"'+(i===0?" disabled":"")+'>← Back</button>'+
+          (i+1>=N?'<button class="btn big green" id="sub">✅ Submit test</button>':'<button class="btn big blue" id="nx">Next →</button>')+'</div>'+
+        '<div class="palette">'+pal+'</div>'+
+        '<div class="center"><button class="btn ghost" id="fin">🏁 Finish &amp; submit now</button></div>'+
+      '</div>';
+    firstPaint=false; paintTimer();
+    if(q.kind==="mc"){
+      Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+        b.onclick=function(){ att.ans[i]=Number(b.getAttribute("data-k")); save(); MQ.sound("click");
+          document.querySelectorAll("#opts .opt").forEach(function(x){ x.classList.remove("picked"); }); b.classList.add("picked"); syncCounts(); };
+      });
+    } else {
+      var tin=el("tin");
+      tin.addEventListener("input",function(){ att.ans[i]=tin.value; save(); syncCounts(); });
+      tin.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); if(i+1<N) go(i+1); } });
+      if(q.kind==="spell"){
+        el("hear").onclick=function(){ dictate(q,false); tin.focus(); };
+        el("slow").onclick=function(){ dictate(q,true); tin.focus(); };
+        if(arrived && MQ.soundEnabled()) setTimeout(function(){ dictate(q,false); },350);
+      }
+      if(window.innerWidth>700) tin.focus();
+    }
+    el("fl").onclick=function(){ att.flag[i]=!att.flag[i]; if(!att.flag[i]) delete att.flag[i]; save(); MQ.sound("click"); render(false); };
+    var bk=el("bk"); if(bk) bk.onclick=function(){ go(i-1); };
+    var nx=el("nx"); if(nx) nx.onclick=function(){ go(i+1); };
+    var sb=el("sub"); if(sb) sb.onclick=confirmSubmit;
+    el("fin").onclick=confirmSubmit;
+    Array.prototype.forEach.call(document.querySelectorAll(".pal[data-p]"),function(b){ b.onclick=function(){ go(Number(b.getAttribute("data-p"))); }; });
+  }
+  function go(p){ if(p<0||p>=N) return; try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){} att.cur=p; save(); MQ.sound("click"); render(true); window.scrollTo({top:0,behavior:"smooth"}); }
+  function confirmSubmit(){
+    var blank=N-nAnswered(), fl=Object.keys(att.flag).length, extra=[];
+    if(blank) extra.push(blank+" unanswered"); if(fl) extra.push(fl+" flagged");
+    if(confirm("Submit your test now?"+(extra.length?"\n\nYou still have "+extra.join(" and ")+" question"+(blank+fl===1?"":"s")+".":""))) submit(false);
+  }
+  function submit(timedOut){
+    if(finished) return; finished=true;
+    clearInterval(timer); timer=null;
+    if(keyH){ document.removeEventListener("keydown",keyH); keyH=null; }
+    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+    att.done=true; att.timedOut=!!timedOut; att.finishedAt=Math.min(Date.now(),att.endAt); save();
+    showResults(buildReport(P, att));
+  }
+  keyH=function(e){ if(e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if(e.key==="ArrowRight") go(att.cur+1); else if(e.key==="ArrowLeft") go(att.cur-1); };
+  document.addEventListener("keydown",keyH);
+  if(timer) clearInterval(timer);
+  if(paintTimer()<=0){ submit(true); return; }
+  render(true);
+  timer=setInterval(function(){ if(paintTimer()<=0) submit(true); },1000);
+}
+
+function toast(msg){
+  var t=document.createElement("div"); t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#0f2a4a;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:16px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);max-width:92vw;text-align:center;";
+  document.body.appendChild(t); setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },2600);
+}
+
+/* =============================================================
+   PERFORMANCE ANALYSIS (one report object used for the screen,
+   the download, the PDF/print copy and the tutor's email)
+   ============================================================= */
+function bandFor(pct){
+  if(pct>=80) return { label:"Greater depth", note:"Excellent work, well above the expected standard for Year 6.", col:"#16a34a" };
+  if(pct>=60) return { label:"Expected standard", note:"Secure. Working at the expected standard for Year 6, with a few areas to polish.", col:"#2563eb" };
+  if(pct>=40) return { label:"Working towards", note:"Developing. Some areas are secure; the targets below will help close the gaps.", col:"#d97706" };
+  return { label:"Needs more support", note:"Early stages. Focused practice on the targets below will make a big difference.", col:"#dc2626" };
+}
+function buildReport(P, att){
+  var N=P.length, score=0, answeredN=0, sec={}, sk={}, corrections=[], all=[];
+  SECTIONS.forEach(function(S){ sec[S.id]={c:0,n:0}; });
+  SKILLS.forEach(function(s){ sk[s]={c:0,n:0}; });
+  P.forEach(function(it,i){
+    var given=att.ans[i], ok=isRight(it,given), blank=(given==null||given==="");
+    if(!blank) answeredN++;
+    if(ok) score++;
+    sec[it.sec].n++; if(ok) sec[it.sec].c++;
+    sk[it.skill].n++; if(ok) sk[it.skill].c++;
+    var row={ no:i+1, section:secTitle(it.sec), skill:it.skill, q:questionText(it), your:answerText(it,given), correct:correctText(it), why:plain(it.why), ok:ok, blank:blank };
+    all.push(row); if(!ok) corrections.push(row);
+  });
+  var pct=Math.round(score/N*100), band=bandFor(pct);
+  var minutes=Math.max(1,Math.round((att.finishedAt-att.start)/60000));
+  var sections=SECTIONS.map(function(S){ var v=sec[S.id]; return { name:S.title, c:v.c, n:v.n, pct:v.n?Math.round(v.c/v.n*100):0 }; });
+  var skills=SKILLS.map(function(s){ var v=sk[s]; return { name:s, section:secTitle(SKILL_SECTION[s]), c:v.c, n:v.n, pct:v.n?Math.round(v.c/v.n*100):0 }; });
+  var strengths=skills.filter(function(s){ return s.pct>=80; }).map(function(s){ return s.name+" ("+s.c+"/"+s.n+")"; });
+  var targets=skills.filter(function(s){ return s.pct<60; }).sort(function(a,b){ return a.pct-b.pct; })
+    .map(function(s){ return { skill:s.name, score:s.c+"/"+s.n, advice:ADVICE[s.name] }; });
+  var bestSec=sections.slice().sort(function(a,b){ return b.pct-a.pct; })[0], weakSec=sections.slice().sort(function(a,b){ return a.pct-b.pct; })[0];
+  var who=student||"The learner";
+  var summary=who+" scored "+score+" out of "+N+" ("+pct+"%) in "+minutes+" minute"+(minutes===1?"":"s")+(att.timedOut?" (the time ran out)":"")+
+    ", answering "+answeredN+" of "+N+" questions. Strongest section: "+bestSec.name+" ("+bestSec.c+"/"+bestSec.n+")."+
+    (weakSec.pct<bestSec.pct?" Section needing the most practice: "+weakSec.name+" ("+weakSec.c+"/"+weakSec.n+").":" All sections were equally strong.");
+  return { test:TEST_TITLE, student:who, school:ACADEMY, tutor:TUTOR, date:new Date().toISOString(),
+    dateText:new Date().toLocaleString("en-GB",{ weekday:"short", day:"numeric", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" }),
+    minutes:minutes, timedOut:!!att.timedOut, score:score, total:N, pct:pct, answered:answeredN,
+    band:band.label, bandNote:band.note, bandCol:band.col, summary:summary,
+    sections:sections, skills:skills, strengths:strengths, targets:targets, corrections:corrections, all:all };
+}
+
+/* ---------- standalone report document (download + print/PDF) ---------- */
+function reportDoc(R, forPrint){
+  function bar(p,c){ return '<div class="bar"><i style="width:'+Math.max(0,Math.min(100,p))+'%;background:'+c+'"></i></div>'; }
+  var col=function(p){ return p>=80?"#16a34a":p>=60?"#2563eb":p>=40?"#d97706":"#dc2626"; };
+  var css='body{font-family:Arial,Helvetica,sans-serif;color:#1f2937;margin:0;background:#fff}main{max-width:820px;margin:0 auto;padding:24px}'+
+    'h1{font-size:24px;margin:0}h2{font-size:18px;margin:26px 0 8px;border-bottom:3px solid #e5e7eb;padding-bottom:4px}'+
+    '.top{background:#0f2a4a;color:#fff;border-radius:12px;padding:18px 20px}.top p{margin:4px 0;opacity:.9}'+
+    '.score{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}.box{flex:1 1 150px;border:2px solid #e5e7eb;border-radius:12px;padding:10px 14px}.box b{display:block;font-size:26px}'+
+    '.band{border-radius:10px;padding:10px 14px;color:#fff;font-weight:bold}table{width:100%;border-collapse:collapse;font-size:14px}'+
+    'th,td{border:1px solid #e5e7eb;padding:7px 8px;text-align:left;vertical-align:top}th{background:#f3f4f6}'+
+    '.bar{background:#eef0f4;border-radius:6px;height:12px;min-width:120px}.bar i{display:block;height:12px;border-radius:6px}'+
+    '.tgt{border-left:5px solid #d97706;background:#fff8e8;padding:8px 12px;margin:6px 0;border-radius:6px}.str{border-left:5px solid #16a34a;background:#effaf3;padding:8px 12px;margin:6px 0;border-radius:6px}'+
+    '.x{color:#b91c1c;font-weight:bold}.ok{color:#15803d;font-weight:bold}.foot{margin-top:24px;font-size:12px;color:#6b7280}'+
+    '@media print{main{padding:0}.top{-webkit-print-color-adjust:exact;print-color-adjust:exact}tr{page-break-inside:avoid}}';
+  var h='<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>'+esc(R.student+" — "+R.test)+'</title><style>'+css+'</style></head><body><main>'+
+    '<div class="top"><h1>📘 '+esc(R.test)+' — Performance Report</h1><p><b>Learner:</b> '+esc(R.student)+'</p><p><b>School:</b> '+esc(R.school)+(R.tutor?' · <b>Tutor:</b> '+esc(R.tutor):'')+'</p><p><b>Date:</b> '+esc(R.dateText)+'</p></div>'+
+    '<div class="score"><div class="box">Score<b>'+R.score+' / '+R.total+'</b></div><div class="box">Percentage<b>'+R.pct+'%</b></div><div class="box">Time used<b>'+R.minutes+' min</b></div><div class="box">Answered<b>'+R.answered+' / '+R.total+'</b></div></div>'+
+    '<div class="band" style="background:'+R.bandCol+'">'+esc(R.band)+': '+esc(R.bandNote)+'</div>'+
+    '<h2>Summary</h2><p>'+esc(R.summary)+'</p>'+
+    '<h2>Section results</h2><table><tr><th>Section</th><th>Score</th><th style="width:45%">Performance</th></tr>'+
+      R.sections.map(function(s){ return '<tr><td>'+esc(s.name)+'</td><td>'+s.c+' / '+s.n+' ('+s.pct+'%)</td><td>'+bar(s.pct,col(s.pct))+'</td></tr>'; }).join("")+'</table>'+
+    '<h2>Skills analysis</h2><table><tr><th>Skill</th><th>Section</th><th>Score</th><th style="width:35%">Performance</th></tr>'+
+      R.skills.map(function(s){ return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.section)+'</td><td>'+s.c+' / '+s.n+'</td><td>'+bar(s.pct,col(s.pct))+'</td></tr>'; }).join("")+'</table>'+
+    '<h2>Strengths</h2>'+(R.strengths.length?R.strengths.map(function(s){ return '<div class="str">✅ '+esc(s)+'</div>'; }).join(""):'<p>Keep practising. Strengths will show here as scores reach 80% in a skill.</p>')+
+    '<h2>Targets and next steps</h2>'+(R.targets.length?R.targets.map(function(t){ return '<div class="tgt"><b>🎯 '+esc(t.skill)+' ('+esc(t.score)+')</b><br>'+esc(t.advice)+'</div>'; }).join(""):'<p>No skill scored below 60%. Well done! Keep revising to stay sharp.</p>')+
+    '<h2>Corrections ('+R.corrections.length+')</h2>'+
+    (R.corrections.length?'<table><tr><th>Q</th><th>Question</th><th>Your answer</th><th>Correct answer</th><th>Why</th></tr>'+
+      R.corrections.map(function(c){ return '<tr><td>'+c.no+'</td><td><small>'+esc(c.section)+' · '+esc(c.skill)+'</small><br>'+esc(c.q)+'</td><td class="x">'+esc(c.your)+'</td><td class="ok">'+esc(c.correct)+'</td><td>'+esc(c.why)+'</td></tr>'; }).join("")+'</table>'
+      :'<p>🎉 No corrections. Every question was answered correctly!</p>')+
+    '<h2>All answers</h2><table><tr><th>Q</th><th>Section</th><th>Your answer</th><th>Result</th></tr>'+
+      R.all.map(function(a){ return '<tr><td>'+a.no+'</td><td>'+esc(a.section)+'</td><td>'+esc(a.your)+'</td><td>'+(a.ok?'<span class="ok">✔ Correct</span>':'<span class="x">✘ Correct answer: '+esc(a.correct)+'</span>')+'</td></tr>'; }).join("")+'</table>'+
+    '<p class="foot">Generated by '+esc(R.school)+' learning portal.</p>'+
+    '</main>'+(forPrint?'<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>':'')+'</body></html>';
+  return h;
+}
+function fileBase(R){ return ("English-Test-Report_"+R.student+"_"+R.date.slice(0,10)).replace(/[^\w\-]+/g,"_"); }
+function downloadReport(R){
+  var blob=new Blob([reportDoc(R,false)],{type:"text/html"}), url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=fileBase(R)+".html"; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },1500);
+}
+function printReport(R){
+  var w=window.open("","_blank");
+  if(!w){ toast("Please allow pop-ups to save the PDF, or use Download instead."); return; }
+  w.document.open(); w.document.write(reportDoc(R,true)); w.document.close();
+}
+
+/* ---------- email to tutor (via the academy's Apps Script) ---------- */
+function emailPayload(R){
+  return { type:"report", test:R.test, student:R.student, school:R.school, tutor:R.tutor, date:R.date, dateText:R.dateText,
+    minutes:R.minutes, timedOut:R.timedOut, score:R.score, total:R.total, pct:R.pct, answered:R.answered,
+    band:R.band, bandNote:R.bandNote, summary:R.summary, sections:R.sections, skills:R.skills,
+    strengths:R.strengths, targets:R.targets, corrections:R.corrections };
+}
+function sendToTutor(R){
+  var box=el("mailbox"); if(box){ box.className="mailbox wait"; box.textContent="📧 Sending the report to your tutor…"; }
+  return MQ.sendReport(emailPayload(R)).then(function(res){
+    var b=el("mailbox"); if(!b) return;
+    if(res&&res.ok){ b.className="mailbox ok"; b.innerHTML="📧 Report sent to your tutor's email ✅"; var a=MQ.readLocal(attemptKey()); if(a){ a.emailed=true; MQ.saveLocal(attemptKey(),a); } }
+    else if(res&&res.offline){ b.className="mailbox bad"; b.innerHTML="📴 The report could not be emailed (the portal is offline). Please download it and send it to your tutor."; }
+    else { b.className="mailbox bad"; b.innerHTML='⚠️ The report could not be sent. Check the internet connection. <button class="btn ghost" id="resend">🔁 Try again</button>'; var r=el("resend"); if(r) r.onclick=function(){ sendToTutor(R); }; }
+  });
+}
+
+/* ---------- on-screen results ---------- */
+function showResults(R){
+  var best=MQ.readLocal(bestKey()), isBest=!best || R.score>best.score;
+  if(isBest) MQ.saveLocal(bestKey(), { score:R.score, pct:R.pct, at:Date.now() });
+  MQ.sound("win"); MQ.confetti(R.pct>=60?220:90);
+  var col=function(p){ return p>=80?"#16a34a":p>=60?"#2563eb":p>=40?"#d97706":"#dc2626"; };
+  function revList(filter){
+    var rows=R.all.filter(function(r){ return filter==="all" || (filter==="wrong" && !r.ok) || (filter==="right" && r.ok); });
+    if(!rows.length) return '<p class="muted center" style="font-weight:700;">Nothing to show here. Well done! 🎉</p>';
+    return rows.map(function(r){
+      var cls=r.ok?"ok":(r.blank?"blank":"no");
+      return '<div class="rev '+cls+'"><span class="rb">'+(r.ok?"✅":(r.blank?"⬜":"❌"))+'</span>'+
+        '<div class="rq">Q'+r.no+' · <span style="color:#2563eb">'+esc(r.section)+' · '+esc(r.skill)+'</span><br>'+esc(r.q)+'</div>'+
+        '<div class="ra">Your answer: '+esc(r.your)+'</div>'+
+        (r.ok?'':'<div class="ra" style="color:#0a8a3f;">Correct answer: '+esc(r.correct)+'</div>')+
+        '<div class="solbox">💡 '+esc(r.why)+'</div></div>'; }).join("");
+  }
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot" style="font-size:70px;">'+(R.pct>=80?"🏆":R.pct>=60?"🌟":R.pct>=40?"💪":"🌱")+'</div>'+
+      '<h1>'+(R.timedOut?"⏰ Time's up! Test submitted":"Test submitted!")+'</h1>'+
+      '<div class="row" style="margin:14px 0;gap:22px;">'+
+        '<div><div class="big-num" style="font-size:52px;">'+R.score+'/'+R.total+'</div><div class="muted">Score</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+R.pct+'%</div><div class="muted">Percentage</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+R.minutes+'</div><div class="muted">Minutes</div></div></div>'+
+      '<p style="font-size:22px;font-weight:800;color:'+R.bandCol+';margin:4px 0;">'+esc(R.band)+'</p>'+
+      '<p style="font-weight:700;color:#4a4470;max-width:620px;margin:6px auto;">'+esc(R.bandNote)+'</p>'+
+      (isBest?'<p style="font-weight:800;color:#3b5b7e;">🏅 New personal best!</p>':'<p style="font-weight:800;color:#3b5b7e;">Personal best: '+best.score+' / '+R.total+'</p>')+
+      '<div id="mailbox" class="mailbox wait">📧 Preparing your report…</div>'+
+      '<div class="row" style="margin-top:12px;">'+
+        '<button class="btn green" id="dl">⬇️ Download report</button>'+
+        '<button class="btn blue" id="pdf">🖨️ Save as PDF / Print</button></div>'+
+      '<div class="row" style="margin-top:8px;"><button class="btn ghost" id="again">🔁 New attempt</button><a class="btn ghost" href="index.html" style="text-decoration:none;">📚 English hub</a></div>'+
+    '</div>'+
+    '<div class="card"><h2>📝 Summary</h2><p style="font-weight:700;color:#334155;font-size:17px;">'+esc(R.summary)+'</p>'+
+      '<h3>Section results</h3>'+R.sections.map(function(s){ return '<div class="brk"><span class="bn">'+esc(s.name)+'</span><span class="bar"><i style="width:'+s.pct+'%;background:'+col(s.pct)+'"></i></span><span class="bs">'+s.c+'/'+s.n+'</span></div>'; }).join("")+
+      '<h3>Skills analysis</h3>'+R.skills.map(function(s){ return '<div class="brk"><span class="bn">'+esc(s.name)+'</span><span class="bar"><i style="width:'+s.pct+'%;background:'+col(s.pct)+'"></i></span><span class="bs">'+s.c+'/'+s.n+'</span></div>'; }).join("")+
+    '</div>'+
+    '<div class="card"><h2>✅ Strengths</h2>'+(R.strengths.length?R.strengths.map(function(s){ return '<div class="str">'+esc(s)+'</div>'; }).join(""):'<p class="muted" style="font-weight:700;">Strengths appear here when a skill reaches 80%. Keep going!</p>')+
+      '<h2>🎯 Targets and next steps</h2>'+(R.targets.length?R.targets.map(function(t){ return '<div class="tgt"><b>'+esc(t.skill)+' ('+esc(t.score)+')</b><br>'+esc(t.advice)+'</div>'; }).join(""):'<p class="muted" style="font-weight:700;">No skill below 60%. Brilliant! 🎉</p>')+
+    '</div>'+
+    '<div class="card"><h2>📋 Corrections</h2>'+
+      '<div class="filt"><button class="btn ghost on" data-f="wrong">❌ To correct ('+R.corrections.length+')</button><button class="btn ghost" data-f="all">All '+R.total+'</button><button class="btn ghost" data-f="right">✅ Correct ('+R.score+')</button></div>'+
+      '<div id="revList">'+revList("wrong")+'</div></div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".filt button"),function(b){
+    b.onclick=function(){ document.querySelectorAll(".filt button").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); el("revList").innerHTML=revList(b.getAttribute("data-f")); };
+  });
+  el("dl").onclick=function(){ MQ.sound("click"); downloadReport(R); };
+  el("pdf").onclick=function(){ MQ.sound("click"); printReport(R); };
+  el("again").onclick=function(){ MQ.saveLocal(attemptKey(), null); intro(); };
+
+  // 1) results row in the tutor's sheet (English tab)
+  var skillScores={}; R.skills.forEach(function(s){ skillScores[s.name]=s.c+"/"+s.n; });
+  MQ.logResult({ student:R.student, subject:"English", week:"", weekTitle:TEST_TITLE+" ("+R.total+" Q · "+TEST_MINUTES+" min)",
+    accuracy:R.pct, correct:R.score, totalQuestions:R.total, stars:MQ.rating(R.pct).stars, rating:R.band, minutes:R.minutes, timedOut:R.timedOut,
+    stages:{ sections:R.sections.map(function(s){return s.name+": "+s.c+"/"+s.n;}), skills:skillScores, missed:R.corrections.map(function(c){return c.no;}) },
+    school:R.school, tutor:R.tutor });
+  // 2) full analysis + corrections emailed to the tutor
+  sendToTutor(R);
+}
+
+boot();
+</script>
+</body>
+</html>

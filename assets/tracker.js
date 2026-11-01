@@ -67,6 +67,21 @@
     });
   };
 
+  /* ---------- Send a finished test report to be emailed to the tutor ----------
+     The Apps Script decides who receives it (the Google account that owns
+     the script), so no email address ever lives in this public website. */
+  MQ.sendReport = function (report) {
+    if (!URL) return Promise.resolve({ ok: false, offline: true });
+    var body = JSON.stringify(Object.assign({ type: "report" }, report));
+    return fetch(URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: body
+    }).then(function () { return { ok: true }; })
+      .catch(function (err) { return { ok: false, error: String(err) }; });
+  };
+
   /* ---------- Read a student's history via JSONP (for progress view) ----------
      subject (optional) picks the matching Sheet tab, e.g. "English".
      Omit it for the default (Maths) results tab. */

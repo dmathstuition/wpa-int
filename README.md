@@ -28,6 +28,33 @@ per area, so a learner (or you) can pick where to go:
 Send the learner the **site root** as the starting link. Every hub has a 🏠 Home
 chip back to it.
 
+## 📘 Year 6 English Test (`english/y6-english-test.html`) with an emailed report
+
+A 50-minute, 45-question test: **Grammar (25)**, covering verb tenses, nouns,
+adjectives and adverbs, pronouns, conjunctions, sentence types and Standard
+English; **Spelling (10)**, with words read aloud plus "choose the correct
+spelling"; and **Reading (10)**, on an original story, "The Rooftop Garden".
+It has the same exam features as the 11+ test (timer, flags, resume, auto-submit).
+
+When it is submitted, the learner sees a **detailed analysis**: score and band,
+section and skill breakdown, strengths, targets with next steps, and **every
+correction** with an explanation. They can **download** it (HTML) or **save it
+as a PDF**. The same report is **emailed to the tutor** with a PDF attached,
+and a results row goes to the English tab.
+
+### One-time setup so reports reach your inbox
+The email is sent by your own Apps Script, so after updating the code:
+1. Open your results Google Sheet ▸ **Extensions ▸ Apps Script**, and replace the
+   code with the latest `apps-script/Code.gs`.
+2. In the toolbar choose **testReportEmail** ▸ **Run**, and allow the "send email
+   as you" permission. You should receive a sample report.
+3. **Deploy ▸ Manage deployments ▸ ✏️ Edit ▸ Version: New version ▸ Deploy.**
+   The URL doesn't change, so `config.js` stays as it is.
+
+Reports go to the Google account that owns the script (or set `REPORT_EMAIL`
+in `Code.gs`). No email address is stored in the website. There is a safety cap
+of 60 report emails a day.
+
 ## ✒️ 11+ Punctuation Test (`english/punctuation-test.html`)
 
 A 50-question, 50-minute computer-based test, linked from the English hub. It
