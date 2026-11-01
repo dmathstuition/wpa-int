@@ -28,6 +28,26 @@ per area, so a learner (or you) can pick where to go:
 Send the learner the **site root** as the starting link. Every hub has a 🏠 Home
 chip back to it.
 
+## 🧠 11+ Reasoning Test (`reasoning-test.html`): gentle Year 5 practice
+
+A 50-minute computer-based test of 45 questions, pitched below full 11+
+difficulty for a Year 5 learner.
+
+- **Section A, Verbal reasoning (25):** same and opposite meanings, odd word
+  out, compound words, analogies, number and letter series, letter codes,
+  missing letters, hidden words and logic.
+- **Section B, Non-verbal reasoning (20):** odd shape out, what comes next,
+  shape analogies, mirror images, grids and counting shapes. Shapes are drawn
+  by the page (SVG).
+
+Questions stay grouped by type, like the real exam, and options are shuffled
+on every attempt. Every shape odd-one-out question is checked so that only
+**one** option stands out, on one feature only. It has the same exam engine
+(timer, flags, resume, auto-submit) and the same report: analysis,
+strengths, targets and corrections. The learner can download it (with shape
+pictures) or save it as a PDF, and it is emailed to the tutor (shapes are
+described in words in the email). Results log to an **"11+ Reasoning"** tab.
+
 ## 📘 Year 6 English Test (`english/y6-english-test.html`) with an emailed report
 
 A 50-minute, 45-question test: **Grammar (25)**, covering verb tenses, nouns,

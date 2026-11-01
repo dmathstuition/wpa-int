@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>11+ Reasoning Test | Whyte Pyramid Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+<style>
+  .cbt-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between;
+    background:linear-gradient(90deg,#7c3aed,#db2777); color:#fff; padding:12px 16px; border-radius:18px; margin-bottom:14px; }
+  .cbt-bar .t { font-size:26px; font-weight:800; letter-spacing:1px; }
+  .cbt-bar .t.warn { animation: pulseWarn 1s infinite; }
+  @keyframes pulseWarn { 0%,100%{ color:#fff; } 50%{ color:#ffe08a; } }
+  .cbt-bar .meta { font-weight:800; font-size:15px; }
+  .card.still { animation:none; }
+  .secband { border-radius:14px; padding:10px 14px; background:#f3e8ff; color:#4c1d95; font-weight:800; margin-bottom:12px; }
+  .secband small { display:block; font-weight:700; color:#6b21a8; }
+  .qno { display:inline-block; background:#7c3aed; color:#fff; font-weight:800; border-radius:999px; padding:3px 12px; font-size:14px; }
+  .qtype { display:inline-block; background:#fdf2f8; color:#9d174d; font-weight:800; border-radius:999px; padding:3px 12px; font-size:13px; margin-left:6px; }
+  .qtext { font-size:21px; font-weight:800; color:var(--ink); line-height:1.5; margin:12px 0 6px; }
+  .qtext .sent { display:block; margin-top:8px; padding:12px 14px; background:#fffdf3; border:2px dashed #e9dca4; border-radius:14px; font-weight:800; font-size:22px; text-align:center; letter-spacing:.5px; }
+  .options.col1 { grid-template-columns:1fr; }
+  .options.col1 .opt { font-size:19px; text-align:left; padding:14px 16px; }
+  .opt.picked { background:linear-gradient(160deg,#ffd93b,#ffb020) !important; color:#4a3500 !important; border-color:#e6a100 !important; }
+  /* figures */
+  .vis { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; margin:10px 0 6px; }
+  .fbox { width:96px; height:96px; background:#fff; border:3px solid var(--line); border-radius:14px; display:flex; align-items:center; justify-content:center; }
+  .fbox.q { font-size:44px; font-weight:800; color:#7c3aed; border-style:dashed; border-color:#c4b5fd; }
+  .arrowtxt { font-size:30px; font-weight:800; color:#6b21a8; }
+  .astxt { font-weight:800; color:#6b21a8; font-size:18px; padding:0 6px; }
+  .matrix { display:grid; grid-template-columns:repeat(2,96px); gap:8px; margin:10px auto; justify-content:center; }
+  .mirror { display:flex; align-items:center; gap:0; justify-content:center; margin:10px 0; }
+  .mirror .mline { width:0; height:110px; border-left:4px dashed #db2777; margin-left:14px; }
+  .mirror small { display:block; color:#db2777; font-weight:800; font-size:12px; text-align:center; }
+  .figopts { display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:10px; margin-top:10px; }
+  .figopt { background:#fff; border:3px solid var(--line); border-radius:16px; padding:6px 4px 4px; cursor:pointer; font-family:inherit; font-weight:800; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .08s; }
+  .figopt:hover { transform:translateY(-2px); }
+  .figopt.picked { background:#fff3c4; border-color:#e6a100; box-shadow:0 0 0 3px #ffd93b; }
+  .figopt span { font-size:16px; }
+  /* palette & results (shared look with the other tests) */
+  .palette { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:6px; margin:16px 0 6px; }
+  .pal { height:38px; border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--ink); font-weight:800; font-size:14px; cursor:pointer; position:relative; font-family:inherit; }
+  .pal.done { background:linear-gradient(160deg,#34e089,#12b866); color:#fff; border-color:#0f9d58; }
+  .pal.cur { outline:3px solid rgba(124,58,237,.55); outline-offset:2px; }
+  .pal.flag::after { content:"🚩"; position:absolute; top:-9px; right:-7px; font-size:13px; }
+  .pal.sep { grid-column:1 / -1; height:auto; border:0; background:none; cursor:default; text-align:left; font-size:12px; color:#6b21a8; padding:2px 0 0; }
+  .flagbtn.on { background:#ffdf6b; border-color:#e6b800; color:#5a4600; }
+  .brk { display:flex; align-items:center; gap:10px; margin:8px 0; font-weight:800; }
+  .brk .bn { flex:0 0 230px; text-align:left; }
+  .brk .bar { flex:1; height:14px; background:#eee; border-radius:999px; overflow:hidden; }
+  .brk .bar i { display:block; height:100%; border-radius:999px; }
+  .brk .bs { flex:0 0 64px; text-align:right; }
+  .rev { border:2px solid var(--line); border-radius:16px; padding:12px 14px; margin:10px 0; text-align:left; }
+  .rev.ok { border-color:#22bd6b; background:#effaf3; } .rev.no { border-color:var(--red); background:#fdeef0; } .rev.blank { border-color:#c9c3e6; background:#f6f4fd; }
+  .rev .rb { float:right; font-size:20px; } .rev .rq { font-weight:800; margin-bottom:6px; } .rev .ra { font-weight:800; font-size:15px; }
+  .rev .rvis { margin:6px 0; }
+  .solbox { margin-top:8px; background:#f5f3ff; border-radius:12px; padding:10px 12px; font-weight:700; color:#4c1d95; }
+  .tgt { border-left:6px solid #f59e0b; background:#fff8e8; border-radius:10px; padding:10px 12px; margin:8px 0; font-weight:700; color:#5a3e00; }
+  .str { border-left:6px solid #16a34a; background:#effaf3; border-radius:10px; padding:10px 12px; margin:8px 0; font-weight:700; color:#14532d; }
+  .filt { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:6px 0 4px; }
+  .filt button.on { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+  .mailbox { border-radius:14px; padding:10px 14px; font-weight:800; margin:10px auto 0; max-width:560px; }
+  .mailbox.ok { background:#e9fbf1; color:#0c7a43; } .mailbox.wait { background:#f5f3ff; color:#4c1d95; } .mailbox.bad { background:#fff1e6; color:#9a3b0b; }
+  .egrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; margin-top:10px; }
+  .eg { border:2px solid var(--line); border-radius:14px; padding:10px 12px; background:#fff; font-weight:700; color:#4a4470; font-size:15px; }
+  .eg b { color:#6b21a8; }
+  @media (max-width:520px){ .fbox{ width:78px; height:78px; } .matrix{ grid-template-columns:repeat(2,78px); } .brk .bn{ flex-basis:140px; font-size:13px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <a class="chip" href="index.html" style="text-decoration:none;color:#fff;">🏠 Home</a>
+    <span class="chip">🧠 <b>11+ Reasoning</b></span>
+    <span class="chip">👤 <b id="whoName">Candidate</b></span>
+    <button class="btn ghost" id="soundBtn">🔊</button>
+  </div>
+  <div class="brand" id="brand"><span class="pyr">🔺</span><span class="nm">Whyte Pyramid Academy<small>11+ Preparation</small></span></div>
+  <div id="screen"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="assets/tracker.js"></script>
+<script>
+if(typeof MQ==="undefined"){
+  document.getElementById("screen").innerHTML='<div class="card center"><h2>Just a moment…</h2><p class="muted" style="font-weight:700;">Something didn\'t load. Please tap reload.</p><button class="btn green" onclick="location.reload()">🔄 Reload</button></div>';
+  throw new Error("deps not loaded");
+}
+
+/* =============================================================
+   11+ REASONING PRACTICE TEST — gentle version for Year 5
+   45 questions · 50 minutes
+     Section A  Verbal reasoning (25)
+     Section B  Non-verbal reasoning (20)
+   Every question is multiple choice. The CORRECT option is written
+   FIRST in `o`; options are shuffled for each attempt.
+   An option is either text, or a FIGURE spec drawn as SVG:
+     { s:"circle"|"poly"|"arrow"|"flag"|"L"|"F", n:sides (poly),
+       fill:"w"|"b"|"g"|"s" (white, black, grey, striped),
+       rot:degrees, r:size (1 = full), dots:n, inner:{…}, mx/my: mirror }
+   `show` sets the picture above the question (series, analogy,
+   matrix, mirror, picture). `type` is the question style shown
+   to the learner; `skill` drives the report.
+   ============================================================= */
+var TEST_TITLE = "11+ Reasoning Practice Test (Year 5)";
+var TEST_MINUTES = 50;
+var SECTIONS = [
+  { id:"vr",  n:"Section A", title:"Verbal reasoning",     desc:"Puzzles with words, letters and numbers. Read each question carefully." },
+  { id:"nvr", n:"Section B", title:"Non-verbal reasoning", desc:"Puzzles with shapes and patterns. Look closely at shape, shading, size, dots and direction." }
+];
+var SKILLS = ["Word meanings","Word groups","Word analogies","Number sequences","Letter sequences & codes","Letter & word puzzles","Logic",
+              "Odd one out (shapes)","Shape series","Shape analogies","Reflections","Matrices & counting"];
+var SKILL_SECTION = { "Word meanings":"vr","Word groups":"vr","Word analogies":"vr","Number sequences":"vr","Letter sequences & codes":"vr","Letter & word puzzles":"vr","Logic":"vr",
+  "Odd one out (shapes)":"nvr","Shape series":"nvr","Shape analogies":"nvr","Reflections":"nvr","Matrices & counting":"nvr" };
+var ADVICE = {
+  "Word meanings":"Build vocabulary every day: read widely, keep a word book, and practise synonyms (same meaning) and antonyms (opposite meaning) in pairs.",
+  "Word groups":"For odd-one-out words, name the group out loud (fruit, birds, 2-D shapes…) and check every word against it. For compound words, test each choice in front of every word.",
+  "Word analogies":"Say the link as a sentence: “A cat's baby is a kitten, so a dog's baby is a…”. Then use the same sentence for the second pair.",
+  "Number sequences":"Write the jump between each pair of numbers (+2, +5, −3, ×2). If adding doesn't work, try doubling or halving.",
+  "Letter sequences & codes":"Write out A–Z with numbers under each letter (A=1 … Z=26) and use it to count jumps and work out codes.",
+  "Letter & word puzzles":"Try each choice in BOTH places and check both words are real. For hidden words, run your finger along the letters across the gap between words.",
+  "Logic":"Draw a quick picture or line (tallest → shortest) and put the facts on it one at a time.",
+  "Odd one out (shapes)":"Check one thing at a time: shape, number of sides, shading, size, dots and direction. Find what four have in common.",
+  "Shape series":"Look at what changes from one box to the next (turns, shading, sides, dots, size) and continue it one more step.",
+  "Shape analogies":"Work out exactly what changed from the first shape to the second, then make the same change to the third shape.",
+  "Reflections":"In a mirror the shape flips sideways: parts on the right go to the left, but top stays at the top. Hold up a small mirror to check!",
+  "Matrices & counting":"In a grid, see what changes along each row and down each column. When counting, count small parts first, then bigger shapes made of parts."
+};
+
+/* figure helpers for writing the bank */
+function C(fill,x){ return Object.assign({s:"circle",fill:fill||"w"},x||{}); }
+function P(n,fill,x){ return Object.assign({s:"poly",n:n,fill:fill||"w"},x||{}); }
+function SQ(fill,x){ return Object.assign({s:"poly",n:4,rot:45,fill:fill||"w"},x||{}); }   // upright square
+function AR(rot,fill,x){ return Object.assign({s:"arrow",rot:rot,fill:fill||"w"},x||{}); }
+function SH(s,x){ return Object.assign({s:s,fill:"b"},x||{}); }
+
+var BANK = [
+  /* ================= SECTION A · VERBAL REASONING (25) ================= */
+  { sec:"vr", skill:"Word meanings", type:"Same meaning", q:"Which word means the <b>same</b> as <b>big</b>?", o:["large","tiny","slow","happy"],
+    why:"big and large mean the same thing (synonyms)." },
+  { sec:"vr", skill:"Word meanings", type:"Same meaning", q:"Which word means the <b>same</b> as <b>quick</b>?", o:["fast","late","quiet","heavy"],
+    why:"quick and fast both mean ‘at speed’." },
+  { sec:"vr", skill:"Word meanings", type:"Opposite meaning", q:"Which word means the <b>opposite</b> of <b>hot</b>?", o:["cold","warm","sunny","burnt"],
+    why:"hot ↔ cold are opposites (antonyms). ‘warm’ is close in meaning to hot." },
+  { sec:"vr", skill:"Word meanings", type:"Opposite meaning", q:"Which word means the <b>opposite</b> of <b>empty</b>?", o:["full","light","open","clean"],
+    why:"empty ↔ full are opposites." },
+  { sec:"vr", skill:"Word meanings", type:"Opposite meaning", q:"Which word means the <b>opposite</b> of <b>ancient</b>?", o:["modern","old","broken","huge"],
+    why:"ancient means very old; the opposite is modern (new). ‘old’ means the same, not the opposite." },
+  { sec:"vr", skill:"Word groups", type:"Odd one out", q:"Which word is the <b>odd one out</b>?", o:["carrot","apple","banana","grape","pear"],
+    why:"apple, banana, grape and pear are fruits. A carrot is a vegetable." },
+  { sec:"vr", skill:"Word groups", type:"Odd one out", q:"Which word is the <b>odd one out</b>?", o:["salmon","robin","eagle","sparrow","owl"],
+    why:"robin, eagle, sparrow and owl are birds. A salmon is a fish." },
+  { sec:"vr", skill:"Word groups", type:"Odd one out", q:"Which word is the <b>odd one out</b>?", o:["cube","square","circle","triangle","rectangle"],
+    why:"square, circle, triangle and rectangle are flat (2-D) shapes. A cube is a 3-D solid." },
+  { sec:"vr", skill:"Word groups", type:"Compound words", q:"Which word can go <b>in front of</b> all three words to make new words?<span class='sent'>___ball &nbsp; ___print &nbsp; ___path</span>", o:["foot","hand","snow","finger"],
+    why:"football, footprint, footpath. (handball and handprint work, but ‘handpath’ doesn't.)" },
+  { sec:"vr", skill:"Word analogies", type:"Analogy", q:"<b>Cat</b> is to <b>kitten</b> as <b>dog</b> is to …", o:["puppy","cub","calf","foal"],
+    why:"A baby cat is a kitten; a baby dog is a puppy." },
+  { sec:"vr", skill:"Word analogies", type:"Analogy", q:"<b>Head</b> is to <b>hat</b> as <b>foot</b> is to …", o:["shoe","scarf","glove","coat"],
+    why:"You wear a hat on your head and a shoe on your foot." },
+  { sec:"vr", skill:"Word analogies", type:"Analogy", q:"<b>Up</b> is to <b>down</b> as <b>left</b> is to …", o:["right","top","side","under"],
+    why:"up and down are opposites, so left goes with its opposite: right." },
+  { sec:"vr", skill:"Number sequences", type:"Number series", q:"What number comes next?<span class='sent'>2, 4, 6, 8, ?</span>", o:["10","9","12","16"],
+    why:"The numbers go up by 2 each time: 8 + 2 = 10." },
+  { sec:"vr", skill:"Number sequences", type:"Number series", q:"What number comes next?<span class='sent'>5, 10, 15, 20, ?</span>", o:["25","30","21","24"],
+    why:"Counting in fives: 20 + 5 = 25." },
+  { sec:"vr", skill:"Number sequences", type:"Number series", q:"What number comes next?<span class='sent'>30, 27, 24, 21, ?</span>", o:["18","19","17","20"],
+    why:"The numbers go down by 3 each time: 21 − 3 = 18." },
+  { sec:"vr", skill:"Number sequences", type:"Number series", q:"What number comes next?<span class='sent'>1, 2, 4, 8, ?</span>", o:["16","10","12","14"],
+    why:"Each number is doubled: 8 × 2 = 16." },
+  { sec:"vr", skill:"Letter sequences & codes", type:"Letter series", q:"What letter comes next?<span class='sent'>A, C, E, G, ?</span>", o:["I","H","J","K"],
+    why:"Skip one letter each time: A (b) C (d) E (f) G (h) I." },
+  { sec:"vr", skill:"Letter sequences & codes", type:"Letter series", q:"What letter comes next?<span class='sent'>Z, Y, X, W, ?</span>", o:["V","U","A","T"],
+    why:"The alphabet is going backwards: Z, Y, X, W, V." },
+  { sec:"vr", skill:"Letter sequences & codes", type:"Letter code", q:"In a code, every letter moves <b>one place forward</b> in the alphabet, so <b>CAT</b> is written <b>DBU</b>. How is <b>DOG</b> written?", o:["EPH","CNF","DOH","FQI"],
+    why:"D→E, O→P, G→H, so DOG is written EPH." },
+  { sec:"vr", skill:"Letter sequences & codes", type:"Letter code", q:"If <b>A = 1, B = 2, C = 3, D = 4, E = 5</b>, what is the total of the word <b>BED</b>?", o:["11","10","12","9"],
+    why:"B (2) + E (5) + D (4) = 11." },
+  { sec:"vr", skill:"Letter & word puzzles", type:"Missing letter", q:"Which <b>one letter</b> ends the first word AND starts the second word?<span class='sent'>sto ( ? ) en</span>", o:["p","r","n","t"],
+    why:"p makes ‘stop’ and ‘pen’. The other letters don't make two real words." },
+  { sec:"vr", skill:"Letter & word puzzles", type:"Missing letter", q:"Which <b>one letter</b> ends the first word AND starts the second word?<span class='sent'>wi ( ? ) ose</span>", o:["n","g","t","s"],
+    why:"n makes ‘win’ and ‘nose’." },
+  { sec:"vr", skill:"Letter & word puzzles", type:"Hidden word", q:"An <b>animal</b> is hidden across two words that sit next to each other. Which animal is it?<span class='sent'>The cow left early.</span>", o:["owl","cat","eel","ant"],
+    why:"c<b>OW L</b>eft: the end of ‘cow’ and the start of ‘left’ spell OWL." },
+  { sec:"vr", skill:"Logic", type:"Logic", q:"Tom is taller than Sam. Sam is taller than Ali. <b>Who is the shortest?</b>", o:["Ali","Sam","Tom","They are all the same height"],
+    why:"Put them in order: Tom (tallest), then Sam, then Ali (shortest)." },
+  { sec:"vr", skill:"Logic", type:"Logic", q:"Mia has 3 more sweets than Ben. Ben has 5 sweets. <b>How many sweets does Mia have?</b>", o:["8","2","5","15"],
+    why:"3 more than 5 is 5 + 3 = 8." },
+
+  /* ================= SECTION B · NON-VERBAL REASONING (20) ================= */
+  /* Odd one out (5) */
+  { sec:"nvr", skill:"Odd one out (shapes)", type:"Odd one out", q:"Which shape is the <b>odd one out</b>?",
+    o:[P(6,"w"), C("b"), SQ("b"), P(3,"b"), P(5,"b")],
+    why:"All the others are shaded black. The hexagon is the only white shape." },
+  { sec:"nvr", skill:"Odd one out (shapes)", type:"Odd one out", q:"Which shape is the <b>odd one out</b>?",
+    o:[SQ("g"), P(3,"w"), P(3,"g",{rot:180}), P(3,"s",{rot:90}), P(3,"b")],
+    why:"Look at the number of sides. The others are all triangles (3 sides); only the square has 4 sides." },
+  { sec:"nvr", skill:"Odd one out (shapes)", type:"Odd one out", q:"Which shape is the <b>odd one out</b>?",
+    o:[P(6,"w",{dots:4}), SQ("w",{dots:3}), C("w",{dots:3}), P(3,"w",{dots:3}), P(5,"w",{dots:3})],
+    why:"Count the dots. The others all have 3 dots; the hexagon has 4." },
+  { sec:"nvr", skill:"Odd one out (shapes)", type:"Odd one out", q:"Which shape is the <b>odd one out</b>?",
+    o:[AR(90,"w"), AR(0,"w"), AR(0,"b"), AR(0,"g"), AR(0,"s")],
+    why:"Look at the direction. All the other arrows point up; one points right." },
+  { sec:"nvr", skill:"Odd one out (shapes)", type:"Odd one out", q:"Which shape is the <b>odd one out</b>?",
+    o:[P(6,"w",{inner:SQ("b")}), SQ("w",{inner:C("b")}), C("w",{inner:C("b")}), P(5,"w",{inner:C("b")}), P(3,"w",{inner:C("b")})],
+    why:"Look inside each shape. The others all have a small black circle inside; the hexagon has a small black square." },
+  /* Series (5) */
+  { sec:"nvr", skill:"Shape series", type:"What comes next?", q:"Which shape comes <b>next</b> in the pattern?",
+    show:{kind:"series", figs:[C("w",{dots:1}),C("w",{dots:2}),C("w",{dots:3}),C("w",{dots:4})]},
+    o:[C("w",{dots:5}),C("w",{dots:4}),C("w",{dots:6}),C("w",{dots:3})],
+    why:"One more dot is added each time: 1, 2, 3, 4, so next comes 5 dots." },
+  { sec:"nvr", skill:"Shape series", type:"What comes next?", q:"Which shape comes <b>next</b> in the pattern?",
+    show:{kind:"series", figs:[AR(0,"b"),AR(90,"b"),AR(180,"b"),AR(270,"b")]},
+    o:[AR(0,"b"),AR(90,"b"),AR(180,"b"),AR(270,"b")],
+    why:"The arrow turns a quarter turn clockwise each time: up, right, down, left… then back to up." },
+  { sec:"nvr", skill:"Shape series", type:"What comes next?", q:"Which shape comes <b>next</b> in the pattern?",
+    show:{kind:"series", figs:[SQ("b"),SQ("w"),SQ("b"),SQ("w")]},
+    o:[SQ("b"),SQ("w"),SQ("g"),C("b")],
+    why:"The square takes turns: black, white, black, white… so next it is black." },
+  { sec:"nvr", skill:"Shape series", type:"What comes next?", q:"Which shape comes <b>next</b> in the pattern?",
+    show:{kind:"series", figs:[P(3,"g"),P(4,"g"),P(5,"g"),P(6,"g")]},
+    o:[P(7,"g"),P(6,"g"),P(8,"g"),P(5,"g")],
+    why:"Each shape has one more side: 3, 4, 5, 6, so next comes a 7-sided shape (a heptagon)." },
+  { sec:"nvr", skill:"Shape series", type:"What comes next?", q:"Which shape comes <b>next</b> in the pattern?",
+    show:{kind:"series", figs:[C("s",{r:1}),C("s",{r:.8}),C("s",{r:.6}),C("s",{r:.4})]},
+    o:[C("s",{r:.2}),C("s",{r:.4}),C("s",{r:.8}),C("s",{r:1})],
+    why:"The circle gets smaller by the same amount each time, so the next one is the smallest." },
+  /* Analogies (4) */
+  { sec:"nvr", skill:"Shape analogies", type:"Shape analogy", q:"The first shape changes into the second. Make the <b>same change</b> to the third shape.",
+    show:{kind:"analogy", figs:[C("w"),C("b"),P(3,"w")]},
+    o:[P(3,"b"),P(3,"w"),C("b"),P(3,"g")],
+    why:"White changes to black, and the shape stays the same. So the white triangle becomes a black triangle." },
+  { sec:"nvr", skill:"Shape analogies", type:"Shape analogy", q:"The first shape changes into the second. Make the <b>same change</b> to the third shape.",
+    show:{kind:"analogy", figs:[AR(0,"w"),AR(180,"w"),AR(90,"w")]},
+    o:[AR(270,"w"),AR(90,"w"),AR(0,"w"),AR(180,"w")],
+    why:"The arrow turns to point the opposite way (a half turn). Right becomes left." },
+  { sec:"nvr", skill:"Shape analogies", type:"Shape analogy", q:"The first shape changes into the second. Make the <b>same change</b> to the third shape.",
+    show:{kind:"analogy", figs:[SQ("g",{r:.5}),SQ("g",{r:1}),P(3,"g",{r:.5})]},
+    o:[P(3,"g",{r:1}),P(3,"g",{r:.5}),SQ("g",{r:1}),C("g",{r:1})],
+    why:"The small shape becomes big, and the shape stays the same. So the small triangle becomes a big triangle." },
+  { sec:"nvr", skill:"Shape analogies", type:"Shape analogy", q:"The first shape changes into the second. Make the <b>same change</b> to the third shape.",
+    show:{kind:"analogy", figs:[C("w",{dots:2}),C("w",{dots:4}),SQ("w",{dots:3})]},
+    o:[SQ("w",{dots:6}),SQ("w",{dots:5}),SQ("w",{dots:3}),C("w",{dots:6})],
+    why:"The number of dots doubles (2 → 4), so 3 dots become 6, in the same square." },
+  /* Reflections (3) */
+  { sec:"nvr", skill:"Reflections", type:"Mirror image", q:"Which shape is the <b>reflection</b> of the shape in the dashed mirror line?",
+    show:{kind:"mirror", figs:[SH("flag")]},
+    o:[SH("flag",{mx:true}),SH("flag"),SH("flag",{my:true}),SH("flag",{mx:true,my:true})],
+    why:"In a side mirror the flag flips to face the other way (left), but it stays at the top of the pole." },
+  { sec:"nvr", skill:"Reflections", type:"Mirror image", q:"Which shape is the <b>reflection</b> of the shape in the dashed mirror line?",
+    show:{kind:"mirror", figs:[SH("L",{fill:"g"})]},
+    o:[SH("L",{fill:"g",mx:true}),SH("L",{fill:"g"}),SH("L",{fill:"g",my:true}),SH("L",{fill:"g",mx:true,my:true})],
+    why:"The foot of the L flips from the right to the left side, and it stays at the bottom." },
+  { sec:"nvr", skill:"Reflections", type:"Mirror image", q:"Which shape is the <b>reflection</b> of the shape in the dashed mirror line?",
+    show:{kind:"mirror", figs:[SH("F",{fill:"s"})]},
+    o:[SH("F",{fill:"s",mx:true}),SH("F",{fill:"s"}),SH("F",{fill:"s",my:true}),SH("F",{fill:"s",mx:true,my:true})],
+    why:"The arms of the F flip to point left, and they stay at the top." },
+  /* Matrices & counting (3) */
+  { sec:"nvr", skill:"Matrices & counting", type:"Complete the grid", q:"Which shape completes the <b>grid</b>?",
+    show:{kind:"matrix", figs:[C("w"),C("b"),SQ("w")]},
+    o:[SQ("b"),SQ("w"),C("b"),P(3,"b")],
+    why:"Along each row the shape stays the same and goes from white to black. So the square must turn black." },
+  { sec:"nvr", skill:"Matrices & counting", type:"Complete the grid", q:"Which shape completes the <b>grid</b>?",
+    show:{kind:"matrix", figs:[P(3,"w",{dots:1}),P(3,"w",{dots:2}),P(6,"w",{dots:1})]},
+    o:[P(6,"w",{dots:2}),P(6,"w",{dots:1}),P(3,"w",{dots:2}),P(6,"w",{dots:3})],
+    why:"Along each row the dots go from 1 to 2 in the same shape, so the hexagon needs 2 dots." },
+  { sec:"nvr", skill:"Matrices & counting", type:"Counting shapes", q:"How many <b>triangles</b> can you find in this picture?",
+    show:{kind:"picture", svg:'<svg viewBox="0 0 100 100" width="150" height="150"><polygon points="10,88 50,14 90,88" fill="#fff" stroke="#2d2559" stroke-width="3" stroke-linejoin="round"/><line x1="50" y1="14" x2="50" y2="88" stroke="#2d2559" stroke-width="3"/></svg>', desc:"a big triangle split by one line from the top to the bottom"},
+    o:["3","2","4","5"],
+    why:"There are 2 small triangles (left and right), plus the big triangle made by both together: 3 altogether." }
+];
+
+/* ---------- figure drawing (SVG) ---------- */
+var INK="#2d2559", figN=0;
+var PATHS={
+  arrow:"M50,14 L74,42 L60,42 L60,86 L40,86 L40,42 L26,42 Z",
+  flag:"M34,14 L40,14 L40,16 L72,30 L40,44 L40,86 L34,86 Z",
+  L:"M32,16 L46,16 L46,72 L72,72 L72,86 L32,86 Z",
+  F:"M32,14 L72,14 L72,28 L46,28 L46,44 L64,44 L64,58 L46,58 L46,86 L32,86 Z"
+};
+var DOTPOS={ 1:[[50,50]], 2:[[40,50],[60,50]], 3:[[50,40],[40,58],[60,58]], 4:[[41,41],[59,41],[41,59],[59,59]],
+  5:[[40,40],[60,40],[50,50],[40,60],[60,60]], 6:[[41,38],[59,38],[41,50],[59,50],[41,62],[59,62]] };
+function polyPts(n,R,rot){ var p=[]; for(var i=0;i<n;i++){ var a=(-90+(rot||0)+i*360/n)*Math.PI/180; p.push((50+R*Math.cos(a)).toFixed(1)+","+(50+R*Math.sin(a)).toFixed(1)); } return p.join(" "); }
+function fillOf(f,pid){ return f==="b"?INK : f==="g"?"#a7b0c7" : f==="s"?"url(#"+pid+")" : "#ffffff"; }
+function shapeEl(f,r,fill){
+  var st=' fill="'+fill+'" stroke="'+INK+'" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+  if(f.s==="circle") return '<circle cx="50" cy="50" r="'+(32*r).toFixed(1)+'"'+st+'/>';
+  if(f.s==="poly") return '<polygon points="'+polyPts(f.n,34*r,f.rot)+'"'+st+'/>';
+  var sx=(f.mx?-1:1)*r, sy=(f.my?-1:1)*r;
+  return '<path d="'+PATHS[f.s]+'" transform="translate(50 50) rotate('+(f.rot||0)+') scale('+sx+' '+sy+') translate(-50 -50)"'+st+'/>';
+}
+function figSVG(f,px){
+  var id="pt"+(++figN), r=f.r||1, body=shapeEl(f,r,fillOf(f.fill,id));
+  if(f.inner) body+=shapeEl(f.inner,f.inner.r||.38,fillOf(f.inner.fill,id));
+  if(f.dots) (DOTPOS[f.dots]||[]).forEach(function(d){ body+='<circle cx="'+d[0]+'" cy="'+d[1]+'" r="4.6" fill="'+(f.fill==="b"?"#fff":INK)+'"/>'; });
+  return '<svg viewBox="0 0 100 100" width="'+px+'" height="'+px+'" role="img"><defs><pattern id="'+id+'" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff"/><line x1="0" y1="0" x2="0" y2="7" stroke="'+INK+'" stroke-width="3"/></pattern></defs>'+body+'</svg>';
+}
+/* plain-English description of a figure (for the report and email) */
+var SHAPENAME={3:"triangle",4:"square",5:"pentagon",6:"hexagon",7:"7-sided shape",8:"8-sided shape"};
+function describe(f){
+  if(typeof f==="string") return f;
+  var col={w:"white",b:"black",g:"grey",s:"striped"}[f.fill]||"white", t;
+  var size = f.r==null?"" : f.r<=.25?"tiny ":f.r<=.45?"small ":f.r<=.65?"medium ":f.r<=.85?"large ":"big ";
+  if(f.s==="circle") t=size+col+" circle";
+  else if(f.s==="poly") t=size+col+" "+(SHAPENAME[f.n]||f.n+"-sided shape")+(f.n===3&&f.rot===180?" (upside down)":"");
+  else if(f.s==="arrow") t=size+col+" arrow pointing "+({0:"up",90:"right",180:"down",270:"left"}[((f.rot||0)%360+360)%360]||"sideways");
+  else { var nm={flag:"flag",L:"L-shape",F:"F-shape"}[f.s];
+    t=col+" "+nm+(f.mx&&f.my?" turned upside down and back to front":f.mx?" flipped to face left":f.my?" flipped upside down":" facing right"); }
+  if(f.dots) t+=" with "+f.dots+" dot"+(f.dots>1?"s":"");
+  if(f.inner) t+=" with a small "+describe(f.inner).replace(/^(small |tiny )/,"")+" inside";
+  return t;
+}
+
+/* ---------- helpers ---------- */
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function plain(s){ return String(s||"").replace(/<span class='sent'>/g," ").replace(/&nbsp;/g," ").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim(); }
+function mulberry(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffleR(a,r){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(r()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+var LET="ABCDE";
+var screen=el("screen");
+
+/* Paper from a seed: questions stay in order (grouped by type, like the
+   real 11+), options are shuffled. Same seed → same paper (for resuming). */
+function buildPaper(seed){
+  var r=mulberry(seed);
+  return BANK.map(function(q){ var opts=shuffleR(q.o,r); return { src:q, sec:q.sec, skill:q.skill, type:q.type, q:q.q, show:q.show, options:opts, answer:opts.indexOf(q.o[0]), why:q.why }; });
+}
+function isFig(o){ return typeof o!=="string"; }
+function optLabel(it,k){ return k==null?"(blank)" : LET[k]+" — "+describe(it.options[k]); }
+function questionText(it){
+  var t=it.type+": "+plain(it.q), s=it.show;
+  if(!s){ if(isFig(it.options[0])) t+=" (options: "+it.options.map(function(o,k){ return LET[k]+" "+describe(o); }).join("; ")+")"; return t; }
+  if(s.kind==="series") t+=" Pattern: "+s.figs.map(describe).join(" → ")+" → ?";
+  else if(s.kind==="analogy") t+=" "+describe(s.figs[0])+" → "+describe(s.figs[1])+", so "+describe(s.figs[2])+" → ?";
+  else if(s.kind==="matrix") t+=" Grid: "+describe(s.figs[0])+" | "+describe(s.figs[1])+" / "+describe(s.figs[2])+" | ?";
+  else if(s.kind==="mirror") t+=" Shape: "+describe(s.figs[0]);
+  else if(s.kind==="picture") t+=" Picture: "+s.desc;
+  return t;
+}
+function secTitle(id){ for(var i=0;i<SECTIONS.length;i++) if(SECTIONS[i].id===id) return SECTIONS[i].title; return id; }
+
+/* the picture above a question */
+function showHTML(s, px){
+  if(!s) return "";
+  px=px||84;
+  var box=function(f){ return '<div class="fbox">'+figSVG(f,px)+'</div>'; }, qbox='<div class="fbox q">?</div>';
+  if(s.kind==="series") return '<div class="vis">'+s.figs.map(box).join("")+qbox+'</div>';
+  if(s.kind==="analogy") return '<div class="vis">'+box(s.figs[0])+'<span class="arrowtxt">→</span>'+box(s.figs[1])+'<span class="astxt">as</span>'+box(s.figs[2])+'<span class="arrowtxt">→</span>'+qbox+'</div>';
+  if(s.kind==="matrix") return '<div class="matrix">'+s.figs.map(box).join("")+qbox+'</div>';
+  if(s.kind==="mirror") return '<div class="mirror">'+box(s.figs[0])+'<div><div class="mline"></div><small>mirror</small></div></div>';
+  if(s.kind==="picture") return '<div class="vis">'+s.svg+'</div>';
+  return "";
+}
+
+/* ---------- brand / sound / learner ---------- */
+var ACADEMY=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.ACADEMY_NAME)||"Whyte Pyramid Academy";
+var TUTOR=(window.MATHQUEST_CONFIG&&window.MATHQUEST_CONFIG.TUTOR_NAME)||"";
+(function(){ var e=document.querySelector("#brand .nm"); if(e) e.innerHTML=ACADEMY+"<small>11+ Preparation</small>"; document.title="11+ Reasoning Test | "+ACADEMY; })();
+var soundBtn=el("soundBtn");
+function paintSound(){ soundBtn.textContent=MQ.soundEnabled()?"🔊":"🔇"; }
+soundBtn.onclick=function(){ MQ.toggleSound(); paintSound(); }; paintSound();
+var student=MQ.getStudent()||"";
+function attemptKey(){ return "r11_attempt_"+(student||"").toLowerCase(); }
+function bestKey(){ return "r11_best_"+(student||"").toLowerCase(); }
+
+/* =============================================================
+   START
+   ============================================================= */
+function boot(){
+  if(!student){
+    screen.innerHTML='<div class="card center" style="max-width:540px;"><div class="mascot">🧠</div>'+
+      '<div class="speech">Welcome to your 11+ reasoning practice test! Please type your name.</div>'+
+      '<div class="row" style="margin-top:16px;"><input class="pill-input" id="nm" placeholder="Your name" maxlength="24" style="flex:1 1 200px;"><button class="btn green" id="nmBtn">Continue ▶</button></div></div>';
+    el("nmBtn").onclick=function(){ var v=el("nm").value.trim(); if(!v) return; student=v; MQ.setStudent(v); el("whoName").textContent=v; intro(); };
+    el("nm").addEventListener("keydown",function(e){ if(e.key==="Enter") el("nmBtn").click(); });
+  } else { el("whoName").textContent=student; intro(); }
+}
+
+function intro(){
+  var saved=MQ.readLocal(attemptKey()), best=MQ.readLocal(bestKey()), resume=saved && !saved.done;
+  var nVR=BANK.filter(function(q){return q.sec==="vr";}).length, nNVR=BANK.length-nVR;
+  screen.innerHTML=
+    '<h1 class="title-pop">🧠 11+ REASONING TEST</h1>'+
+    '<p class="subtitle">Verbal &amp; non-verbal reasoning · '+BANK.length+' questions · '+TEST_MINUTES+' minutes · Year 5 practice</p>'+
+    '<div class="card" style="margin-top:18px;border-top:10px solid #7c3aed;">'+
+      '<h2 style="margin-top:0;">📋 Instructions</h2>'+
+      '<ul style="font-weight:700;color:#4a4470;line-height:1.55;">'+
+        '<li>You have <b>'+TEST_MINUTES+' minutes</b> for <b>'+BANK.length+' questions</b>, about 1 minute each. Don\'t spend too long on one question; flag it and come back.</li>'+
+        '<li><b>Section A: Verbal reasoning</b> ('+nVR+' questions): words, letters and numbers.</li>'+
+        '<li><b>Section B: Non-verbal reasoning</b> ('+nNVR+' questions): shapes and patterns.</li>'+
+        '<li>Every question has one correct answer. Tap your choice; you can change it until you submit.</li>'+
+        '<li>Use <b>🚩 Flag</b> for questions you want to check, and the numbers at the bottom to jump around.</li>'+
+        '<li>The test submits by itself when time runs out, so <b>answer every question</b>, even if you have to guess!</li>'+
+      '</ul>'+
+      '<h3>👀 Examples of each question type</h3><div class="egrid">'+
+        '<div class="eg"><b>Same / opposite meaning:</b> big = large; hot ↔ cold</div>'+
+        '<div class="eg"><b>Analogy:</b> cat → kitten, so dog → puppy</div>'+
+        '<div class="eg"><b>Number series:</b> 2, 4, 6, 8, <b>10</b> (+2 each time)</div>'+
+        '<div class="eg"><b>Missing letter:</b> sto(<b>p</b>)en → stop / pen</div>'+
+        '<div class="eg"><b>Shape series:</b> look at what changes in each box, then continue it</div>'+
+        '<div class="eg"><b>Mirror image:</b> the shape flips sideways, like in a mirror</div>'+
+      '</div>'+
+      (best?'<p style="font-weight:800;color:#6b21a8;margin-top:14px;">🏅 Your best so far: '+best.score+' / '+BANK.length+' ('+best.pct+'%)</p>':'')+
+      '<div class="row" style="margin-top:14px;">'+
+        (resume?'<button class="btn big green" id="resume">▶ Resume your test</button><button class="btn ghost" id="fresh">↺ Start a new test</button>'
+               :'<button class="btn big green" id="fresh">▶ Start the '+TEST_MINUTES+'-minute test</button>')+
+      '</div>'+
+    '</div>';
+  if(resume) el("resume").onclick=function(){ MQ.sound("level"); runTest(saved); };
+  el("fresh").onclick=function(){
+    if(resume && !confirm("Start a new test? Your unfinished test will be lost.")) return;
+    MQ.sound("level");
+    var att={ seed:Math.floor(Math.random()*1e9)+1, start:Date.now(), endAt:Date.now()+TEST_MINUTES*60000, ans:{}, flag:{}, cur:0, done:false };
+    MQ.saveLocal(attemptKey(), att); runTest(att);
+  };
+}
+
+/* =============================================================
+   TEST RUNNER
+   ============================================================= */
+var timer=null, keyH=null;
+function runTest(att){
+  var P=buildPaper(att.seed), N=P.length, finished=false, firstPaint=true, warned10=false, warned5=false;
+  function save(){ MQ.saveLocal(attemptKey(), att); }
+  function answered(i){ return att.ans[i]!=null; }
+  function nAnswered(){ var c=0; for(var i=0;i<N;i++) if(answered(i)) c++; return c; }
+  function secOf(i){ for(var s=0;s<SECTIONS.length;s++) if(SECTIONS[s].id===P[i].sec) return SECTIONS[s]; }
+  function paintTimer(){
+    var left=Math.max(0,Math.round((att.endAt-Date.now())/1000)), m=Math.floor(left/60), s=left%60, t=el("tm");
+    if(t){ t.textContent="⏱ "+m+":"+String(s).padStart(2,"0"); t.classList.toggle("warn", left<=300); }
+    if(left<=600 && left>0 && !warned10){ warned10=true; toast("⏰ 10 minutes left"); }
+    if(left<=300 && left>0 && !warned5){ warned5=true; toast("⏰ 5 minutes left. Make sure every question has an answer!"); }
+    return left;
+  }
+  function render(){
+    var i=att.cur, q=P[i], S=secOf(i), opts;
+    if(isFig(q.options[0])){
+      opts='<div class="figopts" id="opts">'+q.options.map(function(o,k){
+        return '<button class="figopt opt'+(att.ans[i]===k?" picked":"")+'" data-k="'+k+'" aria-label="Option '+LET[k]+': '+esc(describe(o))+'">'+figSVG(o,86)+'<span>'+LET[k]+'</span></button>'; }).join("")+'</div>';
+    } else {
+      opts='<div class="options col1" id="opts">'+q.options.map(function(o,k){
+        return '<button class="opt'+(att.ans[i]===k?" picked":"")+'" data-k="'+k+'"><b>'+LET[k]+'.</b> '+esc(o)+'</button>'; }).join("")+'</div>';
+    }
+    var pal="", last=null;
+    for(var p=0;p<N;p++){
+      if(P[p].sec!==last){ last=P[p].sec; var SS=secOf(p); pal+='<span class="pal sep">'+SS.n+' · '+SS.title+'</span>'; }
+      pal+='<button class="pal'+(answered(p)?" done":"")+(p===i?" cur":"")+(att.flag[p]?" flag":"")+'" data-p="'+p+'">'+(p+1)+'</button>';
+    }
+    screen.innerHTML=
+      '<div class="cbt-bar"><span class="t" id="tm">⏱</span><span class="meta">Question '+(i+1)+' of '+N+'</span><span class="meta" id="cnt">Answered '+nAnswered()+' / '+N+'</span></div>'+
+      '<div class="card'+(firstPaint?"":" still")+'">'+
+        '<div class="secband">'+S.n+' · '+S.title+'<small>'+S.desc+'</small></div>'+
+        '<div class="row" style="justify-content:space-between;"><span><span class="qno">Q'+(i+1)+'</span><span class="qtype">'+esc(q.type)+'</span></span>'+
+          '<button class="btn ghost flagbtn'+(att.flag[i]?" on":"")+'" id="fl">'+(att.flag[i]?"🚩 Flagged":"🚩 Flag for review")+'</button></div>'+
+        '<div class="qtext">'+q.q+'</div>'+showHTML(q.show)+opts+
+        '<div class="row" style="margin-top:16px;justify-content:space-between;">'+
+          '<button class="btn ghost" id="bk"'+(i===0?" disabled":"")+'>← Back</button>'+
+          (i+1>=N?'<button class="btn big green" id="sub">✅ Submit test</button>':'<button class="btn big blue" id="nx">Next →</button>')+'</div>'+
+        '<div class="palette">'+pal+'</div>'+
+        '<div class="center"><button class="btn ghost" id="fin">🏁 Finish &amp; submit now</button></div>'+
+      '</div>';
+    firstPaint=false; paintTimer();
+    Array.prototype.forEach.call(document.querySelectorAll("#opts .opt"),function(b){
+      b.onclick=function(){ att.ans[i]=Number(b.getAttribute("data-k")); save(); MQ.sound("click");
+        document.querySelectorAll("#opts .opt").forEach(function(x){ x.classList.remove("picked"); }); b.classList.add("picked");
+        var c=el("cnt"); if(c) c.textContent="Answered "+nAnswered()+" / "+N;
+        var tile=document.querySelector('.pal[data-p="'+i+'"]'); if(tile) tile.classList.add("done"); };
+    });
+    el("fl").onclick=function(){ att.flag[i]=!att.flag[i]; if(!att.flag[i]) delete att.flag[i]; save(); MQ.sound("click"); render(); };
+    var bk=el("bk"); if(bk) bk.onclick=function(){ go(i-1); };
+    var nx=el("nx"); if(nx) nx.onclick=function(){ go(i+1); };
+    var sb=el("sub"); if(sb) sb.onclick=confirmSubmit;
+    el("fin").onclick=confirmSubmit;
+    Array.prototype.forEach.call(document.querySelectorAll(".pal[data-p]"),function(b){ b.onclick=function(){ go(Number(b.getAttribute("data-p"))); }; });
+  }
+  function go(p){ if(p<0||p>=N) return; att.cur=p; save(); MQ.sound("click"); render(); window.scrollTo({top:0,behavior:"smooth"}); }
+  function confirmSubmit(){
+    var blank=N-nAnswered(), fl=Object.keys(att.flag).length, extra=[];
+    if(blank) extra.push(blank+" unanswered"); if(fl) extra.push(fl+" flagged");
+    if(confirm("Submit your test now?"+(extra.length?"\n\nYou still have "+extra.join(" and ")+" question"+(blank+fl===1?"":"s")+".":""))) submit(false);
+  }
+  function submit(timedOut){
+    if(finished) return; finished=true;
+    clearInterval(timer); timer=null;
+    if(keyH){ document.removeEventListener("keydown",keyH); keyH=null; }
+    att.done=true; att.timedOut=!!timedOut; att.finishedAt=Math.min(Date.now(),att.endAt); save();
+    showResults(buildReport(P, att), P, att);
+  }
+  keyH=function(e){ if(e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if(e.key==="ArrowRight") go(att.cur+1); else if(e.key==="ArrowLeft") go(att.cur-1); };
+  document.addEventListener("keydown",keyH);
+  if(timer) clearInterval(timer);
+  if(paintTimer()<=0){ submit(true); return; }
+  render();
+  timer=setInterval(function(){ if(paintTimer()<=0) submit(true); },1000);
+}
+
+function toast(msg){
+  var t=document.createElement("div"); t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#3b0764;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;font-size:16px;z-index:500;box-shadow:0 8px 20px rgba(0,0,0,.3);max-width:92vw;text-align:center;";
+  document.body.appendChild(t); setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; setTimeout(function(){t.remove();},400); },2600);
+}
+
+/* =============================================================
+   PERFORMANCE ANALYSIS (screen, download, PDF and tutor email)
+   ============================================================= */
+function bandFor(pct){
+  if(pct>=85) return { label:"Excellent: on track", note:"A very strong result for a Year 5 learner. Keep practising timed papers to build speed.", col:"#16a34a" };
+  if(pct>=70) return { label:"Good: building well", note:"A good result. A few question types need more practice; see the targets below.", col:"#2563eb" };
+  if(pct>=50) return { label:"Developing", note:"Some question types are secure. Regular short practice on the targets below will help a lot.", col:"#d97706" };
+  return { label:"Early stages", note:"Reasoning is a new skill. Practise one question type at a time using the tips below.", col:"#dc2626" };
+}
+function buildReport(P, att){
+  var N=P.length, score=0, answeredN=0, sec={}, sk={}, corrections=[], all=[];
+  SECTIONS.forEach(function(S){ sec[S.id]={c:0,n:0}; });
+  SKILLS.forEach(function(s){ sk[s]={c:0,n:0}; });
+  P.forEach(function(it,i){
+    var given=att.ans[i], blank=(given==null), ok=(!blank && given===it.answer);
+    if(!blank) answeredN++; if(ok) score++;
+    sec[it.sec].n++; if(ok) sec[it.sec].c++;
+    sk[it.skill].n++; if(ok) sk[it.skill].c++;
+    var row={ no:i+1, i:i, section:secTitle(it.sec), skill:it.skill, q:questionText(it), your:optLabel(it,given), correct:optLabel(it,it.answer), why:plain(it.why), ok:ok, blank:blank };
+    all.push(row); if(!ok) corrections.push(row);
+  });
+  var pct=Math.round(score/N*100), band=bandFor(pct);
+  var minutes=Math.max(1,Math.round((att.finishedAt-att.start)/60000));
+  var sections=SECTIONS.map(function(S){ var v=sec[S.id]; return { name:S.title, c:v.c, n:v.n, pct:v.n?Math.round(v.c/v.n*100):0 }; });
+  var skills=SKILLS.map(function(s){ var v=sk[s]; return { name:s, section:secTitle(SKILL_SECTION[s]), c:v.c, n:v.n, pct:v.n?Math.round(v.c/v.n*100):0 }; });
+  var strengths=skills.filter(function(s){ return s.pct>=80; }).map(function(s){ return s.name+" ("+s.c+"/"+s.n+")"; });
+  var targets=skills.filter(function(s){ return s.pct<60; }).sort(function(a,b){ return a.pct-b.pct; }).map(function(s){ return { skill:s.name, score:s.c+"/"+s.n, advice:ADVICE[s.name] }; });
+  var vr=sections[0], nvr=sections[1], who=student||"The learner";
+  var summary=who+" scored "+score+" out of "+N+" ("+pct+"%) in "+minutes+" minute"+(minutes===1?"":"s")+(att.timedOut?" (the time ran out)":"")+
+    ", answering "+answeredN+" of "+N+" questions. Verbal reasoning: "+vr.c+"/"+vr.n+" ("+vr.pct+"%). Non-verbal reasoning: "+nvr.c+"/"+nvr.n+" ("+nvr.pct+"%)."+
+    (vr.pct===nvr.pct?" Both sections were equally strong.":" Stronger section: "+(vr.pct>nvr.pct?"verbal":"non-verbal")+" reasoning.");
+  return { test:TEST_TITLE, student:who, school:ACADEMY, tutor:TUTOR, date:new Date().toISOString(),
+    dateText:new Date().toLocaleString("en-GB",{ weekday:"short", day:"numeric", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" }),
+    minutes:minutes, timedOut:!!att.timedOut, score:score, total:N, pct:pct, answered:answeredN,
+    band:band.label, bandNote:band.note, bandCol:band.col, summary:summary,
+    sections:sections, skills:skills, strengths:strengths, targets:targets, corrections:corrections, all:all };
+}
+
+/* standalone report (download + PDF/print); shape questions keep their pictures */
+function reportDoc(R, P, forPrint){
+  function bar(p,c){ return '<div class="bar"><i style="width:'+Math.max(0,Math.min(100,p))+'%;background:'+c+'"></i></div>'; }
+  var col=function(p){ return p>=80?"#16a34a":p>=60?"#2563eb":p>=40?"#d97706":"#dc2626"; };
+  function pics(row){ var it=P[row.i]; if(it.sec!=="nvr") return "";
+    var s=showHTML(it.show,56), o=isFig(it.options[0])?'<div class="vis">'+it.options.map(function(f,k){ return '<div style="text-align:center">'+figSVG(f,52)+'<div><b>'+LET[k]+'</b></div></div>'; }).join("")+'</div>':"";
+    return '<div class="pics">'+s+o+'</div>'; }
+  var css='body{font-family:Arial,Helvetica,sans-serif;color:#1f2937;margin:0;background:#fff}main{max-width:840px;margin:0 auto;padding:24px}'+
+    'h1{font-size:24px;margin:0}h2{font-size:18px;margin:26px 0 8px;border-bottom:3px solid #e5e7eb;padding-bottom:4px}'+
+    '.top{background:#3b0764;color:#fff;border-radius:12px;padding:18px 20px}.top p{margin:4px 0;opacity:.92}'+
+    '.score{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}.box{flex:1 1 150px;border:2px solid #e5e7eb;border-radius:12px;padding:10px 14px}.box b{display:block;font-size:26px}'+
+    '.band{border-radius:10px;padding:10px 14px;color:#fff;font-weight:bold}table{width:100%;border-collapse:collapse;font-size:14px}'+
+    'th,td{border:1px solid #e5e7eb;padding:7px 8px;text-align:left;vertical-align:top}th{background:#f3f4f6}'+
+    '.bar{background:#eef0f4;border-radius:6px;height:12px;min-width:120px}.bar i{display:block;height:12px;border-radius:6px}'+
+    '.tgt{border-left:5px solid #d97706;background:#fff8e8;padding:8px 12px;margin:6px 0;border-radius:6px}.str{border-left:5px solid #16a34a;background:#effaf3;padding:8px 12px;margin:6px 0;border-radius:6px}'+
+    '.x{color:#b91c1c;font-weight:bold}.ok{color:#15803d;font-weight:bold}.foot{margin-top:24px;font-size:12px;color:#6b7280}'+
+    '.vis,.matrix,.mirror{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}.fbox{width:60px;height:60px;border:1px solid #d1d5db;border-radius:8px;display:flex;align-items:center;justify-content:center}'+
+    '.fbox.q{font-weight:bold;font-size:24px;color:#7c3aed}.arrowtxt,.astxt{font-weight:bold;color:#6b21a8}.matrix{display:grid;grid-template-columns:repeat(2,60px)}.mline{height:60px;border-left:3px dashed #db2777;margin-left:8px}.mirror small{color:#db2777;font-size:10px}'+
+    '@media print{main{padding:0}.top,.band{-webkit-print-color-adjust:exact;print-color-adjust:exact}tr{page-break-inside:avoid}}';
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>'+esc(R.student+" — "+R.test)+'</title><style>'+css+'</style></head><body><main>'+
+    '<div class="top"><h1>🧠 '+esc(R.test)+' — Performance Report</h1><p><b>Learner:</b> '+esc(R.student)+'</p><p><b>School:</b> '+esc(R.school)+(R.tutor?' · <b>Tutor:</b> '+esc(R.tutor):'')+'</p><p><b>Date:</b> '+esc(R.dateText)+'</p></div>'+
+    '<div class="score"><div class="box">Score<b>'+R.score+' / '+R.total+'</b></div><div class="box">Percentage<b>'+R.pct+'%</b></div><div class="box">Time used<b>'+R.minutes+' min</b></div><div class="box">Answered<b>'+R.answered+' / '+R.total+'</b></div></div>'+
+    '<div class="band" style="background:'+R.bandCol+'">'+esc(R.band)+': '+esc(R.bandNote)+'</div>'+
+    '<h2>Summary</h2><p>'+esc(R.summary)+'</p>'+
+    '<h2>Section results</h2><table><tr><th>Section</th><th>Score</th><th style="width:45%">Performance</th></tr>'+
+      R.sections.map(function(s){ return '<tr><td>'+esc(s.name)+'</td><td>'+s.c+' / '+s.n+' ('+s.pct+'%)</td><td>'+bar(s.pct,col(s.pct))+'</td></tr>'; }).join("")+'</table>'+
+    '<h2>Skills analysis</h2><table><tr><th>Question type</th><th>Section</th><th>Score</th><th style="width:35%">Performance</th></tr>'+
+      R.skills.map(function(s){ return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.section)+'</td><td>'+s.c+' / '+s.n+'</td><td>'+bar(s.pct,col(s.pct))+'</td></tr>'; }).join("")+'</table>'+
+    '<h2>Strengths</h2>'+(R.strengths.length?R.strengths.map(function(s){ return '<div class="str">✅ '+esc(s)+'</div>'; }).join(""):'<p>Strengths appear here when a question type reaches 80%.</p>')+
+    '<h2>Targets and next steps</h2>'+(R.targets.length?R.targets.map(function(t){ return '<div class="tgt"><b>🎯 '+esc(t.skill)+' ('+esc(t.score)+')</b><br>'+esc(t.advice)+'</div>'; }).join(""):'<p>No question type scored below 60%. Well done!</p>')+
+    '<h2>Corrections ('+R.corrections.length+')</h2>'+
+    (R.corrections.length?'<table><tr><th>Q</th><th>Question</th><th>Your answer</th><th>Correct answer</th><th>Why</th></tr>'+
+      R.corrections.map(function(c){ return '<tr><td>'+c.no+'</td><td><small>'+esc(c.section)+' · '+esc(c.skill)+'</small><br>'+(P[c.i].sec==="nvr"?esc(plain(P[c.i].q))+pics(c):esc(c.q))+'</td><td class="x">'+esc(c.your)+'</td><td class="ok">'+esc(c.correct)+'</td><td>'+esc(c.why)+'</td></tr>'; }).join("")+'</table>'
+      :'<p>🎉 No corrections. Every question was answered correctly!</p>')+
+    '<h2>All answers</h2><table><tr><th>Q</th><th>Section</th><th>Your answer</th><th>Result</th></tr>'+
+      R.all.map(function(a){ return '<tr><td>'+a.no+'</td><td>'+esc(a.section)+'</td><td>'+esc(a.your)+'</td><td>'+(a.ok?'<span class="ok">✔ Correct</span>':'<span class="x">✘ Correct: '+esc(a.correct)+'</span>')+'</td></tr>'; }).join("")+'</table>'+
+    '<p class="foot">Generated by the '+esc(R.school)+' learning portal.</p></main>'+
+    (forPrint?'<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>':'')+'</body></html>';
+}
+function fileBase(R){ return ("11plus-Reasoning-Report_"+R.student+"_"+R.date.slice(0,10)).replace(/[^\w\-+]+/g,"_"); }
+function downloadReport(R,P){
+  var blob=new Blob([reportDoc(R,P,false)],{type:"text/html"}), url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=fileBase(R)+".html"; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },1500);
+}
+function printReport(R,P){
+  var w=window.open("","_blank");
+  if(!w){ toast("Please allow pop-ups to save the PDF, or use Download instead."); return; }
+  w.document.open(); w.document.write(reportDoc(R,P,true)); w.document.close();
+}
+function emailPayload(R){
+  return { test:R.test, student:R.student, school:R.school, tutor:R.tutor, date:R.date, dateText:R.dateText,
+    minutes:R.minutes, timedOut:R.timedOut, score:R.score, total:R.total, pct:R.pct, answered:R.answered,
+    band:R.band, bandNote:R.bandNote, summary:R.summary, sections:R.sections, skills:R.skills,
+    strengths:R.strengths, targets:R.targets,
+    corrections:R.corrections.map(function(c){ return { no:c.no, section:c.section, skill:c.skill, q:c.q, your:c.your, correct:c.correct, why:c.why }; }) };
+}
+function sendToTutor(R){
+  var box=el("mailbox"); if(box){ box.className="mailbox wait"; box.textContent="📧 Sending the report to your tutor…"; }
+  return MQ.sendReport(emailPayload(R)).then(function(res){
+    var b=el("mailbox"); if(!b) return;
+    if(res&&res.ok){ b.className="mailbox ok"; b.innerHTML="📧 Report sent to your tutor ✅"; }
+    else if(res&&res.offline){ b.className="mailbox bad"; b.innerHTML="📴 The report could not be emailed (offline). Please download it and send it to your tutor."; }
+    else { b.className="mailbox bad"; b.innerHTML='⚠️ The report could not be sent. Check the internet connection. <button class="btn ghost" id="resend">🔁 Try again</button>'; var r=el("resend"); if(r) r.onclick=function(){ sendToTutor(R); }; }
+  });
+}
+
+function showResults(R, P, att){
+  var best=MQ.readLocal(bestKey()), isBest=!best || R.score>best.score;
+  if(isBest) MQ.saveLocal(bestKey(), { score:R.score, pct:R.pct, at:Date.now() });
+  MQ.sound("win"); MQ.confetti(R.pct>=70?220:90);
+  var col=function(p){ return p>=80?"#16a34a":p>=60?"#2563eb":p>=40?"#d97706":"#dc2626"; };
+  function revList(filter){
+    var rows=R.all.filter(function(r){ return filter==="all" || (filter==="wrong" && !r.ok) || (filter==="right" && r.ok); });
+    if(!rows.length) return '<p class="muted center" style="font-weight:700;">Nothing to show here. Well done! 🎉</p>';
+    return rows.map(function(r){
+      var it=P[r.i], cls=r.ok?"ok":(r.blank?"blank":"no"), fig=isFig(it.options[0]);
+      var yours = r.blank?"(blank)" : (fig? '<span style="vertical-align:middle">'+figSVG(it.options[att.ans[r.i]],46)+'</span> '+LET[att.ans[r.i]] : esc(it.options[att.ans[r.i]]));
+      var right = fig? '<span style="vertical-align:middle">'+figSVG(it.options[it.answer],46)+'</span> '+LET[it.answer] : esc(it.options[it.answer]);
+      return '<div class="rev '+cls+'"><span class="rb">'+(r.ok?"✅":(r.blank?"⬜":"❌"))+'</span>'+
+        '<div class="rq">Q'+r.no+' · <span style="color:#7c3aed">'+esc(r.skill)+'</span><br>'+plain(it.q)+'</div>'+
+        (it.show?'<div class="rvis">'+showHTML(it.show,56)+'</div>':'')+
+        '<div class="ra">Your answer: '+yours+'</div>'+
+        (r.ok?'':'<div class="ra" style="color:#0a8a3f;">Correct answer: '+right+'</div>')+
+        '<div class="solbox">💡 '+esc(r.why)+'</div></div>'; }).join("");
+  }
+  screen.innerHTML=
+    '<div class="card center">'+
+      '<div class="mascot" style="font-size:70px;">'+(R.pct>=85?"🏆":R.pct>=70?"🌟":R.pct>=50?"💪":"🌱")+'</div>'+
+      '<h1>'+(R.timedOut?"⏰ Time's up! Test submitted":"Test submitted!")+'</h1>'+
+      '<div class="row" style="margin:14px 0;gap:22px;">'+
+        '<div><div class="big-num" style="font-size:52px;">'+R.score+'/'+R.total+'</div><div class="muted">Score</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+R.pct+'%</div><div class="muted">Percentage</div></div>'+
+        '<div><div class="big-num" style="font-size:52px;">'+R.minutes+'</div><div class="muted">Minutes</div></div></div>'+
+      '<p style="font-size:22px;font-weight:800;color:'+R.bandCol+';margin:4px 0;">'+esc(R.band)+'</p>'+
+      '<p style="font-weight:700;color:#4a4470;max-width:620px;margin:6px auto;">'+esc(R.bandNote)+'</p>'+
+      (isBest?'<p style="font-weight:800;color:#6b21a8;">🏅 New personal best!</p>':'<p style="font-weight:800;color:#6b21a8;">Personal best: '+best.score+' / '+R.total+'</p>')+
+      '<div id="mailbox" class="mailbox wait">📧 Preparing your report…</div>'+
+      '<div class="row" style="margin-top:12px;"><button class="btn green" id="dl">⬇️ Download report</button><button class="btn blue" id="pdf">🖨️ Save as PDF / Print</button></div>'+
+      '<div class="row" style="margin-top:8px;"><button class="btn ghost" id="again">🔁 New attempt</button><a class="btn ghost" href="index.html" style="text-decoration:none;">🏠 Home</a></div>'+
+    '</div>'+
+    '<div class="card"><h2>📝 Summary</h2><p style="font-weight:700;color:#334155;font-size:17px;">'+esc(R.summary)+'</p>'+
+      '<h3>Section results</h3>'+R.sections.map(function(s){ return '<div class="brk"><span class="bn">'+esc(s.name)+'</span><span class="bar"><i style="width:'+s.pct+'%;background:'+col(s.pct)+'"></i></span><span class="bs">'+s.c+'/'+s.n+'</span></div>'; }).join("")+
+      '<h3>Question types</h3>'+R.skills.map(function(s){ return '<div class="brk"><span class="bn">'+esc(s.name)+'</span><span class="bar"><i style="width:'+s.pct+'%;background:'+col(s.pct)+'"></i></span><span class="bs">'+s.c+'/'+s.n+'</span></div>'; }).join("")+'</div>'+
+    '<div class="card"><h2>✅ Strengths</h2>'+(R.strengths.length?R.strengths.map(function(s){ return '<div class="str">'+esc(s)+'</div>'; }).join(""):'<p class="muted" style="font-weight:700;">Strengths appear here when a question type reaches 80%. Keep going!</p>')+
+      '<h2>🎯 Targets and next steps</h2>'+(R.targets.length?R.targets.map(function(t){ return '<div class="tgt"><b>'+esc(t.skill)+' ('+esc(t.score)+')</b><br>'+esc(t.advice)+'</div>'; }).join(""):'<p class="muted" style="font-weight:700;">No question type below 60%. Brilliant! 🎉</p>')+'</div>'+
+    '<div class="card"><h2>📋 Corrections</h2>'+
+      '<div class="filt"><button class="btn ghost on" data-f="wrong">❌ To correct ('+R.corrections.length+')</button><button class="btn ghost" data-f="all">All '+R.total+'</button><button class="btn ghost" data-f="right">✅ Correct ('+R.score+')</button></div>'+
+      '<div id="revList">'+revList("wrong")+'</div></div>';
+  Array.prototype.forEach.call(document.querySelectorAll(".filt button"),function(b){
+    b.onclick=function(){ document.querySelectorAll(".filt button").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); el("revList").innerHTML=revList(b.getAttribute("data-f")); };
+  });
+  el("dl").onclick=function(){ MQ.sound("click"); downloadReport(R,P); };
+  el("pdf").onclick=function(){ MQ.sound("click"); printReport(R,P); };
+  el("again").onclick=function(){ MQ.saveLocal(attemptKey(), null); intro(); };
+  var skillScores={}; R.skills.forEach(function(s){ skillScores[s.name]=s.c+"/"+s.n; });
+  MQ.logResult({ student:R.student, subject:"11+ Reasoning", week:"", weekTitle:TEST_TITLE+" ("+R.total+" Q · "+TEST_MINUTES+" min)",
+    accuracy:R.pct, correct:R.score, totalQuestions:R.total, stars:MQ.rating(R.pct).stars, rating:R.band, minutes:R.minutes, timedOut:R.timedOut,
+    stages:{ sections:R.sections.map(function(s){return s.name+": "+s.c+"/"+s.n;}), skills:skillScores, missed:R.corrections.map(function(c){return c.no;}) },
+    school:R.school, tutor:R.tutor });
+  sendToTutor(R);
+}
+
+boot();
+</script>
+</body>
+</html>
